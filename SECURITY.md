@@ -13,7 +13,7 @@ This repository is designed for GitHub Pages or another static-file host.
 - Exports happen only after an explicit user click
 
 ## Important boundary
-GitHub Pages serves application code to browser. The local-only guarantee applies to the files and text that the operator processes with the application, not to the application source.
+GitHub Pages serves application code to browser. The local-only applies to the files and text that the operator processes with the application. Not to the application source.
 
 ## Audit recommendations
 For operational assurance case a reviewer can inspect:
