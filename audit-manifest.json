@@ -1,0 +1,8 @@
+{
+  "application": "Admin Toolbox",
+  "architecture": "GitHub Pages -> static HTML/CSS/JS -> browser -> local processing -> result/download",
+  "network": {"connectSrc": "'none'", "externalRequests": false},
+  "storage": {"localStorage": false, "sessionStorage": false, "indexedDB": false, "cookies": false},
+  "dependencies": {"thirdPartyRuntime": false, "cdn": false},
+  "review": {"auditScreen": true, "securityDoc": "SECURITY.md"}
+}

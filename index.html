@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; worker-src 'self';">
+  <meta name="description" content="Local-only administrative IT toolbox. Files are processed in your browser and are not uploaded.">
+  <title>Admin Toolbox - Local-only IT utilities</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Admin Toolbox</h1>
+      <p>Local-only IT utilities. No uploads. No APIs. No analytics.</p>
+    </div>
+    <div class="privacy-badge" id="privacyBadge">LOCAL ONLY</div>
+  </header>
+
+  <main class="layout">
+    <nav class="sidebar" aria-label="Tools">
+      <button class="nav-item active" data-tool="dashboard">Home</button>
+      <button class="nav-item" data-tool="logs">1 · Log / CSV inspector</button>
+      <button class="nav-item" data-tool="hash">2 · File hashing</button>
+      <button class="nav-item" data-tool="subnet">3 · IP / subnet calculator</button>
+      <button class="nav-item" data-tool="passwords">4 · Password generator</button>
+      <button class="nav-item" data-tool="certs">5 · Certificate / CSR inspector</button>
+      <button class="nav-item" data-tool="diff">6 · Configuration diff</button>
+      <div class="sidebar-footer">
+        <button class="nav-item" data-tool="audit">Audit / architecture</button>
+      </div>
+    </nav>
+
+    <section class="content" id="app" aria-live="polite"></section>
+  </main>
+
+  <footer class="footer">
+    <span>GitHub Pages compatible</span>
+    <span>•</span>
+    <span>Static HTML/CSS/JS</span>
+    <span>•</span>
+    <span>Browser processing only</span>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
