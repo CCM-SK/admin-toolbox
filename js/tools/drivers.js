@@ -18,7 +18,7 @@ USB\\VID_0BDA&PID_8153"></textarea>
 
       <div class="result-actions">
         <button class="btn primary" id="analyzeBtn">
-          Analysieren
+          Analyse
         </button>
 
         <button class="btn" id="exportBtn">
@@ -28,7 +28,7 @@ USB\\VID_0BDA&PID_8153"></textarea>
     </section>
 
     <section class="card" id="driverResults" hidden>
-      <h3>Gefundene Geräte</h3>
+      <h3>Found Devices</h3>
 
       <div class="table-wrap">
         <table>
