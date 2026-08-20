@@ -6,7 +6,7 @@ export function renderDrivers(app) {
       <h2>Driver Assistant</h2>
 
       <p class="small">
-        Analyse von Hardware-IDs aus dem Windows Geräte-Manager.
+        Analyse Hardware-IDs from the Windows Device-Manager.
       </p>
 
       <label for="driverInput">Hardware IDs</label>
@@ -14,7 +14,7 @@ export function renderDrivers(app) {
       <textarea
         id="driverInput"
         placeholder="PCI\\VEN_8086&DEV_51F0
-USB\\VID_0BDA&PID_8153 Möglicherweise werden nicht die aktuellsten Treiber vorgeschlagen"></textarea>
+USB\\VID_0BDA&PID_8153"></textarea>
 
       <div class="result-actions">
         <button class="btn primary" id="analyzeBtn">
@@ -35,11 +35,11 @@ USB\\VID_0BDA&PID_8153 Möglicherweise werden nicht die aktuellsten Treiber vorg
           <thead>
             <tr>
               <th>Typ</th>
-              <th>Hersteller</th>
+              <th>Manufacturer</th>
               <th>Vendor ID</th>
               <th>Device ID</th>
               <th>Original ID</th>
-              <th>Aktionen</th>
+              <th>Search in</th>
             </tr>
           </thead>
           <tbody id="driverTable"></tbody>
@@ -133,7 +133,7 @@ USB\\VID_0BDA&PID_8153 Möglicherweise werden nicht die aktuellsten Treiber vorg
       table.innerHTML = `
         <tr>
           <td colspan="6">
-            Keine gültigen Hardware-IDs gefunden.
+            No valid Hardware IDs found.
           </td>
         </tr>
       `;
