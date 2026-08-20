@@ -13,7 +13,7 @@ import { renderRegex } from './tools/regex.js';
 
 import { renderDrivers } from "./tools/drivers.js";
 
-const views={dashboard:renderDashboard,logs:renderLogs,hash:renderHash,subnet:renderSubnet,passwords:renderPasswords,certs:renderCerts,diff:renderDiff,powershell:renderPowershell,identity:renderIdentity,regex:renderRegex,audit:renderAudit,drivers: rederDrivers};
+const views={dashboard:renderDashboard,logs:renderLogs,hash:renderHash,subnet:renderSubnet,passwords:renderPasswords,certs:renderCerts,diff:renderDiff,powershell:renderPowershell,identity:renderIdentity,regex:renderRegex,audit:renderAudit,drivers: renderDrivers};
 const app=$('#app');
 function activate(tool){ $$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool)); history.replaceState(null,'',`#${tool}`); views[tool](app); }
 $$('.nav-item').forEach(b=>b.addEventListener('click',()=>activate(b.dataset.tool)));
