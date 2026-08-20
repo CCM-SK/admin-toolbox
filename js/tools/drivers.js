@@ -14,7 +14,7 @@ export function renderDrivers(app) {
       <textarea
         id="driverInput"
         placeholder="PCI\\VEN_8086&DEV_51F0
-USB\\VID_0BDA&PID_8153"></textarea>
+USB\\VID_0BDA&PID_8153 Möglicherweise werden nicht die aktuellsten Treiber vorgeschlagen"></textarea>
 
       <div class="result-actions">
         <button class="btn primary" id="analyzeBtn">
