@@ -57,6 +57,7 @@ export function renderHeader(app) {
 }
 
 function parseHeaders(raw) {
+  // Stop at the first header/body separator when a complete message was pasted.
   const headerPart = raw.replace(/^\uFEFF/, '').split(/\r?\n\r?\n/, 1)[0];
   const physical = headerPart.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
   const unfolded = [];
@@ -306,13 +307,17 @@ function statusClass(state) {
   return state === 'good' ? 'success' : state === 'bad' ? 'danger' : state === 'warn' ? 'warning' : '';
 }
 
+function statusIcon(state) {
+  return state === 'good' ? '&#10003;' : state === 'bad' ? '&#10007;' : state === 'warn' ? '&#9888;' : '&#8212;';
+}
+
 function renderResult(a, raw) {
   const s = a.summary;
-  const summaryHtml = `<div class="status ${statusClass(s.state)}"><strong>${escapeHtml(s.title)}</strong><br><span>${escapeHtml(s.text)}</span></div>`;
+  const summaryHtml = `<div class="status ${statusClass(s.state)}"><strong><span aria-hidden="true" style="font-size:1.15em;margin-right:6px">${statusIcon(s.state)}</span>${escapeHtml(s.title)}</strong><br><span>${escapeHtml(s.text)}</span></div>`;
   const cards = a.checks.map(c => `
     <div class="stat">
       <span>${escapeHtml(c.label)}</span>
-      <strong>${escapeHtml(c.value.toUpperCase())}</strong>
+      <strong><span aria-hidden="true" style="margin-right:6px">${statusIcon(c.state)}</span>${escapeHtml(c.value.toUpperCase())}</strong>
       <div class="small">${escapeHtml(c.explanation)}</div>
     </div>`).join('');
 
