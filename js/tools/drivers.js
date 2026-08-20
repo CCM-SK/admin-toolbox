@@ -6,39 +6,40 @@ export function renderDrivers(app) {
       <h2>Driver Assistant</h2>
 
       <p class="small">
-        Paste Hardware IDs from Windows Device Manager.
-        Vendor and Device IDs are detected automatically.
+        Analyse von Hardware-IDs aus dem Windows Geräte-Manager.
       </p>
 
-      <label>Hardware IDs</label>
+      <label for="driverInput">Hardware IDs</label>
 
-      <textarea id="driverInput"
-        placeholder="PCI\\VEN_8086&DEV_51F0&#10;USB\\VID_0BDA&PID_8153"></textarea>
+      <textarea
+        id="driverInput"
+        placeholder="PCI\\VEN_8086&DEV_51F0&#10;USB\\VID_0BDA&PID_8153">
+      </textarea>
 
-      <div class="row">
+      <div class="result-actions">
         <button class="btn primary" id="analyzeBtn">
-          Analyze
+          Analysieren
         </button>
 
         <button class="btn" id="exportBtn">
-          Export CSV
+          CSV Export
         </button>
       </div>
     </section>
 
     <section class="card" id="driverResults" hidden>
-      <h3>Detected Devices</h3>
+      <h3>Gefundene Geräte</h3>
 
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Type</th>
-              <th>Vendor</th>
+              <th>Typ</th>
+              <th>Hersteller</th>
               <th>Vendor ID</th>
               <th>Device ID</th>
-              <th>Original</th>
-              <th>Actions</th>
+              <th>Original ID</th>
+              <th>Aktionen</th>
             </tr>
           </thead>
 
@@ -66,27 +67,23 @@ export function renderDrivers(app) {
 
     "1814": "MediaTek",
 
+    "1028": "Dell",
+    "103C": "HP",
+    "1043": "ASUS",
+    "1462": "MSI",
     "17AA": "Lenovo",
 
-    "103C": "HP",
-
-    "1028": "Dell",
-
-    "1043": "ASUS",
-
-    "1462": "MSI",
-
-    "1AF4": "Red Hat",
-
+    "1AF4": "RedHat",
     "15AD": "VMware"
   };
 
   let currentDevices = [];
 
   function analyze() {
-    const text = $("#driverInput").value;
 
-    const lines = text
+    const input = $("#driverInput").value;
+
+    const lines = input
       .split(/\r?\n/)
       .map(x => x.trim())
       .filter(Boolean);
@@ -95,15 +92,18 @@ export function renderDrivers(app) {
 
     for (const line of lines) {
 
-      const pci = line.match(
-        /VEN_([A-F0-9]{4}).*DEV_([A-F0-9]{4})/i
-      );
+      const pci =
+        line.match(
+          /VEN_([0-9A-F]{4}).*DEV_([0-9A-F]{4})/i
+        );
 
-      const usb = line.match(
-        /VID[A-F0-9_([A-F0-9]{4}).*-F0-9]{4})/i
-      );
+      const usb =
+        line.match(
+          /VID_([0-9A-F]{4}).*PID_([0-9A-F]{4})/i
+        );
 
       if (pci) {
+
         const vendorId = pci[1].toUpperCase();
         const deviceId = pci[2].toUpperCase();
 
@@ -111,13 +111,12 @@ export function renderDrivers(app) {
           type: "PCI",
           vendorId,
           deviceId,
-          vendor:
-            vendorMap[vendorId] || "Unknown",
+          vendor: vendorMap[vendorId] || "Unknown",
           original: line
         });
-      }
 
-      else if (usb) {
+      } else if (usb) {
+
         const vendorId = usb[1].toUpperCase();
         const deviceId = usb[2].toUpperCase();
 
@@ -125,8 +124,7 @@ export function renderDrivers(app) {
           type: "USB",
           vendorId,
           deviceId,
-          vendor:
-            vendorMap[vendorId] || "Unknown",
+          vendor: vendorMap[vendorId] || "Unknown",
           original: line
         });
       }
@@ -137,63 +135,62 @@ export function renderDrivers(app) {
 
   function renderResults() {
 
-    $("#driverResults").hidden =
-      currentDevices.length === 0;
+    const table = $("#driverTable");
+    const results = $("#driverResults");
 
-    $("#driverTable").innerHTML =
-      currentDevices.map(device => {
+    if (!currentDevices.length) {
 
-        const driverPackQuery =
-          encodeURIComponent(
-            device.vendorId +
-            " " +
-            device.deviceId
-          );
+      results.hidden = false;
 
-        const googleQuery =
-          encodeURIComponent(
-            device.original
-          );
+      table.innerHTML = `
+        <tr>
+          <td colspan="6">
+            Keine gültigen Hardware-IDs erkannt.
+          </td>
+        </tr>
+      `;
 
-        return `
-          <tr>
-            <td>${device.type}</td>
+      return;
+    }
 
-            <td>
-              ${escapeHtml(device.vendor)}
-            </td>
+    results.hidden = false;
 
-            <td>
-              ${escapeHtml(device.vendorId)}
-            </td>
+    table.innerHTML = currentDevices.map(device => {
 
-            <td>
-              ${escapeHtml(device.deviceId)}
-            </td>
+      const query =
+        encodeURIComponent(device.original);
 
-            <td class="mono">
-              ${escapeHtml(device.original)}
-            </td>
+      return `
+        <tr>
+          <td>${escapeHtml(device.type)}</td>
 
-            <td>
+          <td>${escapeHtml(device.vendor)}</td>
 
-              <button
-                class="btn driverpack-btn"
-                data-query="${driverPackQuery}">
-                DriverPack
-              </button>
+          <td>${escapeHtml(device.vendorId)}</td>
 
-              <button
-                class="btn google-btn"
-                data-query="${googleQuery}">
-                Google
-              </button>
+          <td>${escapeHtml(device.deviceId)}</td>
 
-            </td>
-          </tr>
-        `;
+          <td class="mono">
+            ${escapeHtml(device.original)}
+          </td>
 
-      }).join("");
+          <td>
+            <button
+              class="btn driverpack-btn"
+              data-query="${query}">
+              DriverPack
+            </button>
+
+            <button
+              class="btn google-btn"
+              data-query="${query}">
+              Google
+            </button>
+          </td>
+        </tr>
+      `;
+
+    }).join("");
 
     document
       .querySelectorAll(".driverpack-btn")
@@ -201,11 +198,8 @@ export function renderDrivers(app) {
 
         btn.onclick = () => {
 
-          const query =
-            btn.dataset.query;
-
           window.open(
-            `https://driverpack.io/de/search?query=${query}`,
+            `https://driverpack.io/de/search?query=${btn.dataset.query}`,
             "_blank",
             "noopener,noreferrer"
           );
@@ -220,11 +214,8 @@ export function renderDrivers(app) {
 
         btn.onclick = () => {
 
-          const query =
-            btn.dataset.query;
-
           window.open(
-            `https://www.google.com/search?q=${query}`,
+            `https://www.google.com/search?q=${btn.dataset.query}`,
             "_blank",
             "noopener,noreferrer"
           );
@@ -232,6 +223,7 @@ export function renderDrivers(app) {
         };
 
       });
+
   }
 
   $("#analyzeBtn").onclick = analyze;
@@ -242,24 +234,15 @@ export function renderDrivers(app) {
       return;
 
     const csv = [
-      [
-        "Type",
-        "Vendor",
-        "VendorID",
-        "DeviceID",
-        "Original"
-      ].join(","),
+      "Type,Vendor,VendorID,DeviceID,Original",
 
-      ...currentDevices.map(d =>
-        [
-          d.type,
-          d.vendor,
-          d.vendorId,
-          d.deviceId,
-          `"${d.original.replaceAll('"', '""')}"`
-        ].join(",")
-      )
-
+      ...currentDevices.map(x => [
+        x.type,
+        x.vendor,
+        x.vendorId,
+        x.deviceId,
+        `"${x.original.replaceAll('"', '""')}"`
+      ].join(","))
     ].join("\n");
 
     downloadText(
