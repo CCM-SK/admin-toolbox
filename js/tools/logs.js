@@ -1,21 +1,235 @@
 import { $, escapeHtml, downloadText, dropBinder } from '../utils.js';
-export function renderLogs(app){
-  app.innerHTML=`<section class="card"><h2>Log / CSV inspector</h2><p class="small">CSV, simple TSV-like delimited text, JSON arrays, and plain-text logs. Processing stays in memory.</p><div class="dropzone" id="logDrop">Drop a file here, or <button class="btn" id="logPick">choose a file</button><input id="logFile" type="file" hidden></div></section><section class="card" id="logWork" hidden><div class="grid-2"><div><label for="logSearch">Search</label><input id="logSearch" placeholder="substring or /regex/flags"></div><div><label for="logColumn">Count values in column</label><select id="logColumn"><option value="">— select —</option></select></div></div><div class="result-actions"><button class="btn" id="logCsv">Export visible CSV</button><button class="btn" id="logJson">Export visible JSON</button></div><div id="logStats"></div><div class="table-wrap" id="logTable"></div></section>`;
-  const drop=$('#logDrop'), file=$('#logFile'), work=$('#logWork'); let mode='text', headers=[], rows=[];
-  $('#logPick').onclick=()=>file.click(); file.onchange=()=>file.files[0]&&load(file.files[0]); dropBinder(drop,fs=>fs[0]&&load(fs[0]));
-  async function load(f){
-    const text=await f.text(), trimmed=text.trim(); work.hidden=false;
-    if(f.name.toLowerCase().endsWith('.json')||trimmed.startsWith('[')){
-      try{const data=JSON.parse(trimmed); if(!Array.isArray(data)||!data.length||typeof data[0]!=='object')throw Error(); headers=[...new Set(data.flatMap(o=>Object.keys(o)))]; rows=data.map(o=>headers.map(h=>o?.[h]??'')); mode='csv';}
-      catch{mode='text'; headers=['line']; rows=text.split(/\r?\n/).filter(Boolean).map(x=>[x]);}
-    }else if(text.includes(',')||text.includes('\t')){const delim=text.split(/\r?\n/)[0].includes('\t')?'\t':','; const parsed=parseDelimited(text,delim); headers=(parsed.shift()||[]).map((h,i)=>h||`Column ${i+1}`); rows=parsed; mode='csv';}
-    else{mode='text'; headers=['line']; rows=text.split(/\r?\n/).filter(Boolean).map(x=>[x]);}
-    const sel=$('#logColumn'); sel.innerHTML='<option value="">— select —</option>'+headers.map((h,i)=>`<option value="${i}">${escapeHtml(h)}</option>`).join(''); render();
+
+export function renderLogs(app) {
+  app.innerHTML = `
+    <section class="card">
+      <h2>Log / CSV inspector</h2>
+      <p class="small">
+        CSV, simple TSV-like delimited text, JSON arrays, and plain-text logs.
+        Processing stays in memory.
+      </p>
+      <div class="dropzone" id="logDrop">
+        Drop a file here, or <button class="btn" id="logPick">choose a file</button>
+        <input id="logFile" type="file" hidden>
+      </div>
+    </section>
+
+    <section class="card" id="logWork" hidden>
+      <div class="grid-2">
+        <div>
+          <label for="logSearch">Search</label>
+          <input id="logSearch" placeholder="substring or /regex/flags">
+        </div>
+        <div>
+          <label for="logColumn">Count values in column</label>
+          <select id="logColumn"><option value="">— select —</option></select>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="btn" id="logCsv">Export visible CSV</button>
+        <button class="btn" id="logJson">Export visible JSON</button>
+      </div>
+      <div id="logStats"></div>
+      <div class="table-wrap" id="logTable"></div>
+    </section>
+  `;
+
+  const drop = $('#logDrop');
+  const file = $('#logFile');
+  const work = $('#logWork');
+
+  // Parsed data state
+  let mode = 'text';   // 'text' | 'csv'
+  let headers = [];
+  let rows = [];
+
+  // --- File selection ---------------------------------------------------
+
+  $('#logPick').onclick = () => file.click();
+  file.onchange = () => file.files[0] && load(file.files[0]);
+  dropBinder(drop, files => files[0] && load(files[0]));
+
+  // --- Loading & parsing --------------------------------------------------
+
+  async function load(f) {
+    const text = await f.text();
+    const trimmed = text.trim();
+    work.hidden = false;
+
+    const looksLikeJson = f.name.toLowerCase().endsWith('.json') || trimmed.startsWith('[');
+
+    if (looksLikeJson) {
+      try {
+        const data = JSON.parse(trimmed);
+        if (!Array.isArray(data) || !data.length || typeof data[0] !== 'object') {
+          throw new Error('Not an array of objects');
+        }
+        headers = [...new Set(data.flatMap(o => Object.keys(o)))];
+        rows = data.map(o => headers.map(h => o?.[h] ?? ''));
+        mode = 'csv';
+      } catch {
+        // Not valid JSON (or not an array of objects) — fall back to plain text lines
+        mode = 'text';
+        headers = ['line'];
+        rows = text.split(/\r?\n/).filter(Boolean).map(line => [line]);
+      }
+    } else if (text.includes(',') || text.includes('\t')) {
+      const firstLine = text.split(/\r?\n/)[0];
+      const delim = firstLine.includes('\t') ? '\t' : ',';
+      const parsed = parseDelimited(text, delim);
+      headers = (parsed.shift() || []).map((h, i) => h || `Column ${i + 1}`);
+      rows = parsed;
+      mode = 'csv';
+    } else {
+      mode = 'text';
+      headers = ['line'];
+      rows = text.split(/\r?\n/).filter(Boolean).map(line => [line]);
+    }
+
+    const columnSelect = $('#logColumn');
+    columnSelect.innerHTML =
+      '<option value="">— select —</option>' +
+      headers.map((h, i) => `<option value="${i}">${escapeHtml(h)}</option>`).join('');
+
+    render();
   }
-  function parseDelimited(text,delim){const rows=[];let row=[],cell='',q=false;for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];if(q){if(c==='"'&&n==='"'){cell+='"';i++;}else if(c==='"'){q=false;}else cell+=c;}else if(c==='"'){q=true;}else if(c===delim){row.push(cell);cell='';}else if(c==='\n'){row.push(cell);rows.push(row);row=[];cell='';}else if(c!=='\r'){cell+=c;}}if(cell!==''||row.length){row.push(cell);rows.push(row);}const w=Math.max(0,...rows.map(r=>r.length));return rows.filter(r=>r.length===w);}
-  function filtered(){const q=$('#logSearch').value.trim(); if(!q)return rows; let fn=r=>r.join(' ').toLowerCase().includes(q.toLowerCase()); if(q.startsWith('/')&&q.lastIndexOf('/')>0){const p=q.lastIndexOf('/');try{const re=new RegExp(q.slice(1,p),q.slice(p+1));fn=r=>re.test(r.join(' '));}catch{}} return rows.filter(fn);}
-  function render(){const rs=filtered(), col=$('#logColumn').value; let stat=`<div class="grid"><div class="stat"><span>Rows</span><strong>${rs.length}</strong></div><div class="stat"><span>Columns</span><strong>${headers.length}</strong></div>`; if(col!==''){const m=new Map(); for(const r of rs)m.set(String(r[col]??''),(m.get(String(r[col]??''))||0)+1); const top=[...m.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8); stat+=`<div class="stat"><span>Unique values</span><strong>${m.size}</strong><div class="small">${top.map(([k,v])=>`${escapeHtml(k)}: ${v}`).join(' · ')}</div></div>`;} $('#logStats').innerHTML=stat+'</div>'; $('#logTable').innerHTML=`<table><thead><tr>${headers.map(h=>`<th>${escapeHtml(h)}</th>`).join('')}</tr></thead><tbody>${rs.slice(0,1000).map(r=>`<tr>${r.map(c=>`<td>${escapeHtml(String(c??''))}</td>`).join('')}</tr>`).join('')}</tbody></table><p class="small">Showing up to 1,000 visible rows.</p>`;}
-  $('#logSearch').oninput=render; $('#logColumn').onchange=render;
-  $('#logCsv').onclick=()=>{const esc=x=>'"'+String(x??'').replaceAll('"','""')+'"';const rs=filtered();downloadText('filtered.csv',[headers.map(esc).join(','),...rs.map(r=>r.map(esc).join(','))].join('\n'),'text/csv;charset=utf-8');};
-  $('#logJson').onclick=()=>{const rs=filtered();downloadText('filtered.json',JSON.stringify(rs.map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]??'']))),null,2),'application/json;charset=utf-8');};
+
+  // Minimal CSV/TSV parser: handles quoted cells, escaped quotes ("") and
+  // both \n and \r\n line endings. Drops any rows whose width doesn't
+  // match the most common (max) column count.
+  function parseDelimited(text, delim) {
+    const rows = [];
+    let row = [];
+    let cell = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      const next = text[i + 1];
+
+      if (inQuotes) {
+        if (c === '"' && next === '"') {
+          cell += '"';
+          i++; // skip the escaped quote
+        } else if (c === '"') {
+          inQuotes = false;
+        } else {
+          cell += c;
+        }
+      } else if (c === '"') {
+        inQuotes = true;
+      } else if (c === delim) {
+        row.push(cell);
+        cell = '';
+      } else if (c === '\n') {
+        row.push(cell);
+        rows.push(row);
+        row = [];
+        cell = '';
+      } else if (c !== '\r') {
+        cell += c;
+      }
+    }
+
+    // Flush the last cell/row if the file didn't end with a newline
+    if (cell !== '' || row.length) {
+      row.push(cell);
+      rows.push(row);
+    }
+
+    const width = Math.max(0, ...rows.map(r => r.length));
+    return rows.filter(r => r.length === width);
+  }
+
+  // --- Search / filtering --------------------------------------------------
+
+  function filtered() {
+    const query = $('#logSearch').value.trim();
+    if (!query) return rows;
+
+    let matches = r => r.join(' ').toLowerCase().includes(query.toLowerCase());
+
+    // Support /pattern/flags regex syntax
+    if (query.startsWith('/') && query.lastIndexOf('/') > 0) {
+      const lastSlash = query.lastIndexOf('/');
+      try {
+        const re = new RegExp(query.slice(1, lastSlash), query.slice(lastSlash + 1));
+        matches = r => re.test(r.join(' '));
+      } catch {
+        // Invalid regex — keep the plain substring matcher
+      }
+    }
+
+    return rows.filter(matches);
+  }
+
+  // --- Rendering --------------------------------------------------------
+
+  function render() {
+    const visibleRows = filtered();
+    const columnIndex = $('#logColumn').value;
+
+    let statsHtml = `
+      <div class="grid">
+        <div class="stat"><span>Rows</span><strong>${visibleRows.length}</strong></div>
+        <div class="stat"><span>Columns</span><strong>${headers.length}</strong></div>
+    `;
+
+    if (columnIndex !== '') {
+      const counts = new Map();
+      for (const r of visibleRows) {
+        const key = String(r[columnIndex] ?? '');
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+      const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+      statsHtml += `
+        <div class="stat">
+          <span>Unique values</span>
+          <strong>${counts.size}</strong>
+          <div class="small">${top.map(([k, v]) => `${escapeHtml(k)}: ${v}`).join(' · ')}</div>
+        </div>
+      `;
+    }
+    statsHtml += '</div>';
+    $('#logStats').innerHTML = statsHtml;
+
+    const headerHtml = headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
+    const bodyHtml = visibleRows
+      .slice(0, 1000)
+      .map(r => `<tr>${r.map(c => `<td>${escapeHtml(String(c ?? ''))}</td>`).join('')}</tr>`)
+      .join('');
+
+    $('#logTable').innerHTML = `
+      <table>
+        <thead><tr>${headerHtml}</tr></thead>
+        <tbody>${bodyHtml}</tbody>
+      </table>
+      <p class="small">Showing up to 1,000 visible rows.</p>
+    `;
+  }
+
+  $('#logSearch').oninput = render;
+  $('#logColumn').onchange = render;
+
+  // --- Export -------------------------------------------------------------
+
+  $('#logCsv').onclick = () => {
+    const escapeCell = x => '"' + String(x ?? '').replaceAll('"', '""') + '"';
+    const visibleRows = filtered();
+    const csv = [
+      headers.map(escapeCell).join(','),
+      ...visibleRows.map(r => r.map(escapeCell).join(',')),
+    ].join('\n');
+    downloadText('filtered.csv', csv, 'text/csv;charset=utf-8');
+  };
+
+  $('#logJson').onclick = () => {
+    const visibleRows = filtered();
+    const json = JSON.stringify(
+      visibleRows.map(r => Object.fromEntries(headers.map((h, i) => [h, r[i] ?? '']))),
+      null,
+      2
+    );
+    downloadText('filtered.json', json, 'application/json;charset=utf-8');
+  };
 }
