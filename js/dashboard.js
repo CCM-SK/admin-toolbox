@@ -63,7 +63,6 @@ export function renderDashboard(app) {
           Compare two local text/config files with a simple line-oriented diff.
         </p>
       </article>
-    </section>
 
       <article class="card">
         <h3>7 · Powershell Analyzer</h3>
@@ -71,7 +70,6 @@ export function renderDashboard(app) {
           Flags code.
         </p>
       </article>
-    </section>
 
       <article class="card">
         <h3>8 · SID/GUID Decoder</h3>
@@ -79,7 +77,6 @@ export function renderDashboard(app) {
           Parsing of several SIDs and GUIDs
         </p>
       </article>
-    </section>
 
      <article class="card">
         <h3>9 · Regex Workbench</h3>
