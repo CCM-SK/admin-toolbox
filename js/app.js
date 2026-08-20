@@ -10,8 +10,8 @@ import { renderAudit } from './tools/audit.js';
 import { renderPowershell } from './tools/powershell.js';
 import { renderIdentity } from './tools/identity.js';
 import { renderRegex } from './tools/regex.js';
-
 import { renderDrivers } from "./tools/drivers.js";
+import { renderDrivers } from "./tools/header.js";
 
 const views={dashboard:renderDashboard,logs:renderLogs,hash:renderHash,subnet:renderSubnet,passwords:renderPasswords,certs:renderCerts,diff:renderDiff,powershell:renderPowershell,identity:renderIdentity,regex:renderRegex,audit:renderAudit,drivers: renderDrivers};
 const app=$('#app');

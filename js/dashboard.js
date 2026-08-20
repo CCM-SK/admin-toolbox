@@ -84,6 +84,20 @@ export function renderDashboard(app) {
           JavaScript regular expressions only, flagging, preview and export.
         </p>
       </article>
+
+      <article class="card">
+        <h3>10 · Driver Assistant</h3>
+        <p>
+          Work in progress
+        </p>
+      </article>
+
+      <article class="card">
+        <h3>11 · Mail-Header analyzer</h3>
+        <p>
+          Work in progress
+        </p>
+      </article>
     </section>
 
     <section class="card">
