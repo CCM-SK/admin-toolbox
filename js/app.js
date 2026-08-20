@@ -7,7 +7,10 @@ import { renderPasswords } from './tools/passwords.js';
 import { renderCerts } from './tools/certs.js';
 import { renderDiff } from './tools/diff.js';
 import { renderAudit } from './tools/audit.js';
-const views={dashboard:renderDashboard,logs:renderLogs,hash:renderHash,subnet:renderSubnet,passwords:renderPasswords,certs:renderCerts,diff:renderDiff,audit:renderAudit};
+import { renderPowershell } from './tools/powershell.js';
+import { renderIdentity } from './tools/identity.js';
+import { renderRegex } from './tools/regex.js';
+const views={dashboard:renderDashboard,logs:renderLogs,hash:renderHash,subnet:renderSubnet,passwords:renderPasswords,certs:renderCerts,diff:renderDiff,diff:renderPowershell,diff:renderIdentity,diff:renderRegex,audit:renderAudit};
 const app=$('#app');
 function activate(tool){ $$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool)); history.replaceState(null,'',`#${tool}`); views[tool](app); }
 $$('.nav-item').forEach(b=>b.addEventListener('click',()=>activate(b.dataset.tool)));
