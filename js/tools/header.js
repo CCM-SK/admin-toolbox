@@ -1,6 +1,6 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
 
-export function renderEmailHeaders(app) {
+export function renderHeader(app) {
   app.innerHTML = `
     <section class="card">
       <h2>E-mail message header analyzer</h2>
