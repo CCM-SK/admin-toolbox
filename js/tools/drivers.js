@@ -13,8 +13,8 @@ export function renderDrivers(app) {
 
       <textarea
         id="driverInput"
-        placeholder="PCI\\VEN_8086&DEV_51F0&#10;USB\\VID_0BDA&PID_8153">
-      </textarea>
+        placeholder="PCI\\VEN_8086&DEV_51F0
+USB\\VID_0BDA&PID_8153"></textarea>
 
       <div class="result-actions">
         <button class="btn primary" id="analyzeBtn">
@@ -42,7 +42,6 @@ export function renderDrivers(app) {
               <th>Aktionen</th>
             </tr>
           </thead>
-
           <tbody id="driverTable"></tbody>
         </table>
       </div>
@@ -52,55 +51,44 @@ export function renderDrivers(app) {
   const vendorMap = {
     "8086": "Intel",
     "8087": "Intel",
-
     "10DE": "NVIDIA",
-
     "1002": "AMD",
     "1022": "AMD",
-
     "10EC": "Realtek",
     "0BDA": "Realtek",
-
     "14E4": "Broadcom",
-
     "168C": "Qualcomm Atheros",
-
     "1814": "MediaTek",
-
     "1028": "Dell",
     "103C": "HP",
     "1043": "ASUS",
     "1462": "MSI",
     "17AA": "Lenovo",
-
-    "1AF4": "RedHat",
+    "1AF4": "Red Hat",
     "15AD": "VMware"
   };
 
   let currentDevices = [];
 
   function analyze() {
-
     const input = $("#driverInput").value;
 
     const lines = input
       .split(/\r?\n/)
-      .map(x => x.trim())
+      .map(line => line.trim())
       .filter(Boolean);
 
     currentDevices = [];
 
     for (const line of lines) {
 
-      const pci =
-        line.match(
-          /VEN_([0-9A-F]{4}).*DEV_([0-9A-F]{4})/i
-        );
+      const pci = line.match(
+        /VEN_([0-9A-F]{4}).*DEV_([0-9A-F]{4})/i
+      );
 
-      const usb =
-        line.match(
-          /VID_([0-9A-F]{4}).*PID_([0-9A-F]{4})/i
-        );
+      const usb = line.match(
+        /VID_([0-9A-F]{4}).*PID_([0-9A-F]{4})/i
+      );
 
       if (pci) {
 
@@ -138,14 +126,14 @@ export function renderDrivers(app) {
     const table = $("#driverTable");
     const results = $("#driverResults");
 
-    if (!currentDevices.length) {
+    results.hidden = false;
 
-      results.hidden = false;
+    if (!currentDevices.length) {
 
       table.innerHTML = `
         <tr>
           <td colspan="6">
-            Keine gültigen Hardware-IDs erkannt.
+            Keine gültigen Hardware-IDs gefunden.
           </td>
         </tr>
       `;
@@ -153,21 +141,15 @@ export function renderDrivers(app) {
       return;
     }
 
-    results.hidden = false;
-
     table.innerHTML = currentDevices.map(device => {
 
-      const query =
-        encodeURIComponent(device.original);
+      const query = encodeURIComponent(device.original);
 
       return `
         <tr>
           <td>${escapeHtml(device.type)}</td>
-
           <td>${escapeHtml(device.vendor)}</td>
-
           <td>${escapeHtml(device.vendorId)}</td>
-
           <td>${escapeHtml(device.deviceId)}</td>
 
           <td class="mono">
@@ -189,7 +171,6 @@ export function renderDrivers(app) {
           </td>
         </tr>
       `;
-
     }).join("");
 
     document
@@ -223,25 +204,25 @@ export function renderDrivers(app) {
         };
 
       });
-
   }
 
   $("#analyzeBtn").onclick = analyze;
 
   $("#exportBtn").onclick = () => {
 
-    if (!currentDevices.length)
+    if (!currentDevices.length) {
       return;
+    }
 
     const csv = [
       "Type,Vendor,VendorID,DeviceID,Original",
 
-      ...currentDevices.map(x => [
-        x.type,
-        x.vendor,
-        x.vendorId,
-        x.deviceId,
-        `"${x.original.replaceAll('"', '""')}"`
+      ...currentDevices.map(device => [
+        device.type,
+        device.vendor,
+        device.vendorId,
+        device.deviceId,
+        `"${device.original.replaceAll('"', '""')}"`
       ].join(","))
     ].join("\n");
 
