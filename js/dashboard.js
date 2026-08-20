@@ -67,21 +67,21 @@ export function renderDashboard(app) {
       <article class="card">
         <h3>7 · Powershell Analyzer</h3>
         <p>
-          Flags code.
+          Checks common security, reliability, and readability issues.
         </p>
       </article>
 
       <article class="card">
         <h3>8 · SID/GUID Decoder</h3>
         <p>
-          Parsing of several SIDs and GUIDs
+          Parses and recognizes Windows SIDs, GUIDs, UUID byte strings, and common GUID representations.
         </p>
       </article>
 
      <article class="card">
         <h3>9 · Regex Workbench</h3>
         <p>
-          Regex Engine, flagging, preview and export
+          JavaScript regular expressions only, flagging, preview and export.
         </p>
       </article>
     </section>
