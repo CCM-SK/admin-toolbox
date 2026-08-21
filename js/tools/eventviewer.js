@@ -1,4 +1,4 @@
-import { $, escapeHtml, downloadText } from "../utils.js";
+import { $, escapeHtml, downloadText, dropBinder } from "../utils.js";
 
 export function renderEventViewer(app) {
 
@@ -8,8 +8,25 @@ export function renderEventViewer(app) {
       <h2>Event Viewer Analyzer</h2>
 
       <p class="small">
-        Analyze Event Log XML exports or copied Windows Event Viewer entries.
+        Analyze Windows Event Viewer exports and copied event logs.
       </p>
+
+      <div class="dropzone" id="eventDrop">
+        Drop XML event logs here or
+        <button class="btn" id="eventPick">
+          Select File
+        </button>
+
+        <input
+          type="file"
+          id="eventFile"
+          accept=".xml,.txt,.log"
+          hidden>
+      </div>
+
+    </section>
+
+    <section class="card">
 
       <label for="eventInput">
         Event Log Content
@@ -40,7 +57,10 @@ Level: Critical">
 
     </section>
 
-    <section class="card" id="eventResults" hidden>
+    <section
+      class="card"
+      id="eventResults"
+      hidden>
 
       <div id="eventStats"></div>
 
@@ -51,7 +71,6 @@ Level: Critical">
           <thead>
             <tr>
               <th>Event ID</th>
-              <th>Source</th>
               <th>Category</th>
               <th>Description</th>
             </tr>
@@ -122,33 +141,75 @@ Level: Critical">
 
   };
 
+  const fileInput = $("#eventFile");
+  const dropZone = $("#eventDrop");
+
+  $("#eventPick").onclick = () =>
+    fileInput.click();
+
+  fileInput.onchange = () => {
+
+    if (fileInput.files.length) {
+      loadFile(fileInput.files[0]);
+    }
+
+  };
+
+  dropBinder(dropZone, files => {
+
+    if (files.length) {
+      loadFile(files[0]);
+    }
+
+  });
+
+  async function loadFile(file) {
+
+    const text =
+      await file.text();
+
+    $("#eventInput").value =
+      text;
+  }
+
   function analyze() {
 
     findings = [];
 
-    const text = $("#eventInput").value;
+    const text =
+      $("#eventInput").value;
 
-    const eventRegex =
+    const regex =
       /(?:Event\s*ID|EventID)\s*[:=]?\s*(\d+)/gi;
 
     let match;
 
-    while ((match = eventRegex.exec(text)) !== null) {
+    while ((match = regex.exec(text)) !== null) {
 
-      const eventId = match[1];
+      const id = match[1];
 
-      const info =
-        knownEvents[eventId] || {
+      const event =
+        knownEvents[id] || {
+
           category: "Unknown",
-          text: "No rule available"
+
+          text:
+            "No rule available"
+
         };
 
       findings.push({
-        id: eventId,
-        source: info.category,
-        category: info.category,
-        description: info.text
+
+        id,
+
+        category:
+          event.category,
+
+        description:
+          event.text
+
       });
+
     }
 
     renderResults();
@@ -156,15 +217,13 @@ Level: Critical">
 
   function renderResults() {
 
-    $("#eventResults").hidden = false;
+    $("#eventResults").hidden =
+      false;
 
-    const criticalIds = [
-      "41",
-      "6008",
-      "1001"
-    ];
+    const criticalIds =
+      ["41", "6008", "1001"];
 
-    const critical =
+    const criticalCount =
       findings.filter(x =>
         criticalIds.includes(x.id)
       ).length;
@@ -174,37 +233,45 @@ Level: Critical">
 
         <div class="stat">
           <span>Detected Events</span>
-          <strong>${findings.length}</strong>
+          <strong>
+            ${findings.length}
+          </strong>
         </div>
 
         <div class="stat">
           <span>Critical Events</span>
-          <strong>${critical}</strong>
+          <strong>
+            ${criticalCount}
+          </strong>
         </div>
 
       </div>
     `;
 
     $("#eventTable").innerHTML =
-      findings.map(x => `
+      findings.length
+      ? findings.map(x => `
         <tr>
-          <td>${escapeHtml(x.id)}</td>
-          <td>${escapeHtml(x.source)}</td>
-          <td>${escapeHtml(x.category)}</td>
-          <td>${escapeHtml(x.description)}</td>
+          <td>
+            ${escapeHtml(x.id)}
+          </td>
+
+          <td>
+            ${escapeHtml(x.category)}
+          </td>
+
+          <td>
+            ${escapeHtml(x.description)}
+          </td>
         </tr>
-      `).join("");
-
-    if (!findings.length) {
-
-      $("#eventTable").innerHTML = `
+      `).join("")
+      : `
         <tr>
-          <td colspan="4">
+          <td colspan="3">
             No matching events found.
           </td>
         </tr>
       `;
-    }
   }
 
   $("#analyzeEvents").onclick =
@@ -217,13 +284,19 @@ Level: Critical">
     }
 
     downloadText(
+
       "event-analysis.json",
+
       JSON.stringify(
         findings,
         null,
         2
       ),
+
       "application/json;charset=utf-8"
+
     );
+
   };
+
 }
