@@ -40,6 +40,13 @@ Level: Critical"></textarea>
 
       <div class="result-actions">
 
+        <label class="checkline">
+          <input
+            type="checkbox"
+            id="criticalOnly">
+          Critical events only
+        </label>
+
         <button
           class="btn primary"
           id="analyzeEvents">
@@ -142,6 +149,7 @@ Level: Critical"></textarea>
       category: "Microsoft Defender",
       text: "Malware remediation failed"
     }
+
   };
 
   const fileInput = $("#eventFile");
@@ -231,6 +239,16 @@ Level: Critical"></textarea>
       "1001"
     ];
 
+    const criticalOnly =
+      $("#criticalOnly").checked;
+
+    const visibleFindings =
+      criticalOnly
+        ? findings.filter(x =>
+            criticalIds.includes(x.id)
+          )
+        : findings;
+
     const criticalCount =
       findings.filter(x =>
         criticalIds.includes(x.id)
@@ -241,7 +259,7 @@ Level: Critical"></textarea>
 
         <div class="stat">
           <span>Detected Events</span>
-          <strong>${findings.length}</strong>
+          <strong>${visibleFindings.length}</strong>
         </div>
 
         <div class="stat">
@@ -252,7 +270,7 @@ Level: Critical"></textarea>
       </div>
     `;
 
-    if (!findings.length) {
+    if (!visibleFindings.length) {
 
       $("#eventTable").innerHTML = `
         <tr>
@@ -266,7 +284,7 @@ Level: Critical"></textarea>
     }
 
     $("#eventTable").innerHTML =
-      findings.map(event => `
+      visibleFindings.map(event => `
         <tr>
 
           <td>
@@ -285,6 +303,14 @@ Level: Critical"></textarea>
       `).join("");
 
   }
+
+  document.addEventListener("change", e => {
+
+    if (e.target.id === "criticalOnly") {
+      renderResults();
+    }
+
+  });
 
   $("#analyzeEvents").onclick =
     analyze;
