@@ -14,10 +14,51 @@ import { renderDrivers } from "./tools/drivers.js";
 import { renderHeader } from "./tools/header.js";
 import { renderEventViewer } from "./tools/eventviewer.js";
 import { renderSShare } from "./tools/sshare.js";
+import { renderArchive } from "./tools/archive.js";
+import { renderSDetector } from "./tools/sdetector.js";
 
-const views={dashboard:renderDashboard,logs:renderLogs,hash:renderHash,subnet:renderSubnet,passwords:renderPasswords,certs:renderCerts,diff:renderDiff,powershell:renderPowershell,identity:renderIdentity,regex:renderRegex,audit:renderAudit,drivers: renderDrivers,header: renderHeader,eventviewer: renderEventViewer,sshare: renderSShare};
-const app=$('#app');
-function activate(tool){ $$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool)); history.replaceState(null,'',`#${tool}`); views[tool](app); }
-$$('.nav-item').forEach(b=>b.addEventListener('click',()=>activate(b.dataset.tool)));
-window.addEventListener('popstate',()=>activate(location.hash.slice(1)||'dashboard'));
-activate(location.hash.slice(1)||'dashboard');
+const views = {
+  dashboard: renderDashboard,
+  logs: renderLogs,
+  hash: renderHash,
+  subnet: renderSubnet,
+  passwords: renderPasswords,
+  certs: renderCerts,
+  diff: renderDiff,
+  powershell: renderPowershell,
+  identity: renderIdentity,
+  regex: renderRegex,
+  audit: renderAudit,
+  drivers: renderDrivers,
+  header: renderHeader,
+  eventviewer: renderEventViewer,
+  sshare: renderSShare,
+  archive: renderArchive,
+  sdetector: renderSDetector
+};
+
+const app = $('#app');
+
+function activate(tool) {
+  $$('.nav-item').forEach((button) => {
+    button.classList.toggle(
+      'active',
+      button.dataset.tool === tool
+    );
+  });
+
+  history.replaceState(null, '', `#${tool}`);
+  views[tool](app);
+}
+
+$$('.nav-item').forEach((button) => {
+  button.addEventListener('click', () => {
+    activate(button.dataset.tool);
+  });
+});
+
+window.addEventListener('popstate', () => {
+  activate(location.hash.slice(1) || 'dashboard');
+});
+
+activate(location.hash.slice(1) || 'dashboard');
