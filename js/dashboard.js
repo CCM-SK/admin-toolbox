@@ -102,7 +102,7 @@ export function renderDashboard(app) {
             <article class="card">
         <h3>Secure Share Password</h3>
         <p>
-          Very()!) work in progress
+          Very(!) work in progress
         </p>
       </article>
 
