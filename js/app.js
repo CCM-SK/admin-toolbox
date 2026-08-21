@@ -13,8 +13,9 @@ import { renderRegex } from './tools/regex.js';
 import { renderDrivers } from "./tools/drivers.js";
 import { renderHeader } from "./tools/header.js";
 import { renderEventViewer } from "./tools/eventviewer.js";
+import { renderSShare } from "./tools/sshare.js";
 
-const views={dashboard:renderDashboard,logs:renderLogs,hash:renderHash,subnet:renderSubnet,passwords:renderPasswords,certs:renderCerts,diff:renderDiff,powershell:renderPowershell,identity:renderIdentity,regex:renderRegex,audit:renderAudit,drivers: renderDrivers,header: renderHeader,eventviewer: renderEventViewer};
+const views={dashboard:renderDashboard,logs:renderLogs,hash:renderHash,subnet:renderSubnet,passwords:renderPasswords,certs:renderCerts,diff:renderDiff,powershell:renderPowershell,identity:renderIdentity,regex:renderRegex,audit:renderAudit,drivers: renderDrivers,header: renderHeader,eventviewer: renderEventViewer,sshare: renderSShare};
 const app=$('#app');
 function activate(tool){ $$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool)); history.replaceState(null,'',`#${tool}`); views[tool](app); }
 $$('.nav-item').forEach(b=>b.addEventListener('click',()=>activate(b.dataset.tool)));

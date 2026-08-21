@@ -19,7 +19,7 @@ export function renderDashboard(app) {
 
     <section class="grid">
       <article class="card">
-        <h3>1 · Log / CSV inspector</h3>
+        <h3>Log / CSV inspector</h3>
         <p>
           Load CSV or plain text logs, search them, count values,
           and export filtered data.
@@ -27,7 +27,7 @@ export function renderDashboard(app) {
       </article>
 
       <article class="card">
-        <h3>2 · File hashing</h3>
+        <h3>File hashing</h3>
         <p>
           Calculate MD5, SHA-1 and SHA-256 hashes locally using
           browser APIs plus a bundled pure-JS MD5 implementation.
@@ -35,14 +35,14 @@ export function renderDashboard(app) {
       </article>
 
       <article class="card">
-        <h3>3 · IP / subnet calculator</h3>
+        <h3>IP / subnet calculator</h3>
         <p>
           IPv4 and IPv6 CIDR calculations, ranges, masks and host counts.
         </p>
       </article>
 
       <article class="card">
-        <h3>4 · Certificate / CSR inspector</h3>
+        <h3>Certificate / CSR inspector</h3>
         <p>
           Inspect PEM certificates and CSRs locally by decoding
           common ASN.1 string fields.
@@ -50,7 +50,7 @@ export function renderDashboard(app) {
       </article>
 
       <article class="card">
-        <h3>5 · Password generator</h3>
+        <h3>Password generator</h3>
         <p>
           Generate passwords and passphrases with browser cryptographic
           randomness. Nothing is stored.
@@ -58,37 +58,51 @@ export function renderDashboard(app) {
       </article>
 
       <article class="card">
-        <h3>6 · Configuration diff</h3>
+        <h3>Configuration diff</h3>
         <p>
           Compare two local text/config files with a simple line-oriented diff.
         </p>
       </article>
 
       <article class="card">
-        <h3>7 · Powershell Analyzer</h3>
+        <h3>Powershell Analyzer</h3>
         <p>
           Checks common security, reliability, and readability issues.
         </p>
       </article>
 
       <article class="card">
-        <h3>8 · SID/GUID Decoder</h3>
+        <h3>SID/GUID Decoder</h3>
         <p>
           Parses and recognizes Windows SIDs, GUIDs, UUID byte strings, and common GUID representations.
         </p>
       </article>
 
      <article class="card">
-        <h3>9 · Regex Workbench</h3>
+        <h3>Regex Workbench</h3>
         <p>
           JavaScript regular expressions only, flagging, preview and export.
         </p>
       </article>
 
       <article class="card">
-        <h3>10 · Driver Assistant</h3>
+        <h3>Driver Assistant</h3>
         <p>
           Work in progress
+        </p>
+
+      </article>
+            <article class="card">
+        <h3>Event Viewer Analyzer</h3>
+        <p>
+          Work in progress
+        </p>
+
+      </article>
+            <article class="card">
+        <h3>Secure Share Password</h3>
+        <p>
+          Very()!) work in progress
         </p>
       </article>
 
