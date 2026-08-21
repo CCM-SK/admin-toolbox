@@ -172,31 +172,47 @@ Level: Critical">
       text;
   }
 
-  function analyze() {
+function analyze() {
 
-    findings = [];
+  findings = [];
 
-    const text =
-      $("#eventInput").value;
+  const text = $("#eventInput").value;
 
-    const regex =
-      /(?:Event\s*ID|EventID)\s*[:=]?\s*(\d+)/gi;
+  const ids = [];
 
-    let match;
+  const xmlMatches =
+    text.matchAll(/<EventID>(\d+)<\/EventID>/gi);
 
-    while ((match = regex.exec(text)) !== null) {
+  for (const match of xmlMatches) {
+    ids.push(match[1]);
+  }
 
-      const id = match[1];
+  const textMatches =
+    text.matchAll(
+      /(?:Event\s*ID|EventID)\s*[:=]?\s*(\d+)/gi
+    );
 
-      const event =
-        knownEvents[id] || {
+  for (const match of textMatches) {
+    ids.push(match[1]);
+  }
 
-          category: "Unknown",
+  for (const id of ids) {
 
-          text:
-            "No rule available"
+    const event =
+      knownEvents[id] || {
+        category: "Unknown",
+        text: "No rule available"
+      };
 
-        };
+    findings.push({
+      id,
+      category: event.category,
+      description: event.text
+    });
+  }
+
+  renderResults();
+}
 
       findings.push({
 
