@@ -107,7 +107,7 @@ export function renderDashboard(app) {
       </article>
 
       <article class="card">
-        <h3>11 · Mail-Header analyzer</h3>
+        <h3>Mail-Header analyzer</h3>
         <p>
           Work in progress
         </p>
