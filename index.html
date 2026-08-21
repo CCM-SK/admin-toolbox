@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="classic">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -11,31 +11,89 @@
 </head>
 <body>
   <header class="topbar">
-    <div>
-      <h1>Admin Toolbox</h1>
-      <p>Local-only IT utilities. No uploads. No APIs. No analytics.</p>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">AT</div>
+      <div>
+        <h1>Admin Toolbox</h1>
+        <p>Local-only IT utilities. No uploads. No APIs. No analytics.</p>
+      </div>
     </div>
-    <div class="privacy-badge" id="privacyBadge">LOCAL ONLY</div>
+
+    <div class="topbar-actions">
+      <div class="privacy-badge" id="privacyBadge" title="Application data stays in the browser">LOCAL ONLY</div>
+      <button class="icon-button" id="themeToggle" type="button" aria-pressed="false" title="Switch visual theme">
+        <span aria-hidden="true">◐</span>
+        <span class="button-label">Theme</span>
+      </button>
+      <button class="icon-button" id="sidebarDetach" type="button" aria-pressed="false" title="Detach and move the sidebar">
+        <span aria-hidden="true">↗</span>
+        <span class="button-label">Detach sidebar</span>
+      </button>
+    </div>
   </header>
 
-  <main class="layout">
-    <nav class="sidebar" aria-label="Tools">
-      <button class="nav-item active" data-tool="dashboard">Home</button>
-      <button class="nav-item" data-tool="logs">Log / CSV inspector</button>
-      <button class="nav-item" data-tool="hash">File hashing</button>
-      <button class="nav-item" data-tool="subnet">IP / subnet calculator</button>
-      <button class="nav-item" data-tool="passwords">Password generator</button>
-      <button class="nav-item" data-tool="certs">Certificate / CSR inspector</button>
-      <button class="nav-item" data-tool="diff">Configuration diff</button>
-      <button class="nav-item" data-tool="powershell">PowerShell Analyzer</button>
-      <button class="nav-item" data-tool="identity">SID/GUID Decoder</button>
-      <button class="nav-item" data-tool="regex">Regex Workbench</button>
-      <button class="nav-item" data-tool="drivers"> Driver Assistant</button>
-      <button class="nav-item" data-tool="header">Mail-Header analyzer</button>
-      <button class="nav-item" data-tool="eventviewer">Eventviewer analyzer</button>
-      <button class="nav-item" data-tool="sshare">Secure Share Password (Very WIP)</button>
+  <main class="layout" id="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Tools">
+      <div class="sidebar-head" id="sidebarDragHandle">
+        <div>
+          <div class="sidebar-kicker">TOOLS</div>
+          <strong>Admin workspace</strong>
+        </div>
+        <button class="drag-handle" id="dragHandle" type="button" title="Drag when sidebar is detached" aria-label="Drag sidebar">⠿</button>
+      </div>
+
+      <div class="sidebar-scroll">
+        <button class="nav-item nav-home active" data-tool="dashboard">
+          <span class="nav-icon" aria-hidden="true">⌂</span>
+          <span>Home</span>
+        </button>
+
+        <details class="tool-group" open>
+          <summary><span class="group-icon">◈</span><span>Core diagnostics</span></summary>
+          <div class="group-items">
+            <button class="nav-item" data-tool="logs"><span class="nav-icon">▤</span><span>Log / CSV inspector</span></button>
+            <button class="nav-item" data-tool="hash"><span class="nav-icon">#</span><span>File hashing</span></button>
+            <button class="nav-item" data-tool="subnet"><span class="nav-icon">⌁</span><span>IP / subnet calculator</span></button>
+            <button class="nav-item" data-tool="diff"><span class="nav-icon">⇄</span><span>Configuration diff</span></button>
+          </div>
+        </details>
+
+        <details class="tool-group" open>
+          <summary><span class="group-icon">⌘</span><span>Security &amp; identity</span></summary>
+          <div class="group-items">
+            <button class="nav-item" data-tool="passwords"><span class="nav-icon">⌁</span><span>Password generator</span></button>
+            <button class="nav-item" data-tool="certs"><span class="nav-icon">◇</span><span>Certificate / CSR inspector</span></button>
+            <button class="nav-item" data-tool="powershell"><span class="nav-icon">PS</span><span>PowerShell Analyzer</span></button>
+            <button class="nav-item" data-tool="identity"><span class="nav-icon">ID</span><span>SID / GUID Decoder</span></button>
+            <button class="nav-item" data-tool="sshare"><span class="nav-icon">⇪</span><span>Secure Share Password</span></button>
+          </div>
+        </details>
+
+        <details class="tool-group" open>
+          <summary><span class="group-icon">⌘</span><span>Network &amp; mail</span></summary>
+          <div class="group-items">
+            <button class="nav-item" data-tool="header"><span class="nav-icon">@</span><span>Mail-header analyzer</span></button>
+          </div>
+        </details>
+
+        <details class="tool-group">
+          <summary><span class="group-icon">⌘</span><span>Developer tools</span></summary>
+          <div class="group-items">
+            <button class="nav-item" data-tool="regex"><span class="nav-icon">.*</span><span>Regex Workbench</span></button>
+          </div>
+        </details>
+
+        <details class="tool-group">
+          <summary><span class="group-icon">▣</span><span>System &amp; hardware</span></summary>
+          <div class="group-items">
+            <button class="nav-item" data-tool="drivers"><span class="nav-icon">▦</span><span>Driver Assistant</span></button>
+            <button class="nav-item" data-tool="eventviewer"><span class="nav-icon">◉</span><span>Event Viewer analyzer</span></button>
+          </div>
+        </details>
+      </div>
+
       <div class="sidebar-footer">
-        <button class="nav-item" data-tool="audit">Audit / architecture</button>
+        <button class="nav-item" data-tool="audit"><span class="nav-icon">✓</span><span>Audit / architecture</span></button>
       </div>
     </nav>
 
@@ -43,13 +101,12 @@
   </main>
 
   <footer class="footer">
-    <span>GitHub Pages compatible</span>
-    <span>•</span>
     <span>Static HTML/CSS/JS</span>
     <span>•</span>
     <span>Browser processing only</span>
   </footer>
 
+  <script type="module" src="js/shell.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
