@@ -1,11 +1,174 @@
-export const $ = (sel, root=document) => root.querySelector(sel);
-export const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
-export const escapeHtml = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export const formatBytes = n => { if (!Number.isFinite(n)) return '—'; const u=['B','KiB','MiB','GiB','TiB']; let i=0,x=n; while(x>=1024&&i<u.length-1){x/=1024;i++;} return `${x.toFixed(i?2:0)} ${u[i]}`; };
-export const downloadText = (name,text,type='text/plain;charset=utf-8') => { const url=URL.createObjectURL(new Blob([text],{type})); const a=document.createElement('a'); a.href=url; a.download=name; a.style.display='none'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); };
-export const readText = file => file.text();
-export const csvParse = text => { const rows=[]; let row=[], cell='', q=false; for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1]; if(q){ if(c==='"'&&n==='"'){cell+='"';i++;} else if(c==='"'){q=false;} else cell+=c; } else if(c==='"'){q=true;} else if(c===','){row.push(cell);cell='';} else if(c==='\n'){row.push(cell);rows.push(row);row=[];cell='';} else if(c!=='\r'){cell+=c;} } if(cell!==''||row.length){row.push(cell);rows.push(row);} const width=Math.max(0,...rows.map(r=>r.length)); return rows.filter(r=>r.length===width&&r.some(v=>v!=='')); };
-export const jsonPretty = (text) => JSON.stringify(JSON.parse(text), null, 2);
-export const downloadBlob = (name, blob) => { const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; a.style.display='none'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); };
-export function dropBinder(el, onFiles){ el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag')}); el.addEventListener('dragleave',()=>el.classList.remove('drag')); el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag');onFiles([...e.dataTransfer.files])}); }
-export function hex(buffer){return [...new Uint8Array(buffer)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+export const $ = (selector, root = document) =>
+    root.querySelector(selector);
+
+export const $$ = (selector, root = document) =>
+    [...root.querySelectorAll(selector)];
+
+export const escapeHtml = (value = '') =>
+    String(value).replace(
+        /[&<>"']/g,
+        (char) =>
+            ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+            })[char]
+    );
+
+export const formatBytes = (bytes) => {
+    if (!Number.isFinite(bytes)) {
+        return '—';
+    }
+
+    const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
+
+    let unitIndex = 0;
+    let value = bytes;
+
+    while (
+        value >= 1024 &&
+        unitIndex < units.length - 1
+    ) {
+        value /= 1024;
+        unitIndex++;
+    }
+
+    const decimals = unitIndex === 0 ? 0 : 2;
+
+    return `${value.toFixed(decimals)} ${units[unitIndex]}`;
+};
+
+export const downloadText = (
+    name,
+    text,
+    type = 'text/plain;charset=utf-8'
+) => {
+    const blob = new Blob([text], { type });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.style.display = 'none';
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+    }, 1000);
+};
+
+export const readText = (file) => file.text();
+
+export const csvParse = (text) => {
+    const rows = [];
+
+    let row = [];
+    let cell = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+
+        if (inQuotes) {
+            if (char === '"' && nextChar === '"') {
+                // Escaped quote: ""
+                cell += '"';
+                i++;
+            } else if (char === '"') {
+                // End quoted cell
+                inQuotes = false;
+            } else {
+                cell += char;
+            }
+
+            continue;
+        }
+
+        if (char === '"') {
+            // Start quoted cell
+            inQuotes = true;
+        } else if (char === ',') {
+            // End cell
+            row.push(cell);
+            cell = '';
+        } else if (char === '\n') {
+            // End row
+            row.push(cell);
+            rows.push(row);
+
+            row = [];
+            cell = '';
+        } else if (char !== '\r') {
+            cell += char;
+        }
+    }
+
+    // Add the final cell/row.
+    if (cell !== '' || row.length) {
+        row.push(cell);
+        rows.push(row);
+    }
+
+    const width = Math.max(
+        0,
+        ...rows.map((currentRow) => currentRow.length)
+    );
+
+    return rows.filter(
+        (currentRow) =>
+            currentRow.length === width &&
+            currentRow.some((value) => value !== '')
+    );
+};
+
+export const jsonPretty = (text) =>
+    JSON.stringify(JSON.parse(text), null, 2);
+
+export const downloadBlob = (name, blob) => {
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.style.display = 'none';
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+    }, 1000);
+};
+
+export function dropBinder(element, onFiles) {
+    element.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        element.classList.add('drag');
+    });
+
+    element.addEventListener('dragleave', () => {
+        element.classList.remove('drag');
+    });
+
+    element.addEventListener('drop', (event) => {
+        event.preventDefault();
+        element.classList.remove('drag');
+
+        onFiles([...event.dataTransfer.files]);
+    });
+}
+
+export function hex(buffer) {
+    return [...new Uint8Array(buffer)]
+        .map((byte) =>
+            byte.toString(16).padStart(2, '0')
+        )
+        .join('');
+}
