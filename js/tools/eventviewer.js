@@ -12,16 +12,16 @@ export function renderEventViewer(app) {
       </p>
 
       <div class="dropzone" id="eventDrop">
-        Drop XML event logs here or
+        Drop XML, LOG or TXT files here or
         <button class="btn" id="eventPick">
           Select File
         </button>
 
         <input
-          type="file"
+          hidden
           id="eventFile"
-          accept=".xml,.txt,.log"
-          hidden>
+          type="file"
+          accept=".xml,.log,.txt">
       </div>
 
     </section>
@@ -36,8 +36,7 @@ export function renderEventViewer(app) {
         id="eventInput"
         placeholder="Event ID: 41
 Source: Kernel-Power
-Level: Critical">
-      </textarea>
+Level: Critical"></textarea>
 
       <div class="result-actions">
 
@@ -94,14 +93,14 @@ Level: Critical">
       text: "Unexpected restart or power loss"
     },
 
-    "6008": {
-      category: "Unexpected Shutdown",
-      text: "System was not shut down properly"
-    },
-
     "219": {
       category: "Kernel-PnP",
       text: "Driver initialization failed"
+    },
+
+    "6008": {
+      category: "Unexpected Shutdown",
+      text: "System was not shut down properly"
     },
 
     "1001": {
@@ -117,6 +116,11 @@ Level: Critical">
     "813": {
       category: "Intune",
       text: "Policy processing failed"
+    },
+
+    "814": {
+      category: "Intune",
+      text: "Configuration policy issue"
     },
 
     "20": {
@@ -138,14 +142,13 @@ Level: Critical">
       category: "Microsoft Defender",
       text: "Malware remediation failed"
     }
-
   };
 
   const fileInput = $("#eventFile");
   const dropZone = $("#eventDrop");
 
-  $("#eventPick").onclick = () =>
-    fileInput.click();
+  $("#eventPick").onclick =
+    () => fileInput.click();
 
   fileInput.onchange = () => {
 
@@ -165,65 +168,52 @@ Level: Critical">
 
   async function loadFile(file) {
 
+    const text = await file.text();
+
+    $("#eventInput").value = text;
+  }
+
+  function analyze() {
+
+    findings = [];
+
     const text =
-      await file.text();
+      $("#eventInput").value;
 
-    $("#eventInput").value =
-      text;
-  }
+    const eventIds = [];
 
-function analyze() {
+    const xmlMatches =
+      text.matchAll(
+        /<EventID>(\d+)<\/EventID>/gi
+      );
 
-  findings = [];
+    for (const match of xmlMatches) {
+      eventIds.push(match[1]);
+    }
 
-  const text = $("#eventInput").value;
+    const classicMatches =
+      text.matchAll(
+        /(?:Event\s*ID|EventID)\s*[:=]?\s*(\d+)/gi
+      );
 
-  const ids = [];
+    for (const match of classicMatches) {
+      eventIds.push(match[1]);
+    }
 
-  const xmlMatches =
-    text.matchAll(/<EventID>(\d+)<\/EventID>/gi);
+    const uniqueIds = [...new Set(eventIds)];
 
-  for (const match of xmlMatches) {
-    ids.push(match[1]);
-  }
+    for (const id of uniqueIds) {
 
-  const textMatches =
-    text.matchAll(
-      /(?:Event\s*ID|EventID)\s*[:=]?\s*(\d+)/gi
-    );
-
-  for (const match of textMatches) {
-    ids.push(match[1]);
-  }
-
-  for (const id of ids) {
-
-    const event =
-      knownEvents[id] || {
-        category: "Unknown",
-        text: "No rule available"
-      };
-
-    findings.push({
-      id,
-      category: event.category,
-      description: event.text
-    });
-  }
-
-  renderResults();
-}
+      const event =
+        knownEvents[id] || {
+          category: "Unknown",
+          text: "No rule available"
+        };
 
       findings.push({
-
         id,
-
-        category:
-          event.category,
-
-        description:
-          event.text
-
+        category: event.category,
+        description: event.text
       });
 
     }
@@ -233,11 +223,13 @@ function analyze() {
 
   function renderResults() {
 
-    $("#eventResults").hidden =
-      false;
+    $("#eventResults").hidden = false;
 
-    const criticalIds =
-      ["41", "6008", "1001"];
+    const criticalIds = [
+      "41",
+      "6008",
+      "1001"
+    ];
 
     const criticalCount =
       findings.filter(x =>
@@ -249,45 +241,49 @@ function analyze() {
 
         <div class="stat">
           <span>Detected Events</span>
-          <strong>
-            ${findings.length}
-          </strong>
+          <strong>${findings.length}</strong>
         </div>
 
         <div class="stat">
           <span>Critical Events</span>
-          <strong>
-            ${criticalCount}
-          </strong>
+          <strong>${criticalCount}</strong>
         </div>
 
       </div>
     `;
 
-    $("#eventTable").innerHTML =
-      findings.length
-      ? findings.map(x => `
-        <tr>
-          <td>
-            ${escapeHtml(x.id)}
-          </td>
+    if (!findings.length) {
 
-          <td>
-            ${escapeHtml(x.category)}
-          </td>
-
-          <td>
-            ${escapeHtml(x.description)}
-          </td>
-        </tr>
-      `).join("")
-      : `
+      $("#eventTable").innerHTML = `
         <tr>
           <td colspan="3">
             No matching events found.
           </td>
         </tr>
       `;
+
+      return;
+    }
+
+    $("#eventTable").innerHTML =
+      findings.map(event => `
+        <tr>
+
+          <td>
+            ${escapeHtml(event.id)}
+          </td>
+
+          <td>
+            ${escapeHtml(event.category)}
+          </td>
+
+          <td>
+            ${escapeHtml(event.description)}
+          </td>
+
+        </tr>
+      `).join("");
+
   }
 
   $("#analyzeEvents").onclick =
@@ -300,17 +296,13 @@ function analyze() {
     }
 
     downloadText(
-
       "event-analysis.json",
-
       JSON.stringify(
         findings,
         null,
         2
       ),
-
       "application/json;charset=utf-8"
-
     );
 
   };
