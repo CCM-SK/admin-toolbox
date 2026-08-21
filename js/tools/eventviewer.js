@@ -13,6 +13,7 @@ export function renderEventViewer(app) {
 
       <div class="dropzone" id="eventDrop">
         Drop XML, LOG or TXT files here or
+
         <button class="btn" id="eventPick">
           Select File
         </button>
@@ -40,12 +41,41 @@ Level: Critical"></textarea>
 
       <div class="result-actions">
 
-        <label class="checkline">
-          <input
-            type="checkbox"
-            id="criticalOnly">
-          Critical events only
-        </label>
+        <div class="row">
+
+          <label class="checkline">
+            <input
+              type="checkbox"
+              id="showCritical"
+              checked>
+            Critical
+          </label>
+
+          <label class="checkline">
+            <input
+              type="checkbox"
+              id="showError"
+              checked>
+            Error
+          </label>
+
+          <label class="checkline">
+            <input
+              type="checkbox"
+              id="showWarning"
+              checked>
+            Warning
+          </label>
+
+          <label class="checkline">
+            <input
+              type="checkbox"
+              id="showInfo"
+              checked>
+            Information
+          </label>
+
+        </div>
 
         <button
           class="btn primary"
@@ -77,6 +107,7 @@ Level: Critical"></textarea>
           <thead>
             <tr>
               <th>Event ID</th>
+              <th>Level</th>
               <th>Category</th>
               <th>Description</th>
             </tr>
@@ -96,67 +127,78 @@ Level: Critical"></textarea>
   const knownEvents = {
 
     "41": {
+      level: "Critical",
       category: "Kernel-Power",
       text: "Unexpected restart or power loss"
     },
 
-    "219": {
-      category: "Kernel-PnP",
-      text: "Driver initialization failed"
-    },
-
     "6008": {
+      level: "Critical",
       category: "Unexpected Shutdown",
       text: "System was not shut down properly"
     },
 
     "1001": {
+      level: "Error",
       category: "BugCheck",
       text: "Blue Screen detected"
     },
 
+    "219": {
+      level: "Warning",
+      category: "Kernel-PnP",
+      text: "Driver initialization failed"
+    },
+
     "404": {
+      level: "Error",
       category: "Intune",
       text: "MDM Policy Error"
     },
 
     "813": {
+      level: "Error",
       category: "Intune",
       text: "Policy processing failed"
     },
 
     "814": {
+      level: "Warning",
       category: "Intune",
       text: "Configuration policy issue"
     },
 
     "20": {
+      level: "Error",
       category: "Windows Update",
       text: "Update installation failed"
     },
 
     "25": {
+      level: "Error",
       category: "Windows Update",
       text: "Update processing failed"
     },
 
     "1116": {
+      level: "Critical",
       category: "Microsoft Defender",
       text: "Malware detected"
     },
 
     "1117": {
+      level: "Error",
       category: "Microsoft Defender",
       text: "Malware remediation failed"
     }
-
   };
 
   const fileInput = $("#eventFile");
   const dropZone = $("#eventDrop");
 
-  $("#eventPick").onclick =
-    () => fileInput.click();
+  $("#eventPick").onclick = () => {
+    fileInput.click();
+  };
 
   fileInput.onchange = () => {
 
@@ -176,9 +218,12 @@ Level: Critical"></textarea>
 
   async function loadFile(file) {
 
-    const text = await file.text();
+    const text =
+      await file.text();
 
-    $("#eventInput").value = text;
+    $("#eventInput").value =
+      text;
+
   }
 
   function analyze() {
@@ -199,29 +244,45 @@ Level: Critical"></textarea>
       eventIds.push(match[1]);
     }
 
-    const classicMatches =
+    const plainMatches =
       text.matchAll(
         /(?:Event\s*ID|EventID)\s*[:=]?\s*(\d+)/gi
       );
 
-    for (const match of classicMatches) {
+    for (const match of plainMatches) {
       eventIds.push(match[1]);
     }
 
-    const uniqueIds = [...new Set(eventIds)];
+    const uniqueIds =
+      [...new Set(eventIds)];
 
     for (const id of uniqueIds) {
 
       const event =
         knownEvents[id] || {
+
+          level: "Information",
+
           category: "Unknown",
-          text: "No rule available"
+
+          text:
+            "No rule available"
+
         };
 
       findings.push({
+
         id,
-        category: event.category,
-        description: event.text
+
+        level:
+          event.level,
+
+        category:
+          event.category,
+
+        description:
+          event.text
+
       });
 
     }
@@ -231,40 +292,72 @@ Level: Critical"></textarea>
 
   function renderResults() {
 
-    $("#eventResults").hidden = false;
-
-    const criticalIds = [
-      "41",
-      "6008",
-      "1001"
-    ];
-
-    const criticalOnly =
-      $("#criticalOnly").checked;
+    $("#eventResults").hidden =
+      false;
 
     const visibleFindings =
-      criticalOnly
-        ? findings.filter(x =>
-            criticalIds.includes(x.id)
-          )
-        : findings;
+      findings.filter(event => {
+
+        if (
+          event.level === "Critical" &&
+          !$("#showCritical").checked
+        ) return false;
+
+        if (
+          event.level === "Error" &&
+          !$("#showError").checked
+        ) return false;
+
+        if (
+          event.level === "Warning" &&
+          !$("#showWarning").checked
+        ) return false;
+
+        if (
+          event.level === "Information" &&
+          !$("#showInfo").checked
+        ) return false;
+
+        return true;
+
+      });
 
     const criticalCount =
-      findings.filter(x =>
-        criticalIds.includes(x.id)
+      findings.filter(
+        x => x.level === "Critical"
+      ).length;
+
+    const errorCount =
+      findings.filter(
+        x => x.level === "Error"
+      ).length;
+
+    const warningCount =
+      findings.filter(
+        x => x.level === "Warning"
       ).length;
 
     $("#eventStats").innerHTML = `
       <div class="grid">
 
         <div class="stat">
-          <span>Detected Events</span>
+          <span>Total Events</span>
           <strong>${visibleFindings.length}</strong>
         </div>
 
         <div class="stat">
-          <span>Critical Events</span>
+          <span>Critical</span>
           <strong>${criticalCount}</strong>
+        </div>
+
+        <div class="stat">
+          <span>Error</span>
+          <strong>${errorCount}</strong>
+        </div>
+
+        <div class="stat">
+          <span>Warning</span>
+          <strong>${warningCount}</strong>
         </div>
 
       </div>
@@ -274,63 +367,5 @@ Level: Critical"></textarea>
 
       $("#eventTable").innerHTML = `
         <tr>
-          <td colspan="3">
-            No matching events found.
-          </td>
-        </tr>
-      `;
-
-      return;
-    }
-
-    $("#eventTable").innerHTML =
-      visibleFindings.map(event => `
-        <tr>
-
-          <td>
-            ${escapeHtml(event.id)}
-          </td>
-
-          <td>
-            ${escapeHtml(event.category)}
-          </td>
-
-          <td>
-            ${escapeHtml(event.description)}
-          </td>
-
-        </tr>
-      `).join("");
-
-  }
-
-  document.addEventListener("change", e => {
-
-    if (e.target.id === "criticalOnly") {
-      renderResults();
-    }
-
-  });
-
-  $("#analyzeEvents").onclick =
-    analyze;
-
-  $("#exportEvents").onclick = () => {
-
-    if (!findings.length) {
-      return;
-    }
-
-    downloadText(
-      "event-analysis.json",
-      JSON.stringify(
-        findings,
-        null,
-        2
-      ),
-      "application/json;charset=utf-8"
-    );
-
-  };
-
-}
+          <td colspan="4">
+            No matching events
