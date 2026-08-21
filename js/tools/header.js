@@ -57,7 +57,6 @@ export function renderHeader(app) {
 }
 
 function parseHeaders(raw) {
-  // Stop at the first header/body separator when a complete message was pasted.
   const headerPart = raw.replace(/^\uFEFF/, '').split(/\r?\n\r?\n/, 1)[0];
   const physical = headerPart.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
   const unfolded = [];
