@@ -5,15 +5,14 @@ export function renderEventViewer(app) {
   app.innerHTML = `
     <section class="card">
 
-      <h2>Event Viewer Analyzer</h2>
+      <h2>Event Viewer Analyzer Pro</h2>
 
       <p class="small">
-        Analyze Windows Event Viewer exports and copied event logs.
+        Analyze Windows Event Viewer XML exports, log files and copied events.
       </p>
 
       <div class="dropzone" id="eventDrop">
         Drop XML, LOG or TXT files here or
-
         <button class="btn" id="eventPick">
           Select File
         </button>
@@ -35,47 +34,46 @@ export function renderEventViewer(app) {
 
       <textarea
         id="eventInput"
-        placeholder="Event ID: 41
-Source: Kernel-Power
-Level: Critical"></textarea>
+        placeholder="Paste XML export content or event log text">
+      </textarea>
+
+      <div class="row">
+
+        <label class="checkline">
+          <input
+            type="checkbox"
+            id="showCritical"
+            checked>
+          Critical
+        </label>
+
+        <label class="checkline">
+          <input
+            type="checkbox"
+            id="showError"
+            checked>
+          Error
+        </label>
+
+        <label class="checkline">
+          <input
+            type="checkbox"
+            id="showWarning"
+            checked>
+          Warning
+        </label>
+
+        <label class="checkline">
+          <input
+            type="checkbox"
+            id="showInfo"
+            checked>
+          Information
+        </label>
+
+      </div>
 
       <div class="result-actions">
-
-        <div class="row">
-
-          <label class="checkline">
-            <input
-              type="checkbox"
-              id="showCritical"
-              checked>
-            Critical
-          </label>
-
-          <label class="checkline">
-            <input
-              type="checkbox"
-              id="showError"
-              checked>
-            Error
-          </label>
-
-          <label class="checkline">
-            <input
-              type="checkbox"
-              id="showWarning"
-              checked>
-            Warning
-          </label>
-
-          <label class="checkline">
-            <input
-              type="checkbox"
-              id="showInfo"
-              checked>
-            Information
-          </label>
-
-        </div>
 
         <button
           class="btn primary"
@@ -85,8 +83,14 @@ Level: Critical"></textarea>
 
         <button
           class="btn"
-          id="exportEvents">
+          id="exportJson">
           Export JSON
+        </button>
+
+        <button
+          class="btn"
+          id="exportCsv">
+          Export CSV
         </button>
 
       </div>
@@ -94,23 +98,28 @@ Level: Critical"></textarea>
     </section>
 
     <section
-      class="card"
       id="eventResults"
+      class="card"
       hidden>
 
       <div id="eventStats"></div>
+
+      <div id="topSources"></div>
 
       <div class="table-wrap">
 
         <table>
 
           <thead>
+
             <tr>
               <th>Event ID</th>
               <th>Level</th>
-              <th>Category</th>
+              <th>Provider</th>
               <th>Description</th>
+              <th>Timestamp</th>
             </tr>
+
           </thead>
 
           <tbody id="eventTable"></tbody>
@@ -135,7 +144,7 @@ Level: Critical"></textarea>
     "6008": {
       level: "Critical",
       category: "Unexpected Shutdown",
-      text: "System was not shut down properly"
+      text: "System was not shut down correctly"
     },
 
     "1001": {
@@ -153,19 +162,19 @@ Level: Critical"></textarea>
     "404": {
       level: "Error",
       category: "Intune",
-      text: "MDM Policy Error"
+      text: "MDM policy problem"
     },
 
     "813": {
       level: "Error",
       category: "Intune",
-      text: "Policy processing failed"
+      text: "Configuration processing failed"
     },
 
     "814": {
       level: "Warning",
       category: "Intune",
-      text: "Configuration policy issue"
+      text: "Configuration issue"
     },
 
     "20": {
@@ -189,32 +198,33 @@ Level: Critical"></textarea>
     "1117": {
       level: "Error",
       category: "Microsoft Defender",
-      text: "Malware remediation failed"
-    }
-  };
-
-  const fileInput = $("#eventFile");
-  const dropZone = $("#eventDrop");
-
-  $("#eventPick").onclick = () => {
-    fileInput.click();
-  };
-
-  fileInput.onchange = () => {
-
-    if (fileInput.files.length) {
-      loadFile(fileInput.files[0]);
+      text: "Malware cleanup failed"
     }
 
   };
 
-  dropBinder(dropZone, files => {
+  const levelMap = {
+    "1": "Critical",
+    "2": "Error",
+    "3": "Warning",
+    "4": "Information"
+  };
 
-    if (files.length) {
-      loadFile(files[0]);
-    }
+  $("#eventPick").onclick =
+    () => $("#eventFile").click();
 
-  });
+  $("#eventFile").onchange = () => {
+
+    const file = $("#eventFile").files[0];
+
+    if (file) loadFile(file);
+
+  };
+
+  dropBinder(
+    $("#eventDrop"),
+    files => files[0] && loadFile(files[0])
+  );
 
   async function loadFile(file) {
 
@@ -233,57 +243,94 @@ Level: Critical"></textarea>
     const text =
       $("#eventInput").value;
 
-    const eventIds = [];
-
-    const xmlMatches =
-      text.matchAll(
-        /<EventID>(\d+)<\/EventID>/gi
+    const xmlEvents =
+      text.match(
+        /<Event[\s\S]*?<\/Event>/gi
       );
 
-    for (const match of xmlMatches) {
-      eventIds.push(match[1]);
-    }
+    if (xmlEvents?.length) {
 
-    const plainMatches =
-      text.matchAll(
-        /(?:Event\s*ID|EventID)\s*[:=]?\s*(\d+)/gi
-      );
+      xmlEvents.forEach(eventText => {
 
-    for (const match of plainMatches) {
-      eventIds.push(match[1]);
-    }
+        const eventId =
+          eventText.match(
+            /<EventID[^>]*>(\d+)<\/EventID>/i
+          )?.[1] || "";
 
-    const uniqueIds =
-      [...new Set(eventIds)];
+        const level =
+          eventText.match(
+            /<Level>(\d+)<\/Level>/i
+          )?.[1] || "4";
 
-    for (const id of uniqueIds) {
+        const provider =
+          eventText.match(
+            /Provider Name=['"]([^'"]+)/      )?.[1] || "Unknown";
 
-      const event =
-        knownEvents[id] || {
+        const timestamp =
+          eventText.match(
+            /SystemTime=[^'"]+/i
+          )?.[1] || "";
 
-          level: "Information",
+        const rule =
+          knownEvents[eventId];
+                findings.push({
 
-          category: "Unknown",
+          id: eventId,
 
-          text:
+          level:
+            rule?.level ||
+            levelMap[level] ||
+            "Information",
+
+          provider,
+
+          timestamp,
+
+          description:
+            rule?.text ||
             "No rule available"
 
-        };
-
-      findings.push({
-
-        id,
-
-        level:
-          event.level,
-
-        category:
-          event.category,
-
-        description:
-          event.text
+        });
 
       });
+
+    } else {
+
+      const regex =
+        /(?:Event\s*ID|EventID)\s*[:=]?\s*(\d+)/gi;
+
+      let match;
+
+      while (
+        (match = regex.exec(text))
+      ) {
+
+        const id = match[1];
+
+        const rule =
+          knownEvents[id];
+
+        findings.push({
+
+          id,
+
+          level:
+            rule?.level ||
+            "Information",
+
+          provider:
+            rule?.category ||
+            "Unknown",
+
+          timestamp: "",
+
+          description:
+            rule?.text ||
+            "No rule available"
+
+        });
+
+      }
 
     }
 
@@ -292,80 +339,223 @@ Level: Critical"></textarea>
 
   function renderResults() {
 
-    $("#eventResults").hidden =
-      false;
+    $("#eventResults").hidden = false;
 
-    const visibleFindings =
-      findings.filter(event => {
+    let visible = findings.filter(x => {
 
-        if (
-          event.level === "Critical" &&
-          !$("#showCritical").checked
-        ) return false;
+      if (
+        x.level === "Critical" &&
+        !$("#showCritical").checked
+      ) return false;
 
-        if (
-          event.level === "Error" &&
-          !$("#showError").checked
-        ) return false;
+      if (
+        x.level === "Error" &&
+        !$("#showError").checked
+      ) return false;
 
-        if (
-          event.level === "Warning" &&
-          !$("#showWarning").checked
-        ) return false;
+      if (
+        x.level === "Warning" &&
+        !$("#showWarning").checked
+      ) return false;
 
-        if (
-          event.level === "Information" &&
-          !$("#showInfo").checked
-        ) return false;
+      if (
+        x.level === "Information" &&
+        !$("#showInfo").checked
+      ) return false;
 
-        return true;
+      return true;
 
-      });
+    });
 
-    const criticalCount =
+    const providerCount = {};
+
+    findings.forEach(x => {
+
+      providerCount[x.provider] =
+        (providerCount[x.provider] || 0) + 1;
+
+    });
+
+    const topProviders =
+      Object.entries(providerCount)
+        .sort((a,b)=>b[1]-a[1])
+        .slice(0,10);
+
+    const critical =
       findings.filter(
-        x => x.level === "Critical"
+        x=>x.level==="Critical"
       ).length;
 
-    const errorCount =
+    const errors =
       findings.filter(
-        x => x.level === "Error"
+        x=>x.level==="Error"
       ).length;
 
-    const warningCount =
+    const warnings =
       findings.filter(
-        x => x.level === "Warning"
+        x=>x.level==="Warning"
       ).length;
+
+    const score =
+      Math.max(
+        0,
+        100 -
+        critical * 15 -
+        errors * 5 -
+        warnings
+      );
 
     $("#eventStats").innerHTML = `
+
       <div class="grid">
 
         <div class="stat">
+          <span>Health Score</span>
+          <strong>${score}%</strong>
+        </div>
+
+        <div class="stat">
           <span>Total Events</span>
-          <strong>${visibleFindings.length}</strong>
+          <strong>${findings.length}</strong>
         </div>
 
         <div class="stat">
           <span>Critical</span>
-          <strong>${criticalCount}</strong>
+          <strong>${critical}</strong>
         </div>
 
         <div class="stat">
-          <span>Error</span>
-          <strong>${errorCount}</strong>
+          <span>Errors</span>
+          <strong>${errors}</strong>
         </div>
 
         <div class="stat">
-          <span>Warning</span>
-          <strong>${warningCount}</strong>
+          <span>Warnings</span>
+          <strong>${warnings}</strong>
+        </div>
+
+      </div>
+
+    `;
+
+    $("#topSources").innerHTML = `
+      <div class="card">
+
+        <h3>Top Event Sources</h3>
+
+        <div class="small">
+          ${topProviders
+            .map(
+              ([k,v]) =>
+              `${escapeHtml(k)} (${v})`
+            )
+            .join(" • ")
+          }
         </div>
 
       </div>
     `;
 
-    if (!visibleFindings.length) {
+    if (!visible.length) {
 
       $("#eventTable").innerHTML = `
         <tr>
-          <td colspan="4">
-            No matching events
+          <td colspan="5">
+            No matching events found.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+    $("#eventTable").innerHTML =
+      visible.map(x => `
+
+        <tr>
+
+          <td>
+            ${escapeHtml(x.id)}
+          </td>
+
+          <td>
+            ${escapeHtml(x.level)}
+          </td>
+
+          <td>
+            ${escapeHtml(x.provider)}
+          </td>
+
+          <td>
+            ${escapeHtml(x.description)}
+          </td>
+
+          <td>
+            ${escapeHtml(x.timestamp)}
+          </td>
+
+        </tr>
+
+      `).join("");
+
+  }
+
+  [
+    "showCritical",
+    "showError",
+    "showWarning",
+    "showInfo"
+  ].forEach(id => {
+
+    $("#" + id)
+      .addEventListener(
+        "change",
+        renderResults
+      );
+
+  });
+
+  $("#analyzeEvents").onclick =
+    analyze;
+
+  $("#exportJson").onclick = () => {
+
+    downloadText(
+      "event-analysis.json",
+      JSON.stringify(
+        findings,
+        null,
+        2
+      ),
+      "application/json"
+    );
+
+  };
+
+  $("#exportCsv").onclick = () => {
+
+    const csv = [
+
+      "EventID,Level,Provider,Description,Timestamp",
+
+      ...findings.map(x => [
+
+        x.id,
+        x.level,
+        x.provider,
+        `"${x.description}"`,
+        x.timestamp
+
+      ].join(","))
+
+    ].join("\n");
+
+    downloadText(
+      "event-analysis.csv",
+      csv,
+      "text/csv"
+    );
+
+  };
+
+}
