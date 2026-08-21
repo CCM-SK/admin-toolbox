@@ -5,7 +5,7 @@ export function renderDashboard(app) {
     <section class="card hero">
       <h2>Local-only Admin Toolbox</h2>
       <p>
-        Six practical utilities for administrative IT work.
+        Practical utilities for administrative IT work.
         Everything you give the app is processed inside this browser tab.
       </p>
 
