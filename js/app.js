@@ -14,7 +14,6 @@ import { renderDrivers } from "./tools/drivers.js";
 import { renderHeader } from "./tools/header.js";
 import { renderEventViewer } from "./tools/eventviewer.js";
 import { renderSShare } from "./tools/sshare.js";
-import { renderArchive } from "./tools/archive.js";
 
 const views = {
   dashboard: renderDashboard,
@@ -31,8 +30,7 @@ const views = {
   drivers: renderDrivers,
   header: renderHeader,
   eventviewer: renderEventViewer,
-  sshare: renderSShare,
-  archive: renderArchive
+  sshare: renderSShare
 };
 
 const app = $('#app');
