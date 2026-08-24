@@ -376,13 +376,13 @@ export function renderSDetector(app) {
           <button class="sd-btn" id="sdScan">Scan</button>
           <button class="sd-btn" id="sdClear">Clear</button>
 
-          <label>
+            <label class="checkline">
             <input
-              type="checkbox"
-              id="sdIgnoreComments"
+                type="checkbox"
+                id="sdIgnoreComments"
             >
             Ignore obvious comments
-          </label>
+            </label>
         </div>
 
         <div id="sdResults"></div>
