@@ -47,10 +47,6 @@ const APP_STYLE = `
   background: #f8fafc;
 }
 
-.am-hidden-input {
-  display: none !important;
-}
-
 #amName {
   margin-top: -6px;
 }
@@ -741,22 +737,17 @@ export function renderArchiveM(app) {
         </div>
 
         <div class="dropzone" id="amDrop">
-          <span>Drop an archive here, or</span>
-
-          <button
-            class="btn"
-            id="amPick"
-            type="button"
-          >
+        Drop an archive here, or
+        <button class="btn" id="amPick" type="button">
             choose an archive
-          </button>
+        </button>
 
-          <input
+        <input
             id="amFile"
-            class="am-hidden-input"
             type="file"
+            hidden
             accept=".zip,.tar,.gz,.tgz,.7z,.rar,application/zip,application/gzip,application/x-7z-compressed,application/vnd.rar"
-          >
+        >
         </div>
 
         <div
