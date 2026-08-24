@@ -12,15 +12,42 @@ const APP_STYLE = `
 }
 
 .am-drop {
-  padding: 18px;
+  min-height: 120px;
+  padding: 28px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
   background: var(--panel, #fff);
-  border: 1px dashed var(--border, #c8ced6);
-  border-radius: 12px;
+  border: 2px dashed var(--border, #c8ced6);
+  border-radius: 10px;
+
+  color: var(--muted, #667085);
+  text-align: center;
+
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .am-drop.drag {
-  outline: 2px solid #4f8cff;
+  border-color: #4f8cff;
   background: #eef5ff;
+  box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.12);
+}
+
+.am-drop .am-drop-text {
+  font-size: 0.95rem;
+}
+
+.am-drop .am-drop-note {
+  width: 100%;
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: var(--muted, #667085);
 }
 
 .am-input {
@@ -222,7 +249,42 @@ function renderResults(state){
 export function renderArchiveM(app){
   app.innerHTML='';
   const style=document.createElement('style');style.textContent=APP_STYLE;app.appendChild(style);
-  app.insertAdjacentHTML('beforeend',`<section class="card am-wrap"><div><h2>Archive manifest viewer</h2><p class="am-muted">Inspect archive metadata in your browser without extracting archive files to disk or uploading them.</p></div><div class="am-drop" id="amDrop"><input class="am-input" id="amFile" type="file" accept=".zip,.tar,.gz,.tgz,.7z,.rar,application/zip,application/gzip,application/x-7z-compressed,application/vnd.rar"><label for="amFile" class="am-btn">Choose archive</label><span id="amName" class="am-muted"> or drop an archive here</span><div id="amNote" class="am-muted" style="margin-top:10px">ZIP and TAR are enumerated from metadata. 7z/RAR are recognized but not unpacked or falsely reported as fully parsed.</div></div><div id="amResults"></div></section>`);
+  app.insertAdjacentHTML(
+  'beforeend',
+  `<section class="card am-wrap">
+    <div>
+      <h2>Archive manifest viewer</h2>
+      <p class="am-muted">
+        Inspect archive metadata in your browser without extracting archive files to disk or uploading them.
+      </p>
+    </div>
+
+    <div class="am-drop" id="amDrop">
+      <input
+        class="am-input"
+        id="amFile"
+        type="file"
+        accept=".zip,.tar,.gz,.tgz,.7z,.rar,application/zip,application/gzip,application/x-7z-compressed,application/vnd.rar"
+      >
+
+      <span class="am-drop-text">
+        Drop an archive here, or
+      </span>
+
+      <label for="amFile" class="am-btn">
+        Choose an archive
+      </label>
+
+      <span id="amName" class="am-muted"></span>
+
+      <div id="amNote" class="am-drop-note">
+        ZIP and TAR are enumerated from metadata. 7z/RAR are recognized but not unpacked or falsely reported as fully parsed.
+      </div>
+    </div>
+
+    <div id="amResults"></div>
+  </section>`
+);
   const fileInput=app.querySelector('#amFile'),drop=app.querySelector('#amDrop'),nameEl=app.querySelector('#amName'),results=app.querySelector('#amResults'); let lastManifest=null;
   async function inspect(file){
     nameEl.textContent=file.name; results.innerHTML='<div class="am-drop">Reading archive metadata…</div>';
