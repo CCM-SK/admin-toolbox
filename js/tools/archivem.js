@@ -731,8 +731,10 @@ export function renderArchiveM(app) {
           <h2>Archive manifest viewer</h2>
 
           <p class="am-muted">
-            Inspect archive metadata in your browser without extracting
-            archive files to disk or uploading them.
+            <p class="small">
+                Inspect archive metadata in your browser without extracting
+                archive files to disk or uploading them.
+            <p>
           </p>
         </div>
 
@@ -756,12 +758,11 @@ export function renderArchiveM(app) {
           aria-live="polite"
         ></div>
 
-        <div
-          id="amNote"
-          class="am-muted"
-        >
-          ZIP and TAR are enumerated from metadata. 7z/RAR are recognized
-          but not unpacked or falsely reported as fully parsed.
+        <div id="amNote" class="am-muted">
+            <p class="small">
+                ZIP and TAR are enumerated from metadata. 7z/RAR are recognized
+                but not unpacked or falsely reported as fully parsed.
+            </p>
         </div>
 
         <div id="amResults"></div>
