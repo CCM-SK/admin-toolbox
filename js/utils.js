@@ -77,11 +77,9 @@ export const csvParse = (text) => {
 
         if (inQuotes) {
             if (char === '"' && nextChar === '"') {
-                // Escaped quote: ""
                 cell += '"';
                 i++;
             } else if (char === '"') {
-                // End quoted cell
                 inQuotes = false;
             } else {
                 cell += char;
@@ -91,14 +89,11 @@ export const csvParse = (text) => {
         }
 
         if (char === '"') {
-            // Start quoted cell
             inQuotes = true;
         } else if (char === ',') {
-            // End cell
             row.push(cell);
             cell = '';
         } else if (char === '\n') {
-            // End row
             row.push(cell);
             rows.push(row);
 
@@ -109,7 +104,6 @@ export const csvParse = (text) => {
         }
     }
 
-    // Add the final cell/row.
     if (cell !== '' || row.length) {
         row.push(cell);
         rows.push(row);

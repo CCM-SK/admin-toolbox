@@ -38,18 +38,13 @@ export function renderLogs(app) {
   const file = $('#logFile');
   const work = $('#logWork');
 
-  // Parsed data state
   let mode = 'text';   // 'text' | 'csv'
   let headers = [];
   let rows = [];
 
-  // --- File selection ---------------------------------------------------
-
   $('#logPick').onclick = () => file.click();
   file.onchange = () => file.files[0] && load(file.files[0]);
   dropBinder(drop, files => files[0] && load(files[0]));
-
-  // --- Loading & parsing --------------------------------------------------
 
   async function load(f) {
     const text = await f.text();
@@ -68,7 +63,6 @@ export function renderLogs(app) {
         rows = data.map(o => headers.map(h => o?.[h] ?? ''));
         mode = 'csv';
       } catch {
-        // Not valid JSON (or not an array of objects) — fall back to plain text lines
         mode = 'text';
         headers = ['line'];
         rows = text.split(/\r?\n/).filter(Boolean).map(line => [line]);
@@ -94,9 +88,6 @@ export function renderLogs(app) {
     render();
   }
 
-  // Minimal CSV/TSV parser: handles quoted cells, escaped quotes ("") and
-  // both \n and \r\n line endings. Drops any rows whose width doesn't
-  // match the most common (max) column count.
   function parseDelimited(text, delim) {
     const rows = [];
     let row = [];
@@ -110,7 +101,7 @@ export function renderLogs(app) {
       if (inQuotes) {
         if (c === '"' && next === '"') {
           cell += '"';
-          i++; // skip the escaped quote
+          i++;
         } else if (c === '"') {
           inQuotes = false;
         } else {
@@ -131,7 +122,6 @@ export function renderLogs(app) {
       }
     }
 
-    // Flush the last cell/row if the file didn't end with a newline
     if (cell !== '' || row.length) {
       row.push(cell);
       rows.push(row);
@@ -141,29 +131,22 @@ export function renderLogs(app) {
     return rows.filter(r => r.length === width);
   }
 
-  // --- Search / filtering --------------------------------------------------
-
   function filtered() {
     const query = $('#logSearch').value.trim();
     if (!query) return rows;
 
     let matches = r => r.join(' ').toLowerCase().includes(query.toLowerCase());
-
-    // Support /pattern/flags regex syntax
     if (query.startsWith('/') && query.lastIndexOf('/') > 0) {
       const lastSlash = query.lastIndexOf('/');
       try {
         const re = new RegExp(query.slice(1, lastSlash), query.slice(lastSlash + 1));
         matches = r => re.test(r.join(' '));
       } catch {
-        // Invalid regex — keep the plain substring matcher
       }
     }
 
     return rows.filter(matches);
   }
-
-  // --- Rendering --------------------------------------------------------
 
   function render() {
     const visibleRows = filtered();
@@ -210,8 +193,6 @@ export function renderLogs(app) {
 
   $('#logSearch').oninput = render;
   $('#logColumn').onchange = render;
-
-  // --- Export -------------------------------------------------------------
 
   $('#logCsv').onclick = () => {
     const escapeCell = x => '"' + String(x ?? '').replaceAll('"', '""') + '"';
