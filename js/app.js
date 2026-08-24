@@ -15,6 +15,7 @@ import { renderHeader } from "./tools/header.js";
 import { renderEventViewer } from "./tools/eventviewer.js";
 import { renderSShare } from "./tools/sshare.js";
 import { renderArchiveM } from "./tools/archivem.js";
+import { renderSDetector } from "./tools/sdetector.js";
 
 const views = {
   dashboard: renderDashboard,
@@ -32,7 +33,8 @@ const views = {
   header: renderHeader,
   eventviewer: renderEventViewer,
   sshare: renderSShare,
-  archivem: renderArchiveM
+  archivem: renderArchiveM,
+  sdetector: renderSDetector
 };
 
 const app = $('#app');
