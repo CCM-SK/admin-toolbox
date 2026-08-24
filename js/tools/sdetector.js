@@ -359,9 +359,10 @@ export function renderSDetector(app) {
         <div>
           <h2>Secrets detector</h2>
           <p class="sd-muted">
+            <p class="small">
             Paste configuration or log text. Everything is analyzed locally.
-            Findings are redacted by default and exports never contain the
-            full detected secret.
+            Findings are redacted by default and exports never contain the full detected secret.
+            </p>
           </p>
         </div>
 
