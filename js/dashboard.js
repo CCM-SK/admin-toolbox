@@ -17,7 +17,7 @@ export function renderDashboard(app) {
       </div>
     </section>
 
-    <section class="grid">
+    /* <section class="grid">
       <article class="card">
         <h3>Log / CSV inspector</h3>
         <p>
@@ -112,7 +112,7 @@ export function renderDashboard(app) {
           Work in progress
         </p>
       </article>
-    </section>
+    </section> */
 
     <section class="card">
       <h3>Privacy model</h3>
