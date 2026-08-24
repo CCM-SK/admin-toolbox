@@ -732,8 +732,7 @@ export function renderArchiveM(app) {
 
           <p class="am-muted">
             <p class="small">
-                Inspect archive metadata in your browser without extracting
-                archive files to disk or uploading them.
+                Inspect archive metadata in your browser without extracting archive files to disk or uploading them.
             <p>
           </p>
         </div>
@@ -760,8 +759,7 @@ export function renderArchiveM(app) {
 
         <div id="amNote" class="am-muted">
             <p class="small">
-                ZIP and TAR are enumerated from metadata. 7z/RAR are recognized
-                but not unpacked or falsely reported as fully parsed.
+                ZIP and TAR are enumerated from metadata. 7z/RAR are recognized but not unpacked or falsely reported as fully parsed.
             </p>
         </div>
 
