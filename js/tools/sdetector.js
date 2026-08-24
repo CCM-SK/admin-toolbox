@@ -4,12 +4,11 @@ const SD_STYLE = `
     gap: 14px;
   }
 
-  .sd-toolbar {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+  .sd-toolbar label {
+    display: inline-flex;
     align-items: center;
-  }
+    gap: 6px;
+    }
 
   .sd-text {
     width: 100%;
