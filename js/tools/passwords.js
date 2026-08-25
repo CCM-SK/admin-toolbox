@@ -30,7 +30,7 @@ export function renderPasswords(app) {
         </div>
         <div>
           <label for="pgCount">Count</label>
-          <input id="pgCount" type="number" min="1" max="100" value="10">
+          <input id="pgCount" type="number" min="1" max="100" value="8">
         </div>
       </div>
 
