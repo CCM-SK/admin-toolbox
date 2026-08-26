@@ -5,16 +5,17 @@ export function renderHeader(app) {
     <section class="card">
       <h2>E-mail message header analyzer</h2>
       <p>
-        Paste complete message headers or load a text file. Authentication results are read locally.
-        No DNS, reputation, URL, or external-service lookups are performed.
+        Paste complete message headers or load an <code>.eml</code> or Outlook <code>.msg</code> file.
+        Authentication results are read locally. No DNS, reputation, URL, or external-service lookups are performed.
       </p>
       <textarea id="mailHeaders" spellcheck="false" placeholder="Authentication-Results: mx.example; spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass header.from=example.com\nReceived-SPF: pass (receiver: domain of sender@example.com designates 203.0.113.10 as permitted sender)\nDKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1; ...\nFrom: Sender <sender@example.com>\nTo: recipient@example.net\nSubject: Example\nDate: Thu, 20 Aug 2026 14:00:00 +0000\nMessage-ID: <...>\nReceived: from ..."></textarea>
       <div class="row" style="margin-top:10px">
-        <input id="mailHeaderFile" type="file" accept=".eml,.txt,.log,.msg" hidden>
-        <button class="btn" id="mailHeaderPick">Load header file</button>
+        <input id="mailHeaderFile" type="file" accept=".eml,.msg,.txt,.log,message/rfc822" hidden>
+        <button class="btn" id="mailHeaderPick">Load .eml / .msg file</button>
         <button class="btn primary" id="mailHeaderAnalyze">Analyze</button>
         <button class="btn" id="mailHeaderClear">Clear</button>
       </div>
+      <div id="mailHeaderFileInfo" class="small" style="margin-top:10px"></div>
     </section>
     <section class="card" id="mailHeaderResult" hidden></section>
   `;
@@ -23,12 +24,32 @@ export function renderHeader(app) {
   $('#mailHeaderFile').onchange = async e => {
     const f = e.target.files?.[0];
     if (!f) return;
-    $('#mailHeaders').value = await f.text();
+    try {
+      const info = $('#mailHeaderFileInfo');
+      info.textContent = `Reading ${f.name} locally…`;
+      const lower = f.name.toLowerCase();
+      if (lower.endsWith('.msg')) {
+        const msg = await parseMsgFile(f);
+        $('#mailHeaders').value = msg.headers || buildSyntheticHeaders(msg.properties);
+        info.textContent = msg.note;
+      } else {
+        const raw = await readLocalTextFile(f);
+        $('#mailHeaders').value = extractEmlHeaders(raw);
+        info.textContent = `Loaded ${f.name} locally. The RFC header section was extracted in the browser.`;
+      }
+    } catch (err) {
+      $('#mailHeaderFileInfo').textContent = '';
+      const result = $('#mailHeaderResult');
+      result.hidden = false;
+      result.innerHTML = `<div class="status danger">${escapeHtml(err.message || 'The message file could not be read.')}</div>`;
+    }
   };
   $('#mailHeaderClear').onclick = () => {
     $('#mailHeaders').value = '';
     $('#mailHeaderResult').hidden = true;
     $('#mailHeaderResult').innerHTML = '';
+    $('#mailHeaderFileInfo').textContent = '';
+    $('#mailHeaderFile').value = '';
   };
   $('#mailHeaderAnalyze').onclick = analyze;
   $('#mailHeaders').addEventListener('keydown', e => {
@@ -388,8 +409,8 @@ function renderResult(a, raw) {
     <h3>All headers</h3>
     <div class="table-wrap"><table><thead><tr><th>#</th><th>Header</th><th>Value</th></tr></thead><tbody>${allHeaderRows}</tbody></table></div>
 
-    <details style="margin-top:14px"><summary>What the symbols checks mean</summary>
-      <p class="small">✓ means the header contains a positive or otherwise favorable result from the sending/receiving infrastructure. It does <strong>not</strong> mean the message itself is trustworthy. SPF, DKIM and DMARC can all pass for malicious mail sent from an authorized or compromised service.</p>
+    <details style="margin-top:14px"><summary>What the green checks mean</summary>
+      <p class="small">Green means the header contains a positive or otherwise favorable result from the sending/receiving infrastructure. It does <strong>not</strong> mean the message itself is trustworthy. SPF, DKIM and DMARC can all pass for malicious mail sent from an authorized or compromised service.</p>
     </details>
   `;
 }
@@ -444,4 +465,232 @@ function bindExports(a, raw) {
     ];
     downloadText('email-header-analysis.txt', lines.join('\n'), 'text/plain;charset=utf-8');
   };
+}
+
+async function readLocalTextFile(file) {
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
+    return new TextDecoder('utf-16le').decode(bytes);
+  }
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    return new TextDecoder('windows-1252').decode(bytes);
+  }
+}
+
+function extractEmlHeaders(raw) {
+  const text = String(raw || '').replace(/^\uFEFF/, '');
+  const m = text.search(/\r?\n\r?\n/);
+  return m >= 0 ? text.slice(0, m) : text;
+}
+
+async function parseMsgFile(file) {
+  const buffer = await file.arrayBuffer();
+  const cfb = parseCompoundFile(buffer);
+  const props = extractMsgStringProperties(cfb.streams);
+  const headers = props['007d'] || '';
+
+  const properties = {
+    subject: props['0037'] || '',
+    senderName: props['0c1a'] || '',
+    senderEmail: props['0c1f'] || '',
+    displayTo: props['0e04'] || '',
+    displayCc: props['0e03'] || '',
+    displayBcc: props['0e02'] || '',
+    replyTo: props['0050'] || '',
+    messageId: props['1035'] || ''
+  };
+
+  if (headers) {
+    return {
+      headers: extractEmlHeaders(headers),
+      properties,
+      note: `Loaded ${file.name} locally. PR_TRANSPORT_MESSAGE_HEADERS was extracted from the Outlook MSG container.`
+    };
+  }
+
+  return {
+    headers: buildSyntheticHeaders(properties),
+    properties,
+    note: `Loaded ${file.name} locally. The MSG did not expose Internet transport headers, so only common MAPI identity fields could be shown. SPF/DKIM/DMARC results cannot be inferred from those fields.`
+  };
+}
+
+function buildSyntheticHeaders(p) {
+  const lines = [];
+  if (p.subject) lines.push(`Subject: ${p.subject}`);
+  if (p.senderEmail || p.senderName) lines.push(`From: ${p.senderName ? p.senderName + ' ' : ''}${p.senderEmail ? `<${p.senderEmail}>` : ''}`.trim());
+  if (p.displayTo) lines.push(`To: ${p.displayTo}`);
+  if (p.displayCc) lines.push(`Cc: ${p.displayCc}`);
+  if (p.displayBcc) lines.push(`Bcc: ${p.displayBcc}`);
+  if (p.replyTo) lines.push(`Reply-To: ${p.replyTo}`);
+  if (p.messageId) lines.push(`Message-ID: ${p.messageId}`);
+  return lines.join('\n');
+}
+
+function parseCompoundFile(buffer) {
+  const view = new DataView(buffer);
+  const bytes = new Uint8Array(buffer);
+  const sig = [0xd0,0xcf,0x11,0xe0,0xa1,0xb1,0x1a,0xe1];
+  for (let i = 0; i < sig.length; i++) {
+    if (bytes[i] !== sig[i]) throw new Error('The selected file is not a valid Outlook .msg / Compound File.');
+  }
+
+  const sectorShift = view.getUint16(30, true);
+  const miniSectorShift = view.getUint16(32, true);
+  const sectorSize = 1 << sectorShift;
+  const miniSectorSize = 1 << miniSectorShift;
+  const firstDirSector = view.getInt32(48, true);
+  const miniCutoff = view.getUint32(56, true);
+  const firstMiniFatSector = view.getInt32(60, true);
+  const numMiniFatSectors = view.getUint32(64, true);
+  const firstDifatSector = view.getInt32(68, true);
+  const numDifatSectors = view.getUint32(72, true);
+
+  const fatSectors = [];
+  for (let i = 0; i < 109; i++) {
+    const sid = view.getInt32(76 + i * 4, true);
+    if (sid >= 0) fatSectors.push(sid);
+  }
+  let difat = firstDifatSector;
+  for (let n = 0; n < numDifatSectors && difat >= 0; n++) {
+    const base = 512 + difat * sectorSize;
+    for (let i = 0; i < (sectorSize / 4) - 1; i++) {
+      const sid = view.getInt32(base + i * 4, true);
+      if (sid >= 0) fatSectors.push(sid);
+    }
+    difat = view.getInt32(base + sectorSize - 4, true);
+  }
+
+  const fat = [];
+  for (const sid of fatSectors) {
+    const base = 512 + sid * sectorSize;
+    for (let i = 0; i < sectorSize / 4; i++) fat.push(view.getInt32(base + i * 4, true));
+  }
+
+  const chain = start => {
+    const out = [];
+    const seen = new Set();
+    let cur = start;
+    while (cur >= 0 && cur !== 0xfffffffe && cur !== 0xffffffff && !seen.has(cur) && out.length < 100000) {
+      seen.add(cur); out.push(cur); cur = fat[cur];
+    }
+    return out;
+  };
+
+  const readRegular = (start, size) => {
+    if (!size || start < 0) return new Uint8Array();
+    const ids = chain(start);
+    const out = new Uint8Array(Math.min(size, ids.length * sectorSize));
+    let pos = 0;
+    for (const sid of ids) {
+      const base = 512 + sid * sectorSize;
+      const take = Math.min(sectorSize, out.length - pos);
+      if (take <= 0) break;
+      out.set(bytes.subarray(base, base + take), pos);
+      pos += take;
+    }
+    return out;
+  };
+
+  const dirIds = chain(firstDirSector);
+  const dir = concatBytes(dirIds.map(s => bytes.slice(512 + s * sectorSize, 512 + (s + 1) * sectorSize)));
+  const entries = [];
+
+  for (let off = 0; off + 128 <= dir.length; off += 128) {
+    const nameLen = viewAt(dir, off + 64, 2, 'u16');
+    if (nameLen < 2) { entries.push(null); continue; }
+    const name = decodeUtf16LE(dir.slice(off, off + nameLen - 2));
+    const type = dir[off + 66];
+    const left = viewAt(dir, off + 68, 4, 'i32');
+    const right = viewAt(dir, off + 72, 4, 'i32');
+    const child = viewAt(dir, off + 76, 4, 'i32');
+    const start = viewAt(dir, off + 116, 4, 'i32');
+    const sizeLow = viewAt(dir, off + 120, 4, 'u32');
+    const sizeHigh = viewAt(dir, off + 124, 4, 'u32');
+    const size = sizeHigh ? (sizeHigh * 0x100000000 + sizeLow) : sizeLow;
+    entries.push({ name, type, left, right, child, start, size });
+  }
+
+  const root = entries.findIndex(e => e && e.type === 5);
+  const rootEntry = root >= 0 ? entries[root] : null;
+  const rootMiniStream = rootEntry && rootEntry.start >= 0 ? readRegular(rootEntry.start, rootEntry.size) : new Uint8Array();
+
+  const miniFat = [];
+  if (firstMiniFatSector >= 0 && numMiniFatSectors) {
+    for (const sid of chain(firstMiniFatSector).slice(0, numMiniFatSectors)) {
+      const base = 512 + sid * sectorSize;
+      for (let i = 0; i < sectorSize / 4; i++) miniFat.push(view.getInt32(base + i * 4, true));
+    }
+  }
+
+  const readMini = (start, size) => {
+    if (!size || start < 0 || !miniFat.length) return new Uint8Array();
+    const chunks = [];
+    const seen = new Set();
+    let cur = start;
+    let count = 0;
+    while (cur >= 0 && cur !== 0xfffffffe && cur !== 0xffffffff && !seen.has(cur) && count * miniSectorSize < size) {
+      seen.add(cur);
+      const base = cur * miniSectorSize;
+      chunks.push(rootMiniStream.slice(base, base + miniSectorSize));
+      cur = miniFat[cur];
+      count++;
+    }
+    return concatBytes(chunks).slice(0, size);
+  };
+
+  const streams = new Map();
+  const visit = (id, path) => {
+    if (id < 0 || !entries[id]) return;
+    const e = entries[id];
+    visit(e.left, path);
+    const current = path ? `${path}/${e.name}` : e.name;
+    if (e.type === 1 || e.type === 5) visit(e.child, current);
+    else if (e.type === 2) {
+      const data = e.size < miniCutoff ? readMini(e.start, e.size) : readRegular(e.start, e.size);
+      streams.set(current, data);
+    }
+    visit(e.right, path);
+  };
+  if (root >= 0) visit(entries[root].child, '');
+
+  return { streams };
+}
+
+function extractMsgStringProperties(streams) {
+  const strings = {};
+  for (const [path, data] of streams) {
+    const m = path.match(/__substg1\.0_([0-9A-Fa-f]{4})([0-9A-Fa-f]{4})$/);
+    if (!m) continue;
+    const prop = m[1].toLowerCase();
+    const type = m[2].toLowerCase();
+    if (type === '001f') strings[prop] = decodeUtf16LE(data).replace(/\u0000+$/, '');
+    else if (type === '001e') strings[prop] = decodeWindows1252(data).replace(/\u0000+$/, '');
+  }
+  return strings;
+}
+
+function viewAt(bytes, offset, size, kind) {
+  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return kind === 'u16' ? v.getUint16(offset, true) : kind === 'u32' ? v.getUint32(offset, true) : v.getInt32(offset, true);
+}
+
+function decodeUtf16LE(bytes) {
+  return new TextDecoder('utf-16le').decode(bytes);
+}
+
+function decodeWindows1252(bytes) {
+  try { return new TextDecoder('windows-1252').decode(bytes); }
+  catch { return new TextDecoder('iso-8859-1').decode(bytes); }
+}
+
+function concatBytes(chunks) {
+  const total = chunks.reduce((n, c) => n + c.length, 0);
+  const out = new Uint8Array(total);
+  let pos = 0;
+  for (const c of chunks) { out.set(c, pos); pos += c.length; }
+  return out;
 }
