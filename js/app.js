@@ -17,6 +17,7 @@ import { renderSShare } from "./tools/sshare.js";
 import { renderArchiveM } from "./tools/archivem.js";
 import { renderSDetector } from "./tools/sdetector.js";
 import { renderVlanPlanner } from './tools/vlanplanner.js';
+import { renderUrlanalyzer } from './tools/urlanalyzer.js';
 
 const views = {
   dashboard: renderDashboard,
@@ -36,7 +37,8 @@ const views = {
   sshare: renderSShare,
   archivem: renderArchiveM,
   sdetector: renderSDetector,
-  vlanplanner: renderVlanPlanner
+  vlanplanner: renderVlanPlanner,
+  urlanalyzer: renderUrlanalyzer
 };
 
 const app = $('#app');
