@@ -214,7 +214,6 @@ export function renderUrlAnalyzer(app) {
   let lastResult = null;
   const input = $('#urlInput');
   const results = $('#urlResults');
-
   const run = () => {
     lastResult = analyze(input.value);
     results.innerHTML = renderResult(lastResult);
