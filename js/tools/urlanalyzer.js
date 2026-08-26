@@ -218,7 +218,6 @@ export function renderUrlAnalyzer(app) {
     lastResult = analyze(input.value);
     results.innerHTML = renderResult(lastResult);
   };
-
   $('#analyzeUrl').onclick = run;
   $('#clearUrl').onclick = () => { input.value = ''; results.innerHTML = ''; lastResult = null; input.focus(); };
   $('#copyUrlReport').onclick = async () => {
