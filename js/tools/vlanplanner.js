@@ -221,7 +221,7 @@ export function renderVlanPlanner(app) {
       <h3>Planning notes</h3>
       <ul>
         <li>VLAN IDs are validated against the standard 1–4094 range</li>
-        <li>Subnet allocation is IPv4 only and does not modify switches, routers, DHCP, or live network services</li>
+        <li>Subnet allocation is IPv4 only</li>
         <li>Aligned allocation starts each subnet on its calculated CIDR boundary</li>
         <li>Gateway assignment is a planning convention only</li>
       </ul>
