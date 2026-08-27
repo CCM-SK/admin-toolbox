@@ -1,5 +1,23 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
 
+const suspiciousTlds = new Set([
+  'zip',
+  'mov',
+  'click',
+  'top',
+  'xyz',
+  'work',
+  'download',
+  'stream',
+  'country',
+  'gq',
+  'tk',
+  'ml',
+  'ga',
+  'cf'
+]);
+
+
 async function copyText(text) {
     if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
@@ -26,7 +44,6 @@ function hostInfo(hostname) {
   const isIpv4 = /^(?:\d{1,3}\.){3}\d{1,3}$/.test(lower);
   const isIpv6 = lower.includes(':') && /^[0-9a-f:]+$/i.test(lower);
   const labels = lower ? lower.split('.') : [];
-  const suspiciousTlds = new Set(['zip','mov','click','top','xyz','work','download','stream','country','gq','tk','ml','ga','cf']);
   const punycode = labels.some(x => x.startsWith('xn--'));
   const tld = !isIpv4 && !isIpv6 && labels.length > 1 ? labels.at(-1) : '';
   const manySubdomains = labels.length >= 5;
