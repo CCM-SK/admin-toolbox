@@ -4,7 +4,11 @@ export function renderCerts(app) {
   app.innerHTML = `
     <section class="card">
       <h2>Certificate / CSR inspector</h2>
-      <p>Paste PEM or load a PEM/DER certificate or CSR. Parsing is local and deliberately conservative.</p>
+      <p>
+        <p class="small">
+        Paste PEM or load a PEM/DER certificate or CSR. Parsing is local and deliberately conservative.
+        </p>
+      </p>
       <textarea id="pem" placeholder="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"></textarea>
       <div class="row" style="margin-top:10px">
         <input id="cf" type="file" accept=".pem,.crt,.cer,.csr,.txt" hidden>

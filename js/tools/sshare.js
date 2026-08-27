@@ -314,7 +314,11 @@ export function renderSShare(app) {
   app.innerHTML = `
     <section class="card">
       <h1>Secure Password Share</h1>
-      <p>Encrypt secrets in your browser for manual, out-of-band sharing. Nothing is uploaded, stored, or looked up.</p>
+      <p>
+        <p class="small">
+        Encrypt secrets in your browser for manual, out-of-band sharing. Nothing is uploaded, stored, or looked up.
+        </p>
+      </p>
       <div class="notice warning"><strong>Important:</strong> this tool transports encrypted packages; it does not provide a server-side one-time secret service. Delete plaintext copies after use and verify recipient identity through a trusted channel.</div>
       <div class="actions">
         <button class="btn" id="ss-tab-pass">Passphrase package</button>

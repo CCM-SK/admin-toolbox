@@ -5,8 +5,10 @@ export function renderHeader(app) {
     <section class="card">
       <h2>E-mail message header analyzer</h2>
       <p>
+        <p class="small">
         Paste complete message headers or load an <code>.eml</code> or Outlook <code>.msg</code> file.
         Authentication results are read locally. No DNS, reputation, URL, or external-service lookups are performed.
+        </p>
       </p>
       <textarea id="mailHeaders" spellcheck="false" placeholder="Authentication-Results: mx.example; spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass header.from=example.com\nReceived-SPF: pass (receiver: domain of sender@example.com designates 203.0.113.10 as permitted sender)\nDKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1; ...\nFrom: Sender <sender@example.com>\nTo: recipient@example.net\nSubject: Example\nDate: Thu, 20 Aug 2026 14:00:00 +0000\nMessage-ID: <...>\nReceived: from ..."></textarea>
       <div class="row" style="margin-top:10px">

@@ -4,7 +4,11 @@ export function renderHash(app) {
   app.innerHTML = `
     <section class="card">
       <h2>File hashing</h2>
-      <p>SHA-256 and SHA-1 use Web Crypto. MD5 is bundled as local JavaScript for legacy comparisons.</p>
+      <p>
+        <p class="small">
+        SHA-256 and SHA-1 use Web Crypto. MD5 is bundled as local JavaScript for legacy comparisons.
+        </p>
+      </p>
       <div class="dropzone" id="hashDrop">
         Drop one or more files here, or <button class="btn" id="hashPick">choose files</button>
         <input id="hashFile" type="file" multiple hidden>

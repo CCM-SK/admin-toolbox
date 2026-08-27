@@ -117,7 +117,11 @@ export function renderVlanPlanner(app) {
   app.innerHTML = `
     <section class="card">
       <h2>VLAN + subnet planner</h2>
-      <p>Plan VLAN IDs and right-sized IPv4 subnets locally. Nothing is uploaded or resolved remotely.</p>
+      <p>
+        <p class="small">
+        Plan VLAN IDs and right-sized IPv4 subnets locally. Nothing is uploaded or resolved remotely.
+        </p>
+      </p>
 
       <div class="grid">
         <label>

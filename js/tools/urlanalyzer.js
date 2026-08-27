@@ -683,8 +683,10 @@ export function renderUrlAnalyzer(app) {
       <h2>URL Authenticity / Forensics Analyzer</h2>
 
       <p>
+        <p class="small">
         Paste a URL to inspect it without visiting it.
         Everything is parsed and analyzed locally in this browser.
+        </p>
       </p>
 
       <label for="urlInput">URL</label>
