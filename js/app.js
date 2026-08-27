@@ -17,6 +17,8 @@ import { renderSShare } from "./tools/sshare.js";
 import { renderArchiveM } from "./tools/archivem.js";
 import { renderSDetector } from "./tools/sdetector.js";
 import { renderVlanPlanner } from './tools/vlanplanner.js';
+import { renderUrlAnalyzer } from './tools/urlanalyzer.js';
+
 
 const views = {
   dashboard: renderDashboard,
@@ -26,6 +28,7 @@ const views = {
   passwords: renderPasswords,
   certs: renderCerts,
   diff: renderDiff,
+  urlanalyzer: renderUrlAnalyzer,
   powershell: renderPowershell,
   identity: renderIdentity,
   regex: renderRegex,

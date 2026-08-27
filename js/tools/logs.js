@@ -22,7 +22,7 @@ export function renderLogs(app) {
         </div>
         <div>
           <label for="logColumn">Count values in column</label>
-          <select id="logColumn"><option value="">— select —</option></select>
+          <select id="logColumn"><option value="">- select -</option></select>
         </div>
       </div>
       <div class="result-actions">
@@ -82,7 +82,7 @@ export function renderLogs(app) {
 
     const columnSelect = $('#logColumn');
     columnSelect.innerHTML =
-      '<option value="">— select —</option>' +
+      '<option value="">- select -</option>' +
       headers.map((h, i) => `<option value="${i}">${escapeHtml(h)}</option>`).join('');
 
     render();
