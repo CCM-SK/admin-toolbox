@@ -1,4 +1,4 @@
-import { $, escapeHtml, downloadText, copyText } from './utils.js';
+import { $, escapeHtml, downloadText } from './utils.js';
 
 function badge(kind, text) {
   const cls = kind === 'good' ? 'good' : kind === 'bad' ? 'bad' : kind === 'warn' ? 'warn' : 'neutral';
