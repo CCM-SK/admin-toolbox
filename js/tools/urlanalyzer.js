@@ -1,4 +1,4 @@
-import { $, escapeHtml, downloadText } from './utils.js';
+import { $, escapeHtml, downloadText } from '../utils.js';
 
 async function copyText(text) {
     if (navigator.clipboard?.writeText) {
