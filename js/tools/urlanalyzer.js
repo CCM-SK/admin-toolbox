@@ -617,7 +617,7 @@ function renderResult(result) {
         <div>
           <strong>${escapeHtml(result.verdict)}</strong>
           <div>
-            Heuristic URL analysis only — this does not prove that
+            Heuristic URL analysis only - this does not prove that
             the destination is safe or malicious.
           </div>
         </div>

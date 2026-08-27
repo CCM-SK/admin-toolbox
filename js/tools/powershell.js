@@ -217,7 +217,7 @@ export function renderPowershell(app) {
     };
 
     return {
-      application: 'Admin Toolbox — PowerShell analyzer',
+      application: 'Admin Toolbox - PowerShell analyzer',
       generatedAt: new Date().toISOString(),
       metrics,
       findings,
