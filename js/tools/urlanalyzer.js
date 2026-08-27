@@ -1,4 +1,4 @@
-import { $, escapeHtml, downloadText, copyText } from '../utils.js';
+import { $, escapeHtml, downloadText, copyText } from './utils.js';
 
 function badge(kind, text) {
   const cls = kind === 'good' ? 'good' : kind === 'bad' ? 'bad' : kind === 'warn' ? 'warn' : 'neutral';
@@ -214,10 +214,12 @@ export function renderUrlAnalyzer(app) {
   let lastResult = null;
   const input = $('#urlInput');
   const results = $('#urlResults');
+
   const run = () => {
     lastResult = analyze(input.value);
     results.innerHTML = renderResult(lastResult);
   };
+
   $('#analyzeUrl').onclick = run;
   $('#clearUrl').onclick = () => { input.value = ''; results.innerHTML = ''; lastResult = null; input.focus(); };
   $('#copyUrlReport').onclick = async () => {
