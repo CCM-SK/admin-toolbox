@@ -1,5 +1,12 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
 
+export const metadata = {
+  id: 'mail-header',
+  title: 'Mail-Header analyzer',
+  description: 'Analyze message headers locally',
+  path: '/#header'
+};
+
 export function renderHeader(app) {
   app.innerHTML = `
     <section class="card">

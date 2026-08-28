@@ -1,6 +1,22 @@
 import { escapeHtml } from './utils.js';
 
+const tools = import.meta.glob('./tools/*.js', {
+  eager: true,
+  import: 'metadata'
+});
+
 export function renderDashboard(app) {
+
+  const cards = Object.values(tools)
+    .filter(Boolean)
+    .map(tool => `
+      <a class="card" href="#${escapeHtml(tool.metadata.path)}">
+        <h3>${escapeHtml(tool.metadata.title)}</h3>
+        <p>${escapeHtml(tool.metadata.description)}</p>
+      </a>
+    `)
+    .join('');
+
   app.innerHTML = `
     <section class="card hero">
       <h2>Local-only Admin Toolbox</h2>

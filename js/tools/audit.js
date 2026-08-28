@@ -62,17 +62,31 @@ export function renderAudit(app) {
       cdn: false
     },
     tools: [
-      'log-csv-inspector',
-      'file-hashing',
-      'ip-subnet',
-      'certificate-csr-inspector',
+      'archive-metadata',
+      'event-viewer',
+      'url-analyzer',
+      'encoding-decoding',
+      'powershell-analyzer',
+      'regex-workbench',
+      'ssh-key-inspector',
+      'vlan-planner',
       'password-generator',
-      'configuration-diff'
+      'configuration-diff',
+      'certificate-inspector',
+      'file-hashing',
+      'ip-subnet-calculator',
+      'log-csv-inspector',
+      'secret-detector',
+      'ssh-share',
+      'driver-inspector',
+      'identity-inspector',
+      'header-analyzer',
+      'url-analyzer'
     ],
     limitations: [
       'Certificate inspector is a conservative ASN.1 string inspector, not a PKI validator.',
       'Diff is line-oriented rather than semantic.',
-      'Hashing loads the selected file into browser memory.'
+      'Files loaded into browser memory.'
     ]
   };
 
