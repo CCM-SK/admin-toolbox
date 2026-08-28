@@ -90,6 +90,10 @@ export function renderAudit(app) {
       'identity-inspector',
       'header-analyzer'
     ],
+    review: {
+      auditScreen: true,
+      securityDoc: 'SECURITY.md'
+    },
     limitations: [
       'Certificate inspector is a conservative ASN.1 string inspector, not a PKI validator.',
       'Diff is line-oriented rather than semantic.',
