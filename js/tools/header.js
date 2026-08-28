@@ -8,34 +8,26 @@ export const metadata = {
 };
 
 export function renderHeader(app) {
-app.innerHTML = `
-  <section class="card">
-    <h2>E-mail message header analyzer</h2>
-    <p class="small">
-      Paste complete message headers or load an <code>.eml</code> or Outlook <code>.msg</code> file.
-      Authentication results are read locally. No DNS, reputation, URL, or external-service lookups are performed.
-    </p>
-    <textarea
-      id="mailHeaders"
-      spellcheck="false"
-      placeholder="Authentication-Results: mx.example; spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass header.from=example.com\nReceived-SPF: pass (receiver: domain of sender@example.com designates 203.0.113.10 as permitted sender)\nDKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1; ...\nFrom: Sender <sender@example.com>\nTo: recipient@example.net\nSubject: Example\nDate: Thu, 20 Aug 2026 14:00:00 +0000\nMessage-ID: <...>\nReceived: from ..."
-    ></textarea>
-    <div class="row mail-header-actions">
-      <input
-        id="mailHeaderFile"
-        type="file"
-        accept=".eml,.msg,.txt,.log,message/rfc822"
-        hidden
-      >
-      <button class="btn" id="mailHeaderPick">Load .eml / .msg file</button>
-      <button class="btn primary" id="mailHeaderAnalyze">Analyze</button>
-      <button class="btn" id="mailHeaderClear">Clear</button>
-    </div>
-
-    <div id="mailHeaderFileInfo" class="small mail-header-file-info"></div>
-  </section>
-  <section class="card" id="mailHeaderResult" hidden></section>
-`;
+  app.innerHTML = `
+    <section class="card">
+      <h2>E-mail message header analyzer</h2>
+      <p>
+        <p class="small">
+        Paste complete message headers or load an <code>.eml</code> or Outlook <code>.msg</code> file.
+        Authentication results are read locally. No DNS, reputation, URL, or external-service lookups are performed.
+        </p>
+      </p>
+      <textarea id="mailHeaders" spellcheck="false" placeholder="Authentication-Results: mx.example; spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass header.from=example.com\nReceived-SPF: pass (receiver: domain of sender@example.com designates 203.0.113.10 as permitted sender)\nDKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1; ...\nFrom: Sender <sender@example.com>\nTo: recipient@example.net\nSubject: Example\nDate: Thu, 20 Aug 2026 14:00:00 +0000\nMessage-ID: <...>\nReceived: from ..."></textarea>
+      <div class="row" style="margin-top:10px">
+        <input id="mailHeaderFile" type="file" accept=".eml,.msg,.txt,.log,message/rfc822" hidden>
+        <button class="btn" id="mailHeaderPick">Load .eml / .msg file</button>
+        <button class="btn primary" id="mailHeaderAnalyze">Analyze</button>
+        <button class="btn" id="mailHeaderClear">Clear</button>
+      </div>
+      <div id="mailHeaderFileInfo" class="small" style="margin-top:10px"></div>
+    </section>
+    <section class="card" id="mailHeaderResult" hidden></section>
+  `;
 
   $('#mailHeaderPick').onclick = () => $('#mailHeaderFile').click();
   $('#mailHeaderFile').onchange = async e => {
