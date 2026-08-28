@@ -21,5 +21,5 @@ For operational assurance case a reviewer can inspect:
 1. index.html for the CSP and absence of remote origins
 2. js/ for network APIs and storage APIs
 3. Browser DevTools Network panel while using each tool; the application should produce no application-originated requests
-4. The generated audit-manifest.json from the Audit page
+4. The audit-manifest.json from the Audit page
 

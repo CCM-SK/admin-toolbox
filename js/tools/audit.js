@@ -49,17 +49,25 @@ export function renderAudit(app) {
       'GitHub Pages -> static HTML/CSS/JS -> browser -> local processing -> result/download',
     network: {
       connectSrc: "'none'",
-      externalRequests: false
+      externalRequests: false,
+      thirdPartyRuntimeRequests: false
     },
     storage: {
       localStorage: false,
       sessionStorage: false,
       indexedDB: false,
-      cookies: false
+      applicationCookies: false
     },
     dependencies: {
       thirdPartyRuntime: false,
       cdn: false
+    },
+    fileInput: {
+      userSelection: true,
+      dragAndDrop: true
+    },
+    exports: {
+      userInitiatedOnly: true
     },
     tools: [
       'archive-metadata',
@@ -80,8 +88,7 @@ export function renderAudit(app) {
       'ssh-share',
       'driver-inspector',
       'identity-inspector',
-      'header-analyzer',
-      'url-analyzer'
+      'header-analyzer'
     ],
     limitations: [
       'Certificate inspector is a conservative ASN.1 string inspector, not a PKI validator.',
