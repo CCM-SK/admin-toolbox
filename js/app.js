@@ -18,6 +18,7 @@ import { renderArchiveM } from "./tools/archivem.js";
 import { renderSDetector } from "./tools/sdetector.js";
 import { renderVlanPlanner } from './tools/vlanplanner.js';
 import { renderUrlAnalyzer } from './tools/urlanalyzer.js';
+import { renderEncoding } from './tools/encoding.js';
 
 
 const views = {
@@ -39,7 +40,8 @@ const views = {
   sshare: renderSShare,
   archivem: renderArchiveM,
   sdetector: renderSDetector,
-  vlanplanner: renderVlanPlanner
+  vlanplanner: renderVlanPlanner,
+  encoding: renderEncoding
 };
 
 const app = $('#app');
