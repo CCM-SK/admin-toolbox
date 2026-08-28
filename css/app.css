@@ -880,6 +880,20 @@ pre {
   .content {
     padding: 16px;
   }
+
+  .rx-text-label {
+    margin-top: 14px;
+  }
+
+  .rx-text {
+    min-height: 240px;
+  }
+
+  .rx-actions {
+    margin-top: 10px;
+}
+
+
 }
 
 html[data-theme="modern"] input,

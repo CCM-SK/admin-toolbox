@@ -1,52 +1,52 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
 
 export function renderRegex(app) {
-  app.innerHTML = `
-    <section class="card">
-      <h2>Regex workbench</h2>
-      <p class="small">
-        JavaScript regular expressions only. Patterns and test text remain in your browser.
-        Nothing is executed outside the JavaScript RegExp engine.
-      </p>
+app.innerHTML = `
+  <section class="card">
+    <h2>Regex workbench</h2>
+    <p class="small">
+      JavaScript regular expressions only. Patterns and test text remain in your browser.
+      Nothing is executed outside the JavaScript RegExp engine.
+    </p>
 
-      <div class="grid-2">
-        <div>
-          <label for="rxPattern">Pattern</label>
-          <input
-            id="rxPattern"
-            class="mono"
-            value="(\\b[A-Z][a-z]+\\b)"
-          >
-        </div>
-
-        <div>
-          <label for="rxFlags">Flags</label>
-          <input
-            id="rxFlags"
-            class="mono"
-            value="g"
-            placeholder="gimuydsv"
-          >
-        </div>
+    <div class="grid-2">
+      <div>
+        <label for="rxPattern">Pattern</label>
+        <input
+          id="rxPattern"
+          class="mono"
+          value="(\\b[A-Z][a-z]+\\b)"
+        >
       </div>
 
-      <label for="rxText" style="margin-top:14px">Test text</label>
-      <textarea
-        id="rxText"
-        class="mono"
-        style="min-height:240px"
-        placeholder="Enter text to test"
-      ></textarea>
-
-      <div class="row" style="margin-top:10px">
-        <button class="btn primary" id="rxRun">Run</button>
-        <button class="btn" id="rxClear">Clear</button>
-        <button class="btn" id="rxExport">Export results</button>
+      <div>
+        <label for="rxFlags">Flags</label>
+        <input
+          id="rxFlags"
+          class="mono"
+          value="g"
+          placeholder="gimuydsv"
+        >
       </div>
-    </section>
+    </div>
 
-    <section class="card" id="rxResult" hidden></section>
-  `;
+    <label for="rxText" class="rx-text-label">Test text</label>
+
+    <textarea
+      id="rxText"
+      class="mono rx-text"
+      placeholder="Enter text to test"
+    ></textarea>
+
+    <div class="row rx-actions">
+      <button class="btn primary" id="rxRun">Run</button>
+      <button class="btn" id="rxClear">Clear</button>
+      <button class="btn" id="rxExport">Export results</button>
+    </div>
+  </section>
+
+  <section class="card" id="rxResult" hidden></section>
+`;
 
   let last = null;
 
