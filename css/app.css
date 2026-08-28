@@ -912,3 +912,10 @@ html[data-theme="modern"] textarea {
 html[data-theme="modern"] .diff-same {
   background: var(--surface);
 }
+
+#encoding-hex,
+#encoding-result {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
