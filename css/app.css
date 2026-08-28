@@ -891,8 +891,15 @@ pre {
 
   .rx-actions {
     margin-top: 10px;
+  }
+
+  .mail-header-actions {
+    margin-top: 10px;
 }
 
+  .mail-header-file-info {
+    margin-top: 10px;
+}
 
 }
 
