@@ -203,14 +203,20 @@ export function renderEncoding(app) {
 
     function updateByteView(bytes) {
         const text = utf8Decode(bytes);
+
         $('#encoding-chars').textContent = text.length.toLocaleString();
         $('#encoding-bytes').textContent = bytes.length.toLocaleString();
         $('#encoding-ascii').textContent = `${printableAsciiPercent(bytes)}%`;
+
         const sample = bytes.slice(0, 256);
         const hex = bytesToHex(sample).replace(/(..)/g, '$1 ').trim();
+        const ascii = asciiPreview(sample);
+
         $('#encoding-preview').textContent =
-            `HEX   ${hex}\nASCII ${asciiPreview(sample)}` +
-            (bytes.length > 256 ? `\n\nShowing first 256 bytes of ${bytes.length}.` : '');
+            `HEX   ${hex}\nASCII ${ascii}` +
+            (bytes.length > 256
+                ? `\n\nShowing first 256 bytes of ${bytes.length}.`
+                : '');
     }
 
     function updateSourceStats(bytes, validUtf8 = true) {
