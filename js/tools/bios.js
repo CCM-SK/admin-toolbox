@@ -1433,6 +1433,345 @@ AMI: {
 
 };
 
+const BEEP_CODES = {
+
+  Dell: {
+
+    '1-1-2': {
+      status: 'error',
+      meaning: 'Microprocessor register failure',
+      note: 'Check CPU/platform diagnostics and the exact Dell service documentation for the system model.'
+    },
+
+    '1-1-3': {
+      status: 'error',
+      meaning: 'NVRAM read/write failure',
+      note: 'The firmware could not properly access nonvolatile configuration memory.'
+    },
+
+    '1-1-4': {
+      status: 'error',
+      meaning: 'ROM BIOS checksum failure',
+      note: 'The BIOS/firmware checksum did not validate.'
+    },
+
+    '1-2-1': {
+      status: 'error',
+      meaning: 'Programmable interval timer failure',
+      note: 'Firmware timer initialization/test failed.'
+    },
+
+    '1-2-2': {
+      status: 'error',
+      meaning: 'DMA initialization failure',
+      note: 'Direct-memory-access controller initialization failed.'
+    },
+
+    '1-2-3': {
+      status: 'error',
+      meaning: 'DMA page-register read/write failure',
+      note: 'Firmware could not successfully test the DMA page registers.'
+    },
+
+    '1-3': {
+      status: 'error',
+      meaning: 'Video memory test failure',
+      note: 'Check the graphics subsystem and the exact Dell model diagnostics.'
+    },
+
+    '1-3-1': {
+      status: 'error',
+      meaning: 'Memory modules not being properly identified or used',
+      note: 'Dell documents this pattern as part of a range of memory-related beep conditions.'
+    },
+
+    '1-3-2': {
+      status: 'error',
+      meaning: 'Memory failure',
+      note: 'Dell uses this pattern on documented systems for memory failure. Check RAM seating, DIMM compatibility, and the exact model documentation.'
+    },
+
+    '1-3-3': {
+      status: 'error',
+      meaning: 'Memory modules not being properly identified or used',
+      note: 'Part of Dells documented memory-beep range on applicable legacy systems.'
+    },
+
+    '1-3-4': {
+      status: 'error',
+      meaning: 'Memory modules not being properly identified or used',
+      note: 'Part of Dells documented memory-beep range on applicable legacy systems.'
+    },
+
+    '1-4': {
+      status: 'error',
+      meaning: 'Memory modules not being properly identified or used',
+      note: 'Dell documents this within legacy memory-related beep-code families.'
+    },
+
+    '2-1': {
+      status: 'error',
+      meaning: 'Memory modules not being properly identified or used',
+      note: 'Applicable to certain Dell legacy beep-code schemes.'
+    },
+
+    '2-2': {
+      status: 'error',
+      meaning: 'Memory modules not being properly identified or used',
+      note: 'Applicable to certain Dell legacy beep-code schemes.'
+    },
+
+    '2-3': {
+      status: 'error',
+      meaning: 'Memory modules not being properly identified or used',
+      note: 'Applicable to certain Dell legacy beep-code schemes.'
+    },
+
+    '2-4': {
+      status: 'error',
+      meaning: 'Memory modules not being properly identified or used',
+      note: 'Applicable to certain Dell legacy beep-code schemes.'
+    },
+
+    '3-1-1': {
+      status: 'error',
+      meaning: 'Slave DMA register failure',
+      note: 'Firmware failed the slave DMA register test.'
+    },
+
+    '3-1-2': {
+      status: 'error',
+      meaning: 'Master DMA register failure',
+      note: 'Firmware failed the master DMA register test.'
+    },
+
+    '3-1-3': {
+      status: 'error',
+      meaning: 'Master interrupt mask register failure',
+      note: 'Firmware failed the master interrupt-mask register test.'
+    },
+
+    '3-1-4': {
+      status: 'error',
+      meaning: 'Slave interrupt mask register failure',
+      note: 'Firmware failed the slave interrupt-mask register test.'
+    },
+
+    '3-2-2': {
+      status: 'error',
+      meaning: 'Interrupt vector loading failure',
+      note: 'Firmware could not correctly load the interrupt vectors.'
+    },
+
+    '3-2-4': {
+      status: 'error',
+      meaning: 'Keyboard controller test failure',
+      note: 'Check the keyboard/controller path and motherboard diagnostics.'
+    },
+
+    '3-3-1': {
+      status: 'error',
+      meaning: 'NVRAM power loss',
+      note: 'Check CMOS/NVRAM power and the applicable Dell system documentation.'
+    },
+
+    '3-3-2': {
+      status: 'error',
+      meaning: 'Invalid NVRAM configuration',
+      note: 'Firmware configuration stored in NVRAM is invalid or could not be initialized.'
+    },
+
+    '3-3-3': {
+      status: 'error',
+      meaning: 'Real-time clock or keyboard controller not found',
+      note: 'Check the RTC/CMOS and keyboard-controller subsystem.'
+    },
+
+    '3-3-4': {
+      status: 'error',
+      meaning: 'Video memory test failure',
+      note: 'Check the graphics subsystem and exact Dell model documentation.'
+    },
+
+    '3-4-1': {
+      status: 'error',
+      meaning: 'Screen initialization failure',
+      note: 'Check graphics hardware, display connection, and model-specific diagnostics.'
+    },
+
+    '3-4-2': {
+      status: 'error',
+      meaning: 'Screen retrace failure',
+      note: 'Graphics initialization/retrace test failed.'
+    },
+
+    '3-4-3': {
+      status: 'error',
+      meaning: 'Search for video ROM failure',
+      note: 'Firmware could not locate or initialize the expected video ROM.'
+    },
+
+    '4-2-1': {
+      status: 'error',
+      meaning: 'Timer tick failure',
+      note: 'System timer test failed.'
+    },
+
+    '4-2-2': {
+      status: 'error',
+      meaning: 'Shutdown failure',
+      note: 'Firmware shutdown test failed.'
+    },
+
+    '4-2-3': {
+      status: 'error',
+      meaning: 'Gate A20 failure',
+      note: 'Legacy CPU/memory-addressing initialization failed.'
+    },
+
+    '4-2-4': {
+      status: 'error',
+      meaning: 'Unexpected interrupt in protected mode',
+      note: 'A protected-mode interrupt condition occurred unexpectedly.'
+    },
+
+    '4-3-1': {
+      status: 'error',
+      meaning: 'Memory failure above address 0FFFFh',
+      note: 'Firmware detected a memory failure above the lower memory boundary.'
+    },
+
+    '4-3-3': {
+      status: 'error',
+      meaning: 'Timer-chip counter 2 failure',
+      note: 'Legacy system timer hardware test failed.'
+    },
+
+    '4-3-4': {
+      status: 'error',
+      meaning: 'Time-of-day clock stopped',
+      note: 'Check RTC/CMOS battery and motherboard clock hardware.'
+    },
+
+    '4-4-1': {
+      status: 'error',
+      meaning: 'Serial or parallel port test failure',
+      note: 'Legacy I/O port testing failed.'
+    },
+
+    '4-4-2': {
+      status: 'error',
+      meaning: 'Failure to decompress code to shadowed memory',
+      note: 'Firmware failed a legacy BIOS decompression/shadowing operation.'
+    },
+
+    '4-4-3': {
+      status: 'error',
+      meaning: 'Math-coprocessor test failure',
+      note: 'Legacy processor/math-coprocessor initialization failed.'
+    },
+
+    '4-4-4': {
+      status: 'error',
+      meaning: 'Cache test failure',
+      note: 'Processor cache test failed.'
+    }
+  }
+};
+
+function normalizeBeepPattern(text) {
+  const input = String(text ?? '')
+    .trim()
+    .toLowerCase();
+
+  if (!input) return null;
+
+  /*
+   * First, look for an explicit numeric sequence.
+   *
+   * Examples:
+   *   1-3-2
+   *   1 3 2
+   *   1,3,2
+   *   1 / 3 / 2
+   */
+  const explicit = input.match(
+    /\b\d+(?:\s*[-–—,\/+x]\s*\d+)+\b/
+  );
+
+  if (explicit) {
+    return explicit[0]
+      .replace(/[–—]/g, '-')
+      .replace(/[,\s\/+x]+/gi, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  const numbers = [
+    ...input.matchAll(/\b\d+\b/g)
+  ].map(m => m[0]);
+
+  if (numbers.length >= 2) {
+    return numbers.join('-');
+  }
+
+  return null;
+}
+
+function lookupBeepCode(pattern, vendor) {
+  const normalized = normalizeBeepPattern(pattern);
+
+  if (!normalized) return null;
+
+  /*
+   * Explicit vendor selection.
+   */
+  if (vendor && vendor !== 'auto') {
+    const entry = BEEP_CODES[vendor]?.[normalized];
+
+    if (entry) {
+      return {
+        ...entry,
+        vendor,
+        pattern: normalized
+      };
+    }
+  }
+
+  /*
+   * Auto-search all available vendor databases.
+   */
+  const matches = [];
+
+  for (const [vendorName, codes] of Object.entries(BEEP_CODES)) {
+    const entry = codes[normalized];
+
+    if (entry) {
+      matches.push({
+        ...entry,
+        vendor: vendorName,
+        pattern: normalized
+      });
+    }
+  }
+
+  if (matches.length === 1) {
+    return matches[0];
+  }
+
+  if (matches.length > 1) {
+    return {
+      status: 'ambiguous',
+      pattern: normalized,
+      meaning:
+        'This beep pattern exists for more than one vendor/system family and needs the exact model to determine its meaning.',
+      matches
+    };
+  }
+
+  return null;
+}
+
 function esc(v) {
   return String(v ?? '')
     .replace(/&/g, '&amp;')
@@ -1573,56 +1912,212 @@ function getVerdict(known) {
   }
 }
 
-function detectBeep(text) {
-  const hasBeepWord = /\b(beeps?|tones?)\b/i.test(text);
-  const hasPatternWords = /\b(long|short)\b/i.test(text);
-  const hasSequence = /\b\d+(?:\s*[-+,x]\s*\d+)+\b/i.test(text);
+function detectBeep(text, vendor = 'auto') {
+  const input = String(text ?? '')
+    .trim()
+    .replace(/\s+/g, ' ');
 
-  if (!hasBeepWord && !(hasPatternWords && hasSequence)) {
+  if (!input) return null;
+
+  const hasBeepWord =
+    /\b(beeps?|beep|tones?|tone)\b/i.test(input);
+
+  const hasPatternWords =
+    /\b(long|short)\b/i.test(input);
+
+  const hasNumericSequence =
+    /\b\d+(?:\s*[-–—,\/+x]\s*\d+)+\b/i.test(input);
+
+  const hasNumberedBeepWording =
+    /\b\d+\s*(?:beeps?|tones?)\b/i.test(input);
+
+  /*
+   * Don't classify ordinary text as a beep code.
+   */
+  if (
+    !hasBeepWord &&
+    !hasPatternWords &&
+    !hasNumericSequence
+  ) {
     return null;
   }
 
-  const numbers = [...text.matchAll(/\b\d+\b/g)].map(m => m[0]);
+  const numbers = [
+    ...input.matchAll(/\b\d+\b/g)
+  ].map(m => m[0]);
 
   const toneWords = [
-    ...text.matchAll(/\b(?:long|short|beep|beeps|tone|tones)\b/gi)
+    ...input.matchAll(
+      /\b(?:long|short|beep|beeps|tone|tones)\b/gi
+    )
   ].map(m => m[0].toLowerCase());
+
+  const normalized = normalizeBeepPattern(input);
+
+  const known = normalized
+    ? lookupBeepCode(normalized, vendor)
+    : null;
+
+  const parts = [];
+
+  parts.push({
+    label: 'Pattern text',
+    value: input,
+    meaning: 'Original beep/tone wording supplied by the user'
+  });
+
+  if (normalized) {
+    parts.push({
+      label: 'Normalized beep pattern',
+      value: normalized,
+      meaning: 'Canonical form used for local database lookup'
+    });
+  }
+
+  if (numbers.length) {
+    parts.push({
+      label: 'Numbers',
+      value: numbers.join(', '),
+      meaning: 'Numeric counts detected in the beep/tone description'
+    });
+  }
+
+  if (toneWords.length) {
+    parts.push({
+      label: 'Tone words',
+      value: [...new Set(toneWords)].join(', '),
+      meaning: 'Long/short/beep/tone descriptors detected in the input'
+    });
+  }
+
+  if (known) {
+
+    if (known.status === 'ambiguous') {
+      parts.push({
+        label: 'Local database status',
+        value: STATUS_LABELS.ambiguous,
+        meaning:
+          'More than one vendor/system family has a matching local entry'
+      });
+    } else {
+      parts.push({
+        label: 'Local database status',
+        value:
+          STATUS_LABELS[known.status] ||
+          STATUS_LABELS.unknown,
+        meaning:
+          'Status returned by the browser-local beep-code database'
+      });
+
+      if (known.vendor) {
+        parts.push({
+          label: 'Matched vendor',
+          value: known.vendor,
+          meaning:
+            'Vendor associated with the local database entry'
+        });
+      }
+
+      if (known.meaning) {
+        parts.push({
+          label: 'Known meaning',
+          value: known.meaning,
+          meaning:
+            'Meaning stored in the browser-local database'
+        });
+      }
+    }
+
+  } else if (normalized) {
+
+    parts.push({
+      label: 'Local database status',
+      value: STATUS_LABELS.unknown,
+      meaning:
+        'The normalized beep pattern was not found in the local database'
+    });
+  }
+
+  let verdict;
+
+  if (!normalized) {
+
+    verdict =
+      'A beep/tone pattern was detected, but a reliable numeric beep sequence could not be extracted. Enter the number of beeps in each group, such as 1-3-2.';
+
+  } else if (!known) {
+
+    verdict =
+      `Beep pattern ${normalized} detected, but this local database has no verified meaning for it. Do not treat an unknown pattern as a confirmed error.`;
+
+  } else if (known.status === 'ambiguous') {
+
+    verdict =
+      `Beep pattern ${normalized} is known, but its meaning depends on the vendor/system family.`;
+
+  } else if (known.status === 'error') {
+
+    verdict =
+      `Known error: ${known.meaning}`;
+
+  } else if (known.status === 'warning') {
+
+    verdict =
+      `Known warning/diagnostic condition: ${known.meaning}`;
+
+  } else if (known.status === 'stage') {
+
+    verdict =
+      `POST progress stage: ${known.meaning}. This is not inherently an error.`;
+
+  } else if (known.status === 'success') {
+
+    verdict =
+      `Known normal/success state: ${known.meaning}`;
+
+  } else {
+
+    verdict =
+      known.meaning ||
+      'Known diagnostic beep pattern.';
+  }
+
+  const searchTerms = [
+    input
+  ];
+
+  if (normalized) {
+    searchTerms.push(
+      `BIOS beep code ${normalized}`
+    );
+
+    searchTerms.push(
+      `POST beep code ${normalized}`
+    );
+  }
+
+  if (vendor && vendor !== 'auto') {
+    searchTerms.push(
+      `${vendor} beep code ${normalized || input}`
+    );
+
+    searchTerms.push(
+      `${vendor} POST beep code ${normalized || input}`
+    );
+  }
+
+  searchTerms.push(
+    'exact motherboard or computer model'
+  );
 
   return {
     family: 'beep',
-
-    parts: [
-      {
-        label: 'Pattern text',
-        value: text,
-        meaning: 'Original beep/tone wording'
-      },
-
-      ...(numbers.length
-        ? [{
-            label: 'Numbers',
-            value: numbers.join(', '),
-            meaning: 'Counts/sequence values present in the report'
-          }]
-        : []),
-
-      ...(toneWords.length
-        ? [{
-            label: 'Tone words',
-            value: [...new Set(toneWords)].join(', '),
-            meaning: 'Long/short/beep/tone descriptors'
-          }]
-        : []),
-
-      {
-        label: 'Normalized search form',
-        value: text
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, ' ')
-          .trim(),
-        meaning: 'Simplified form useful when searching'
-      }
-    ]
+    vendor,
+    known,
+    normalizedPattern: normalized,
+    verdict,
+    parts,
+    searchTerms: [...new Set(searchTerms)]
   };
 }
 
