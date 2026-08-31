@@ -2652,7 +2652,7 @@ export function renderBiosInterpreter(app) {
           <input
             id="bios-code"
             type="text"
-            placeholder="e.g. A2, 0x55, 1 long 2 short, 9C, memory initialization"
+            placeholder="e.g. A2, 0x55, 1-3-2, 9C, memory initialization"
             autocomplete="off"
             spellcheck="false"
           >
