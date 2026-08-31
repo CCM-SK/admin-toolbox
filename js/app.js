@@ -21,6 +21,7 @@ import { renderUrlAnalyzer } from './tools/urlanalyzer.js';
 import { renderEncoding } from './tools/encoding.js';
 import { renderBiosInterpreter } from './tools/bios.js';
 import { renderRangeAnalyzer } from './tools/range.js';
+import { renderIdentityMeta } from './tools/identityMeta.js';
 
 
 const views = {
@@ -45,7 +46,8 @@ const views = {
   vlanplanner: renderVlanPlanner,
   encoding: renderEncoding,
   bios: renderBiosInterpreter,
-  range: renderRangeAnalyzer
+  range: renderRangeAnalyzer,
+  identityMeta: renderIdentityMeta
 };
 
 const app = $('#app');
