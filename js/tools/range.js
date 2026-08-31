@@ -1,4 +1,4 @@
-const $ = (root, selector) => root.querySelector(selector);
+const $ = (selector, root = document) => root.querySelector(selector);
 
 function esc(value) {
     return String(value ?? '')
