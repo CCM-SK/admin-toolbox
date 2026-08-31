@@ -418,8 +418,8 @@ function renderResult(a, raw) {
     <h3>All headers</h3>
     <div class="table-wrap"><table><thead><tr><th>#</th><th>Header</th><th>Value</th></tr></thead><tbody>${allHeaderRows}</tbody></table></div>
 
-    <details style="margin-top:14px"><summary>What the green checks mean</summary>
-      <p class="small">Green means the header contains a positive or otherwise favorable result from the sending/receiving infrastructure. It does <strong>not</strong> mean the message itself is trustworthy. SPF, DKIM and DMARC can all pass for malicious mail sent from an authorized or compromised service.</p>
+    <details style="margin-top:14px"><summary>What the check-mark means</summary>
+      <p class="small">Check-mark means the header contains a positive or otherwise favorable result from the sending/receiving infrastructure. It does <strong>not</strong> mean the message itself is trustworthy. SPF, DKIM and DMARC can all pass for malicious mail sent from an authorized or compromised service.</p>
     </details>
   `;
 }
