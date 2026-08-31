@@ -20,6 +20,7 @@ import { renderVlanPlanner } from './tools/vlanplanner.js';
 import { renderUrlAnalyzer } from './tools/urlanalyzer.js';
 import { renderEncoding } from './tools/encoding.js';
 import { renderBiosInterpreter } from './tools/bios.js';
+import { renderRangeAnalyzer } from './tools/range.js';
 
 
 const views = {
@@ -43,7 +44,8 @@ const views = {
   sdetector: renderSDetector,
   vlanplanner: renderVlanPlanner,
   encoding: renderEncoding,
-  bios: renderBiosInterpreter
+  bios: renderBiosInterpreter,
+  range: renderRangeAnalyzer
 };
 
 const app = $('#app');
