@@ -228,7 +228,7 @@ S-1-5-32-544
   }
 
   function parseSid(v) {
-    const m = v.match(/^S-(\\d+)-([\\dA-Fa-fx]+)((?:-\\d+)+)$/);
+    const m = v.match(/^S-(\d+)-([\dA-Fa-fx]+)((?:-\d+)+)$/);
 
     if (!m) {
       return null;
