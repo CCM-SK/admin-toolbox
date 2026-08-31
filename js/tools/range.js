@@ -377,7 +377,7 @@ export function renderRangeAnalyzer(app) {
             </div>
           </div>
 
-          <div style="margin-top:1rem">
+          <div class="range-section">
             <div class="card">
               <h3>Overlaps & containment</h3>
               <div id="range-relations">—</div>

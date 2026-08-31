@@ -928,4 +928,10 @@ html[data-theme="modern"] .diff-same {
   margin-top: .5rem;
 }
 
+.range-section {
+  margin-top: 1rem;
+}
 
+.range-subnote {
+  margin-top: .5rem;
+}
