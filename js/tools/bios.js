@@ -2633,14 +2633,12 @@ export function renderBiosInterpreter(app) {
         <div>
           <h2>BIOS / POST Error Interpreter</h2>
 
-          <p class="muted">
+          <p class="small">
             Break a BIOS/UEFI diagnostic code into searchable parts and, when available, compare it with the browser-local POST code database.
           </p>
         </div>
 
-        <span class="muted">
-          LOCAL ONLY
-        </span>
+        <span class="muted"></span>
       </div>
 
       <div class="grid two">

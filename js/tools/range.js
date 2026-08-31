@@ -314,9 +314,9 @@ export function renderRangeAnalyzer(app) {
         <div class="row between">
           <div>
             <h2>IP Range / CIDR Overlap Analyzer</h2>
-            <p class="muted">Paste IPv4 and/or IPv6 CIDRs — one per line. Everything is calculated locally.</p>
+            <p class="small">Paste IPv4 and/or IPv6 CIDRs — one per line. Everything is calculated locally.</p>
           </div>
-          <span class="badge ok">LOCAL ONLY</span>
+          <span class="badge ok"></span>
         </div>
 
         <div class="card">
