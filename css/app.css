@@ -415,10 +415,6 @@ button {
 
   padding: 24px;
 
-  /*
-    Retains the old max-width behavior while allowing
-    the new detached-sidebar layout to breathe.
-  */
   width: 100%;
   max-width: 1400px;
 
@@ -923,3 +919,13 @@ html[data-theme="modern"] .diff-same {
 
   overflow-x: hidden;
 }
+
+.range-section {
+  margin-top: 1rem;
+}
+
+.range-subnote {
+  margin-top: .5rem;
+}
+
+

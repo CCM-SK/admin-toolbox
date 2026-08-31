@@ -342,7 +342,7 @@ export function renderRangeAnalyzer(app) {
             <div class="stat"><span>IPv6</span><strong id="range-v6">0</strong></div>
           </div>
 
-          <div class="grid two" style="margin-top:1rem">
+          <div class="grid two range-section">
             <div class="card">
               <div class="row between">
                 <h3>Smallest supernet</h3>
@@ -361,7 +361,7 @@ export function renderRangeAnalyzer(app) {
             </div>
           </div>
 
-          <div class="grid two" style="margin-top:1rem">
+          <div class="grid two range-section">
             <div class="card">
               <h3>Usable host totals</h3>
               <div class="grid two">
@@ -373,7 +373,7 @@ export function renderRangeAnalyzer(app) {
             <div class="card">
               <h3>Gaps</h3>
               <div id="range-gaps">—</div>
-              <div class="muted" style="margin-top:.5rem">Gaps are measured only inside the smallest common supernet.</div>
+              <div class="muted range-subnote">Gaps are measured only inside the smallest common supernet.</div>
             </div>
           </div>
 
@@ -391,7 +391,7 @@ export function renderRangeAnalyzer(app) {
             <div class="card">
               <h3>Mergeable CIDRs</h3>
               <div id="range-mergeable">—</div>
-              <div class="muted" style="margin-top:.5rem">The tool shows a minimal CIDR cover after overlapping and adjacent input ranges are merged.</div>
+              <div class="muted range-subnote">The tool shows a minimal CIDR cover after overlapping and adjacent input ranges are merged.</div>
             </div>
 
             <div class="card">
