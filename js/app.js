@@ -19,6 +19,7 @@ import { renderSDetector } from "./tools/sdetector.js";
 import { renderVlanPlanner } from './tools/vlanplanner.js';
 import { renderUrlAnalyzer } from './tools/urlanalyzer.js';
 import { renderEncoding } from './tools/encoding.js';
+import { renderBiosInterpreter } from './tools/bios.js';
 
 
 const views = {
@@ -41,7 +42,8 @@ const views = {
   archivem: renderArchiveM,
   sdetector: renderSDetector,
   vlanplanner: renderVlanPlanner,
-  encoding: renderEncoding
+  encoding: renderEncoding,
+  bios: renderBiosInterpreter
 };
 
 const app = $('#app');
