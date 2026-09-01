@@ -112,7 +112,7 @@ function renderStart(app) {
             <h2>JWT / JWS / JWK Decoder</h2>
             <p class="small">Inspect token headers, claims, timestamps, signatures and JWK fields locally</p>
           </div>
-          <span class="badge warn">DECODE ONLY - DOES NOT VERIFY</span>
+          <span class="badge warn"></span>
         </div>
 
         <div class="notice warning">
