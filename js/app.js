@@ -23,6 +23,7 @@ import { renderBiosInterpreter } from './tools/bios.js';
 import { renderRangeAnalyzer } from './tools/range.js';
 import { renderIdentityMeta } from './tools/identityMeta.js';
 import { renderDataWorkbench } from './tools/jsonyamlxml.js';
+import { renderJwt } from './tools/jwt.js';
 
 
 const views = {
@@ -49,7 +50,8 @@ const views = {
   bios: renderBiosInterpreter,
   range: renderRangeAnalyzer,
   identityMeta: renderIdentityMeta,
-  dataWorkbench: renderDataWorkbench
+  dataWorkbench: renderDataWorkbench,
+  jwt: renderJwt
 };
 
 const app = $('#app');
