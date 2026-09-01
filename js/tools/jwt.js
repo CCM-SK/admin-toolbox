@@ -237,7 +237,7 @@ function renderStart(app) {
           style="margin-top:.75rem"
         >
           <button
-            class="btn"
+            class="btn primary"
             type="button"
             id="jwt-decode"
           >

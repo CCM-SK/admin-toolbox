@@ -2707,7 +2707,7 @@ export function renderBiosInterpreter(app) {
 
       <div class="row">
         <button
-          class="btn"
+          class="btn primary"
           type="button"
           id="bios-analyze"
         >

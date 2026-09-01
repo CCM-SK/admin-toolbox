@@ -154,7 +154,7 @@ export function renderEncoding(app) {
         </div>
 
         <div class="row">
-          <button class="btn" type="button" id="encoding-convert">Convert →</button>
+          <button class="btn primary" type="button" id="encoding-convert">Convert →</button>
           <button class="btn secondary" type="button" id="encoding-swap">Swap</button>
           <button class="btn secondary" type="button" id="encoding-paste">Paste</button>
         </div>

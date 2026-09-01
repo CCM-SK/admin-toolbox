@@ -923,7 +923,7 @@ export function renderDataWorkbench(app) {
         ></textarea>
 
         <div class="row">
-          <button class="btn" id="dw-run">Run</button>
+          <button class="btn primary" id="dw-run">Run</button>
           <button class="btn secondary" id="dw-copy">
             Copy result
           </button>
