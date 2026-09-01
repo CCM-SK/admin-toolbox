@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; worker-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; worker-src 'self';">
   <meta name="description" content="Local-only administrative IT toolbox. Files are processed in your browser and are not uploaded.">
   <title>Admin Toolbox - Local-only IT utilities</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -66,8 +67,10 @@
             <button class="nav-item" data-tool="sshare"><span class="nav-icon">⇪</span><span>Secure Share Password</span></button>
             <button class="nav-item" data-tool="powershell"><span class="nav-icon">PS</span><span>PowerShell Analyzer</span></button>
             <button class="nav-item" data-tool="identity"><span class="nav-icon">ID</span><span>SID / GUID Decoder</span></button>
+            <button class="nav-item" data-tool="identityMeta"><span class="nav-icon">ID</span><span>Identity Metadata</span></button>
             <button class="nav-item" data-tool="certs"><span class="nav-icon">◇</span><span>Certificate / CSR inspector</span></button>
             <button class="nav-item" data-tool="sdetector"><span class="nav-icon">⌕</span><span>Secrets Detector</span></button>
+            <button class="nav-item" data-tool="jwt"><span class="nav-icon">⌕</span><span>JWT/JWS/JWK Decoder</span></button>
           </div>
         </details>
 
@@ -77,6 +80,7 @@
             <button class="nav-item" data-tool="header"><span class="nav-icon">@</span><span>Mail-header analyzer</span></button>
             <button class="nav-item" data-tool="urlanalyzer"><span class="nav-icon">🌐︎</span><span>URL Analyzer</span></button>
             <button class="nav-item" data-tool="subnet"><span class="nav-icon">⌁</span><span>IP / subnet calculator</span></button>
+            <button class="nav-item" data-tool="range"><span class="nav-icon">⌁</span><span>IP Range Analyzer</span></button>
             <button class="nav-item" data-tool="vlanplanner"><span class="nav-icon">⌁</span><span>VLAN planner</span></button>
           </div>
         </details>
@@ -85,6 +89,8 @@
           <summary><span class="group-icon">⌘</span><span>Developer tools</span></summary>
           <div class="group-items">
             <button class="nav-item" data-tool="regex"><span class="nav-icon">.*</span><span>Regex Workbench</span></button>
+            <button class="nav-item" data-tool="encoding"><span class="nav-icon">⇄</span><span>Encoding / decoding</span></button>
+            <button class="nav-item" data-tool="dataWorkbench"><span class="nav-icon">.*</span><span>Data Workbench</span></button>
           </div>
         </details>
 
@@ -92,6 +98,7 @@
           <summary><span class="group-icon">▣</span><span>System &amp; hardware</span></summary>
           <div class="group-items">
             <button class="nav-item" data-tool="drivers"><span class="nav-icon">▦</span><span>Driver Assistant</span></button>
+            <button class="nav-item" data-tool="bios"><span class="nav-icon"> BIOS</span><span>Bios Interpreter</span></button>
           </div>
         </details>
       </div>

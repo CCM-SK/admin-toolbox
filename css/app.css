@@ -415,10 +415,6 @@ button {
 
   padding: 24px;
 
-  /*
-    Retains the old max-width behavior while allowing
-    the new detached-sidebar layout to breathe.
-  */
   width: 100%;
   max-width: 1400px;
 
@@ -880,6 +876,27 @@ pre {
   .content {
     padding: 16px;
   }
+
+  .rx-text-label {
+    margin-top: 14px;
+  }
+
+  .rx-text {
+    min-height: 240px;
+  }
+
+  .rx-actions {
+    margin-top: 10px;
+  }
+
+  .mail-header-actions {
+    margin-top: 10px;
+}
+
+  .mail-header-file-info {
+    margin-top: 10px;
+}
+
 }
 
 html[data-theme="modern"] input,
@@ -890,4 +907,31 @@ html[data-theme="modern"] textarea {
 
 html[data-theme="modern"] .diff-same {
   background: var(--surface);
+}
+
+#encoding-preview {
+  max-width: 100%;
+  margin: 0;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+
+  overflow-x: hidden;
+}
+
+.range-section {
+  margin-top: 1rem;
+}
+
+.range-subnote {
+  margin-top: .5rem;
+}
+
+.range-section {
+  margin-top: 1rem;
+}
+
+.range-subnote {
+  margin-top: .5rem;
 }

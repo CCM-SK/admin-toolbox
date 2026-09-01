@@ -680,11 +680,12 @@ function renderResult(result) {
 export function renderUrlAnalyzer(app) {
   app.innerHTML = `
     <section class="card">
-      <h2>URL Authenticity / Forensics Analyzer</h2>
+      <h2>URL Authenticity / Simple Forensics</h2>
 
       <p>
-        Paste a URL to inspect it without visiting it.
-        Everything is parsed and analyzed locally in this browser.
+        <p class="small">
+        Paste a URL to inspect it without visiting it. Everything is parsed and analyzed locally in this browser.
+        </p>
       </p>
 
       <label for="urlInput">URL</label>
@@ -714,8 +715,9 @@ export function renderUrlAnalyzer(app) {
       </div>
 
       <p class="muted">
-        No DNS lookups, HTTP requests, reputation checks,
-        redirect following, or external APIs are used.
+        <p class="small">
+        No DNS lookups, HTTP requests, reputation checks, redirect following, or external APIs are used.
+        </p>
       </p>
     </section>
 

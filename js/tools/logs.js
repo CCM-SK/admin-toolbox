@@ -1,5 +1,12 @@
 import { $, escapeHtml, downloadText, dropBinder } from '../utils.js';
 
+export const metadata = {
+  id: 'logs',
+  title: 'Log / CSV inspector',
+  description: 'Load CSV or plain text logs, search them, count values, and export filtered data',
+  path: '/#logs'
+};
+
 export function renderLogs(app) {
   app.innerHTML = `
     <section class="card">

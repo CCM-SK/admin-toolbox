@@ -1,12 +1,21 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
 
+export const metadata = {
+  id: 'mail-header',
+  title: 'Mail-Header analyzer',
+  description: 'Analyze message headers locally',
+  path: '/#header'
+};
+
 export function renderHeader(app) {
   app.innerHTML = `
     <section class="card">
       <h2>E-mail message header analyzer</h2>
       <p>
+        <p class="small">
         Paste complete message headers or load an <code>.eml</code> or Outlook <code>.msg</code> file.
         Authentication results are read locally. No DNS, reputation, URL, or external-service lookups are performed.
+        </p>
       </p>
       <textarea id="mailHeaders" spellcheck="false" placeholder="Authentication-Results: mx.example; spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass header.from=example.com\nReceived-SPF: pass (receiver: domain of sender@example.com designates 203.0.113.10 as permitted sender)\nDKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1; ...\nFrom: Sender <sender@example.com>\nTo: recipient@example.net\nSubject: Example\nDate: Thu, 20 Aug 2026 14:00:00 +0000\nMessage-ID: <...>\nReceived: from ..."></textarea>
       <div class="row" style="margin-top:10px">
@@ -409,8 +418,8 @@ function renderResult(a, raw) {
     <h3>All headers</h3>
     <div class="table-wrap"><table><thead><tr><th>#</th><th>Header</th><th>Value</th></tr></thead><tbody>${allHeaderRows}</tbody></table></div>
 
-    <details style="margin-top:14px"><summary>What the green checks mean</summary>
-      <p class="small">Green means the header contains a positive or otherwise favorable result from the sending/receiving infrastructure. It does <strong>not</strong> mean the message itself is trustworthy. SPF, DKIM and DMARC can all pass for malicious mail sent from an authorized or compromised service.</p>
+    <details style="margin-top:14px"><summary>What the check-mark means</summary>
+      <p class="small">Check-mark means the header contains a positive or otherwise favorable result from the sending/receiving infrastructure. It does <strong>not</strong> mean the message itself is trustworthy. SPF, DKIM and DMARC can all pass for malicious mail sent from an authorized or compromised service.</p>
     </details>
   `;
 }

@@ -2,7 +2,9 @@ export function renderAudit(app) {
   app.innerHTML = `
     <section class="card">
       <h2>Audit / architecture</h2>
-      <p>Use this screen when reviewing the deployment model.</p>
+      <p class="small">
+        Use this screen when reviewing the deployment model.
+      </p>
 
       <div class="grid">
         <div class="stat">
@@ -49,30 +51,57 @@ export function renderAudit(app) {
       'GitHub Pages -> static HTML/CSS/JS -> browser -> local processing -> result/download',
     network: {
       connectSrc: "'none'",
-      externalRequests: false
+      externalRequests: false,
+      thirdPartyRuntimeRequests: false
     },
     storage: {
       localStorage: false,
       sessionStorage: false,
       indexedDB: false,
-      cookies: false
+      applicationCookies: false
     },
     dependencies: {
       thirdPartyRuntime: false,
       cdn: false
     },
+    fileInput: {
+      userSelection: true,
+      dragAndDrop: true
+    },
+    exports: {
+      userInitiatedOnly: true
+    },
     tools: [
-      'log-csv-inspector',
-      'file-hashing',
-      'ip-subnet',
-      'certificate-csr-inspector',
+      'archive-metadata',
+      'event-viewer',
+      'url-analyzer',
+      'encoding-decoding',
+      'powershell-analyzer',
+      'regex-workbench',
+      'ssh-key-inspector',
+      'vlan-planner',
       'password-generator',
-      'configuration-diff'
+      'configuration-diff',
+      'certificate-inspector',
+      'file-hashing',
+      'ip-subnet-calculator',
+      'log-csv-inspector',
+      'secret-detector',
+      'ssh-share',
+      'driver-inspector',
+      'identity-inspector',
+      'header-analyzer',
+      'json-yaml-xml-workbench',
+      'identity-metadata'
     ],
+    review: {
+      auditScreen: true,
+      securityDoc: 'SECURITY.md'
+    },
     limitations: [
       'Certificate inspector is a conservative ASN.1 string inspector, not a PKI validator.',
       'Diff is line-oriented rather than semantic.',
-      'Hashing loads the selected file into browser memory.'
+      'Files loaded into browser memory.'
     ]
   };
 

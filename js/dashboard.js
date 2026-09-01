@@ -1,6 +1,7 @@
 import { escapeHtml } from './utils.js';
 
 export function renderDashboard(app) {
+
   app.innerHTML = `
     <section class="card hero">
       <h2>Local-only Admin Toolbox</h2>

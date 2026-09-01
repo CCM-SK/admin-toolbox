@@ -18,6 +18,12 @@ import { renderArchiveM } from "./tools/archivem.js";
 import { renderSDetector } from "./tools/sdetector.js";
 import { renderVlanPlanner } from './tools/vlanplanner.js';
 import { renderUrlAnalyzer } from './tools/urlanalyzer.js';
+import { renderEncoding } from './tools/encoding.js';
+import { renderBiosInterpreter } from './tools/bios.js';
+import { renderRangeAnalyzer } from './tools/range.js';
+import { renderIdentityMeta } from './tools/identityMeta.js';
+import { renderDataWorkbench } from './tools/jsonyamlxml.js';
+import { renderJwt } from './tools/jwt.js';
 
 
 const views = {
@@ -39,7 +45,13 @@ const views = {
   sshare: renderSShare,
   archivem: renderArchiveM,
   sdetector: renderSDetector,
-  vlanplanner: renderVlanPlanner
+  vlanplanner: renderVlanPlanner,
+  encoding: renderEncoding,
+  bios: renderBiosInterpreter,
+  range: renderRangeAnalyzer,
+  identityMeta: renderIdentityMeta,
+  dataWorkbench: renderDataWorkbench,
+  jwt: renderJwt
 };
 
 const app = $('#app');

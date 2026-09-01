@@ -1,8 +1,56 @@
 {
   "application": "Admin Toolbox",
   "architecture": "GitHub Pages -> static HTML/CSS/JS -> browser -> local processing -> result/download",
-  "network": {"connectSrc": "'none'", "externalRequests": false},
-  "storage": {"localStorage": false, "sessionStorage": false, "indexedDB": false, "cookies": false},
-  "dependencies": {"thirdPartyRuntime": false, "cdn": false},
-  "review": {"auditScreen": true, "securityDoc": "SECURITY.md"}
+  "network": {
+    "connectSrc": "'none'",
+    "externalRequests": false,
+    "thirdPartyRuntimeRequests": false
+  },
+  "storage": {
+    "localStorage": false,
+    "sessionStorage": false,
+    "indexedDB": false,
+    "applicationCookies": false
+  },
+  "dependencies": {
+    "thirdPartyRuntime": false,
+    "cdn": false
+  },
+  "fileInput": {
+    "userSelection": true,
+    "dragAndDrop": true
+  },
+  "exports": {
+    "userInitiatedOnly": true
+  },
+  "review": {
+    "auditScreen": true,
+    "securityDoc": "SECURITY.md"
+  },
+  "tools": [
+    "archive-metadata",
+    "event-viewer",
+    "url-analyzer",
+    "encoding-decoding",
+    "powershell-analyzer",
+    "regex-workbench",
+    "ssh-key-inspector",
+    "vlan-planner",
+    "password-generator",
+    "configuration-diff",
+    "certificate-inspector",
+    "file-hashing",
+    "ip-subnet-calculator",
+    "log-csv-inspector",
+    "secret-detector",
+    "ssh-share",
+    "driver-inspector",
+    "identity-inspector",
+    "header-analyzer"
+  ],
+  "limitations": [
+    "Certificate inspector is a conservative ASN.1 string inspector, not a PKI validator.",
+    "Diff is line-oriented rather than semantic.",
+    "Files loaded into browser memory."
+  ]
 }
