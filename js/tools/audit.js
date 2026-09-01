@@ -88,7 +88,9 @@ export function renderAudit(app) {
       'ssh-share',
       'driver-inspector',
       'identity-inspector',
-      'header-analyzer'
+      'header-analyzer',
+      'json-yaml-xml-workbench',
+      'identity-metadata'
     ],
     review: {
       auditScreen: true,
