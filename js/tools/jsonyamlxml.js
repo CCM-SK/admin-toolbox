@@ -875,7 +875,7 @@ export function renderDataWorkbench(app) {
       <div class="row between">
         <div>
           <h2>JSON / YAML / XML Workbench</h2>
-          <p class="muted">
+          <p class="small">
             Format, validate, minify, sort, convert, repair, extract, and diff locally.
           </p>
         </div>
