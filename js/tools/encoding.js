@@ -115,7 +115,7 @@ export function renderEncoding(app) {
             <h2>Encoding Converter</h2>
             <p class="muted">Text ↔ Base64 ↔ Base64URL ↔ Hex ↔ URL encoding. Everything runs locally.</p>
           </div>
-          <span class="badge ok">LOCAL ONLY</span>
+          <span class="badge ok"></span>
         </div>
 
         <div class="grid two">

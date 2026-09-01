@@ -880,7 +880,7 @@ export function renderDataWorkbench(app) {
           </p>
         </div>
 
-        <span class="badge ok">LOCAL ONLY</span>
+        <span class="badge ok"></span>
       </div>
 
       <div class="tabs" role="tablist">
