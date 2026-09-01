@@ -22,6 +22,7 @@ import { renderEncoding } from './tools/encoding.js';
 import { renderBiosInterpreter } from './tools/bios.js';
 import { renderRangeAnalyzer } from './tools/range.js';
 import { renderIdentityMeta } from './tools/identityMeta.js';
+import { renderDataWorkbench } from './tools/jsonyamlxml.js';
 
 
 const views = {
@@ -47,7 +48,8 @@ const views = {
   encoding: renderEncoding,
   bios: renderBiosInterpreter,
   range: renderRangeAnalyzer,
-  identityMeta: renderIdentityMeta
+  identityMeta: renderIdentityMeta,
+  dataWorkbench: renderDataWorkbench
 };
 
 const app = $('#app');
