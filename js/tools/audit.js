@@ -2,7 +2,9 @@ export function renderAudit(app) {
   app.innerHTML = `
     <section class="card">
       <h2>Audit / architecture</h2>
-      <p>Use this screen when reviewing the deployment model.</p>
+      <p class="small">
+        Use this screen when reviewing the deployment model.
+      </p>
 
       <div class="grid">
         <div class="stat">
