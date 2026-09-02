@@ -1,4 +1,8 @@
-function downloadText(text, filename, mime = 'text/plain;charset=utf-8') {
+function downloadText(
+  text,
+  filename,
+  mime = 'text/plain;charset=utf-8'
+) {
   const blob = new Blob([text], { type: mime });
   const url = URL.createObjectURL(blob);
 
@@ -125,7 +129,10 @@ function repairJson(text) {
       '$1"$2"$3'
     )
     .replace(/,\s*([}\]])/g, '$1')
-    .replace(/\bundefined\b|\bNaN\b|\bInfinity\b/g, 'null');
+    .replace(
+      /\bundefined\b|\bNaN\b|\bInfinity\b/g,
+      'null'
+    );
 }
 
 function yamlComment(line) {
@@ -153,7 +160,10 @@ function yamlComment(line) {
       }
     } else if (c === '"' || c === "'") {
       q = c;
-    } else if (c === '#' && (i === 0 || /\s/.test(line[i - 1]))) {
+    } else if (
+      c === '#' &&
+      (i === 0 || /\s/.test(line[i - 1]))
+    ) {
       return line.slice(0, i).trimEnd();
     }
   }
@@ -270,7 +280,9 @@ function parseYaml(text) {
   src.forEach((raw, i) => {
     if (/\t/.test(raw)) {
       throw Object.assign(
-        new Error('Tabs are not supported for YAML indentation.'),
+        new Error(
+          'Tabs are not supported for YAML indentation.'
+        ),
         { yamlLine: i + 1 }
       );
     }
@@ -313,7 +325,9 @@ function parseYaml(text) {
       if (list) {
         if (!ln.raw.startsWith('-')) {
           throw Object.assign(
-            new Error('Mixed YAML mapping/list content.'),
+            new Error(
+              'Mixed YAML mapping/list content.'
+            ),
             { yamlLine: ln.line }
           );
         }
@@ -451,7 +465,10 @@ function parseYaml(text) {
     return [obj, pos];
   }
 
-  const [v, p] = block(0, lines[0].indent);
+  const [v, p] = block(
+    0,
+    lines[0].indent
+  );
 
   if (p < lines.length) {
     throw Object.assign(
@@ -472,7 +489,10 @@ function yamlString(v, ind = 0) {
     return 'null';
   }
 
-  if (typeof v === 'boolean' || typeof v === 'number') {
+  if (
+    typeof v === 'boolean' ||
+    typeof v === 'number'
+  ) {
     return String(v);
   }
 
@@ -558,7 +578,9 @@ function xmlToJson(node) {
   const es = [...node.children];
 
   const t = [...node.childNodes]
-    .filter(n => n.nodeType === Node.TEXT_NODE)
+    .filter(
+      n => n.nodeType === Node.TEXT_NODE
+    )
     .map(n => n.nodeValue)
     .join('')
     .trim();
@@ -611,7 +633,9 @@ function jsonToXml(v, root = 'root') {
     );
 
     if (Array.isArray(x)) {
-      return x.map(i => node(n, i)).join('\n');
+      return x
+        .map(i => node(n, i))
+        .join('\n');
     }
 
     if (x === null) {
@@ -645,9 +669,10 @@ function jsonToXml(v, root = 'root') {
 }
 
 function xmlPretty(text) {
-  const raw = new XMLSerializer().serializeToString(
-    xmlParse(text)
-  );
+  const raw =
+    new XMLSerializer().serializeToString(
+      xmlParse(text)
+    );
 
   return raw
     .replace(/(>)(<)/g, '$1\n$2')
@@ -673,7 +698,9 @@ function tokens(path) {
 
       const m = s
         .slice(i)
-        .match(/^([A-Za-z_$][A-Za-z0-9_$-]*)/);
+        .match(
+          /^([A-Za-z_$][A-Za-z0-9_$-]*)/
+        );
 
       if (!m) {
         throw Error('Invalid JSONPath.');
@@ -681,6 +708,7 @@ function tokens(path) {
 
       t.push({ k: m[1] });
       i += m[1].length;
+
     } else if (s[i] === '[') {
       const e = s.indexOf(']', i);
 
@@ -696,13 +724,16 @@ function tokens(path) {
 
       if (/^\d+$/.test(x)) {
         t.push({ i: +x });
+
       } else if (x === '*') {
         t.push({ w: 1 });
+
       } else if (
         (x[0] === '"' && x.at(-1) === '"') ||
         (x[0] === "'" && x.at(-1) === "'")
       ) {
         t.push({ k: x.slice(1, -1) });
+
       } else {
         throw Error(
           `Unsupported JSONPath expression [${x}].`
@@ -710,10 +741,13 @@ function tokens(path) {
       }
 
       i = e + 1;
+
     } else {
       const m = s
         .slice(i)
-        .match(/^([A-Za-z_$][A-Za-z0-9_$-]*)/);
+        .match(
+          /^([A-Za-z_$][A-Za-z0-9_$-]*)/
+        );
 
       if (!m) {
         throw Error('Invalid JSONPath.');
@@ -744,6 +778,7 @@ function jp(root, path) {
           v: x.v[q.k],
           p: `${x.p}.${q.k}`
         });
+
       } else if (
         q.i !== undefined &&
         Array.isArray(x.v) &&
@@ -753,6 +788,7 @@ function jp(root, path) {
           v: x.v[q.i],
           p: `${x.p}[${q.i}]`
         });
+
       } else if (q.w) {
         if (Array.isArray(x.v)) {
           x.v.forEach((v, i) =>
@@ -811,10 +847,15 @@ function diff(a, b) {
   let i = 0;
   let j = 0;
 
-  while (i < A.length && j < B.length) {
+  while (
+    i < A.length &&
+    j < B.length
+  ) {
     if (A[i] === B[j]) {
       o.push('  ' + A[i++]);
-    } else if (d[i + 1][j] >= d[i][j + 1]) {
+    } else if (
+      d[i + 1][j] >= d[i][j + 1]
+    ) {
       o.push('- ' + A[i++]);
     } else {
       o.push('+ ' + B[j++]);
@@ -875,7 +916,7 @@ export function renderDataWorkbench(app) {
       <div class="row between">
         <div>
           <h2>JSON / YAML / XML Workbench</h2>
-          <p class="small">
+          <p class="muted">
             Format, validate, minify, sort, convert, repair, extract, and diff locally.
           </p>
         </div>
@@ -883,7 +924,8 @@ export function renderDataWorkbench(app) {
         <span class="badge ok"></span>
       </div>
 
-      <div class="tabs" role="tablist">
+      <!-- Operation buttons -->
+      <div class="row">
         ${[
           'format',
           'validate',
@@ -895,7 +937,12 @@ export function renderDataWorkbench(app) {
           .map(
             x => `
               <button
-                class="tab ${x === 'format' ? 'active' : ''}"
+                class="btn ${
+                  x === 'format'
+                    ? 'primary'
+                    : 'secondary'
+                }"
+                type="button"
                 data-tab="${x}"
               >
                 ${x[0].toUpperCase() + x.slice(1)}
@@ -907,13 +954,29 @@ export function renderDataWorkbench(app) {
 
       <div class="card">
         <div class="row between">
-          <label for="dw-format">Format</label>
+          <label for="dw-format">
+            Input format
+          </label>
 
           <select id="dw-format">
             <option value="json">JSON</option>
             <option value="yaml">YAML</option>
             <option value="xml">XML</option>
           </select>
+        </div>
+
+        <div class="row between">
+          <label for="dw-input">
+            Input value
+          </label>
+
+          <button
+            class="btn secondary"
+            type="button"
+            id="dw-clear"
+          >
+            Clear
+          </button>
         </div>
 
         <textarea
@@ -923,38 +986,69 @@ export function renderDataWorkbench(app) {
         ></textarea>
 
         <div class="row">
-          <button class="btn primary" id="dw-run">Run</button>
-          <button class="btn secondary" id="dw-copy">
+          <button
+            class="btn primary"
+            type="button"
+            id="dw-run"
+          >
+            Run
+          </button>
+
+          <button
+            class="btn secondary"
+            type="button"
+            id="dw-copy"
+          >
             Copy result
           </button>
-          <button class="btn secondary" id="dw-download">
+
+          <button
+            class="btn secondary"
+            type="button"
+            id="dw-download"
+          >
             Download
-          </button>
-          <button class="btn secondary" id="dw-clear">
-            Clear
           </button>
         </div>
       </div>
 
       <div id="dw-extra"></div>
 
-      <div id="dw-status" class="notice hidden"></div>
+      <div
+        id="dw-status"
+        class="notice hidden"
+        role="status"
+      ></div>
 
       <div class="card">
         <div class="row between">
-          <h3>Result</h3>
-          <span class="muted" id="dw-info">—</span>
+          <label for="dw-result">
+            Result
+          </label>
+
+          <span
+            class="muted"
+            id="dw-info"
+          >
+            —
+          </span>
         </div>
 
         <textarea
           id="dw-result"
           rows="14"
           readonly
+          placeholder="Result appears here…"
         ></textarea>
       </div>
 
       <div class="card">
-        <h3>JSONPath evaluator</h3>
+        <div class="row between">
+          <h3>JSONPath evaluator</h3>
+          <span class="muted">
+            Query parsed data
+          </span>
+        </div>
 
         <div class="row">
           <input
@@ -963,47 +1057,77 @@ export function renderDataWorkbench(app) {
             placeholder="$.users[0].name"
           >
 
-          <button class="btn secondary" id="dw-jp-run">
+          <button
+            class="btn secondary"
+            type="button"
+            id="dw-jp-run"
+          >
             Evaluate
           </button>
         </div>
 
-        <pre id="dw-jp-out" class="mono"></pre>
+        <pre
+          id="dw-jp-out"
+          class="mono"
+        ></pre>
       </div>
 
       <div class="card">
-        <h3>Extract a value by path</h3>
+        <div class="row between">
+          <h3>Extract a value by path</h3>
+          <span class="muted">
+            JSONPath-style lookup
+          </span>
+        </div>
 
         <div class="row">
           <input
             id="dw-path"
             value="users[0].name"
+            placeholder="users[0].name"
           >
 
-          <button class="btn secondary" id="dw-path-run">
+          <button
+            class="btn secondary"
+            type="button"
+            id="dw-path-run"
+          >
             Extract
           </button>
         </div>
 
-        <pre id="dw-path-out" class="mono"></pre>
+        <pre
+          id="dw-path-out"
+          class="mono"
+        ></pre>
       </div>
 
       <div class="card">
-        <h3>Repair common JSON mistakes</h3>
+        <div class="row between">
+          <h3>Repair common JSON mistakes</h3>
 
-        <button class="btn secondary" id="dw-repair">
-          Repair JSON
-        </button>
+          <button
+            class="btn secondary"
+            type="button"
+            id="dw-repair"
+          >
+            Repair JSON
+          </button>
+        </div>
 
-        <pre id="dw-repair-out" class="mono"></pre>
+        <pre
+          id="dw-repair-out"
+          class="mono"
+        ></pre>
       </div>
 
       <div class="card">
         <h3>Syntax / error location</h3>
 
-        <pre id="dw-error" class="mono">
-          No operation run yet.
-        </pre>
+        <pre
+          id="dw-error"
+          class="mono"
+        >No operation run yet.</pre>
       </div>
     </section>
   `;
@@ -1013,10 +1137,13 @@ export function renderDataWorkbench(app) {
   let tab = 'format';
   let last = '';
 
-  function status(t, k = 'error') {
-    $('#dw-status').textContent = t;
-    $('#dw-status').className = t
-      ? `notice ${k}`
+  function status(
+    text,
+    kind = 'error'
+  ) {
+    $('#dw-status').textContent = text;
+    $('#dw-status').className = text
+      ? `notice ${kind}`
       : 'notice hidden';
   }
 
@@ -1026,9 +1153,19 @@ export function renderDataWorkbench(app) {
     if (tab === 'diff') {
       e.innerHTML = `
         <div class="card">
-          <label for="dw-right">
-            Compare against
-          </label>
+          <div class="row between">
+            <label for="dw-right">
+              Compare against
+            </label>
+
+            <button
+              class="btn secondary"
+              type="button"
+              id="dw-clear-right"
+            >
+              Clear
+            </button>
+          </div>
 
           <textarea
             id="dw-right"
@@ -1037,6 +1174,11 @@ export function renderDataWorkbench(app) {
           ></textarea>
         </div>
       `;
+
+      $('#dw-clear-right').onclick = () => {
+        $('#dw-right').value = '';
+      };
+
     } else if (tab === 'convert') {
       const f = $('#dw-format').value;
 
@@ -1050,7 +1192,7 @@ export function renderDataWorkbench(app) {
       e.innerHTML = `
         <div class="card">
           <div class="grid two">
-            <div>
+            <div class="card compact">
               <label for="dw-target">
                 Convert to
               </label>
@@ -1059,13 +1201,15 @@ export function renderDataWorkbench(app) {
                 ${ts
                   .map(
                     x =>
-                      `<option value="${x}">${x.toUpperCase()}</option>`
+                      `<option value="${x}">
+                        ${x.toUpperCase()}
+                      </option>`
                   )
                   .join('')}
               </select>
             </div>
 
-            <div>
+            <div class="card compact">
               <label for="dw-root">
                 XML root
               </label>
@@ -1073,11 +1217,13 @@ export function renderDataWorkbench(app) {
               <input
                 id="dw-root"
                 value="root"
+                placeholder="root"
               >
             </div>
           </div>
         </div>
       `;
+
     } else {
       e.innerHTML = '';
     }
@@ -1098,7 +1244,9 @@ export function renderDataWorkbench(app) {
       );
 
       if (!l.ok || !r.ok) {
-        status('Both documents must be valid.');
+        status(
+          'Both documents must be valid.'
+        );
 
         $('#dw-error').textContent =
           (l.ok ? r.error : l.error).message;
@@ -1108,21 +1256,34 @@ export function renderDataWorkbench(app) {
 
       const lt =
         f === 'json'
-          ? JSON.stringify(l.value, null, 2)
+          ? JSON.stringify(
+              l.value,
+              null,
+              2
+            )
           : f === 'yaml'
             ? yamlString(l.value)
-            : xmlPretty($('#dw-input').value);
+            : xmlPretty(
+                $('#dw-input').value
+              );
 
       const rt =
         f === 'json'
-          ? JSON.stringify(r.value, null, 2)
+          ? JSON.stringify(
+              r.value,
+              null,
+              2
+            )
           : f === 'yaml'
             ? yamlString(r.value)
-            : xmlPretty($('#dw-right').value);
+            : xmlPretty(
+                $('#dw-right').value
+              );
 
       last = diff(lt, rt);
 
       $('#dw-result').value = last;
+
       $('#dw-info').textContent =
         `${last.split('\n').length} lines`;
 
@@ -1150,7 +1311,9 @@ export function renderDataWorkbench(app) {
             : ''
         }`;
 
-      status('Parse/validation failed.');
+      status(
+        'Parse/validation failed.'
+      );
 
       return;
     }
@@ -1158,13 +1321,23 @@ export function renderDataWorkbench(app) {
     let out = '';
 
     try {
-      if (tab === 'format' || tab === 'validate') {
+      if (
+        tab === 'format' ||
+        tab === 'validate'
+      ) {
         out =
           f === 'json'
-            ? JSON.stringify(p.value, null, 2)
+            ? JSON.stringify(
+                p.value,
+                null,
+                2
+              )
             : f === 'yaml'
               ? yamlString(p.value)
-              : xmlPretty($('#dw-input').value);
+              : xmlPretty(
+                  $('#dw-input').value
+                );
+
       } else if (tab === 'minify') {
         out =
           f === 'json'
@@ -1174,9 +1347,11 @@ export function renderDataWorkbench(app) {
                   /\n\s+/g,
                   '\n'
                 )
-              : new XMLSerializer().serializeToString(
-                  p.value
-                );
+              : new XMLSerializer()
+                  .serializeToString(
+                    p.value
+                  );
+
       } else if (tab === 'sort') {
         if (f !== 'json') {
           throw Error(
@@ -1189,6 +1364,7 @@ export function renderDataWorkbench(app) {
           null,
           2
         );
+
       } else if (tab === 'convert') {
         const t = $('#dw-target').value;
 
@@ -1199,17 +1375,27 @@ export function renderDataWorkbench(app) {
 
           out =
             t === 'json'
-              ? JSON.stringify(j, null, 2)
+              ? JSON.stringify(
+                  j,
+                  null,
+                  2
+                )
               : yamlString(j);
+
         } else if (t === 'xml') {
           out = jsonToXml(
             p.value,
             $('#dw-root').value || 'root'
           );
+
         } else {
           out =
             t === 'json'
-              ? JSON.stringify(p.value, null, 2)
+              ? JSON.stringify(
+                  p.value,
+                  null,
+                  2
+                )
               : yamlString(p.value);
         }
       }
@@ -1229,34 +1415,55 @@ export function renderDataWorkbench(app) {
           : 'Operation completed locally.',
         'success'
       );
+
     } catch (e) {
       last = '';
       $('#dw-result').value = '';
-      $('#dw-error').textContent = e.message;
-      status('Operation failed.');
+      $('#dw-error').textContent =
+        e.message;
+
+      status(
+        'Operation failed.'
+      );
     }
   }
 
+  /*
+   * Operation buttons.
+   * These use the same btn primary/secondary
+   * visual hierarchy as Script 2.
+   */
   app
-    .querySelectorAll('.tab')
-    .forEach(b => {
-      b.onclick = () => {
-        tab = b.dataset.tab;
+    .querySelectorAll('[data-tab]')
+    .forEach(button => {
+      button.onclick = () => {
+        tab = button.dataset.tab;
 
         app
-          .querySelectorAll('.tab')
-          .forEach(x =>
+          .querySelectorAll('[data-tab]')
+          .forEach(x => {
+            const active =
+              x === button;
+
             x.classList.toggle(
-              'active',
-              x === b
-            )
-          );
+              'primary',
+              active
+            );
+
+            x.classList.toggle(
+              'secondary',
+              !active
+            );
+          });
 
         options();
       };
     });
 
-  $('#dw-format').onchange = options;
+  $('#dw-format').onchange = () => {
+    options();
+  };
+
   $('#dw-run').onclick = run;
 
   $('#dw-clear').onclick = () => {
@@ -1279,8 +1486,14 @@ export function renderDataWorkbench(app) {
     if (!last) return;
 
     try {
-      await navigator.clipboard.writeText(last);
-      status('Copied.', 'success');
+      await navigator.clipboard.writeText(
+        last
+      );
+
+      status(
+        'Copied.',
+        'success'
+      );
     } catch {
       const e = $('#dw-result');
 
@@ -1289,7 +1502,10 @@ export function renderDataWorkbench(app) {
 
       document.execCommand('copy');
 
-      status('Copied.', 'success');
+      status(
+        'Copied.',
+        'success'
+      );
     }
   };
 
@@ -1317,7 +1533,9 @@ export function renderDataWorkbench(app) {
 
     let root = p.value;
 
-    if ($('#dw-format').value === 'xml') {
+    if (
+      $('#dw-format').value === 'xml'
+    ) {
       root = xmlToJson(
         root.documentElement
       );
@@ -1329,18 +1547,20 @@ export function renderDataWorkbench(app) {
         $('#dw-jp').value
       );
 
-      $('#dw-jp-out').textContent = r.length
-        ? r
-            .map(
-              x =>
-                `${x.p} = ${JSON.stringify(
-                  x.v,
-                  null,
-                  2
-                )}`
-            )
-            .join('\n')
-        : 'No matches.';
+      $('#dw-jp-out').textContent =
+        r.length
+          ? r
+              .map(
+                x =>
+                  `${x.p} = ${JSON.stringify(
+                    x.v,
+                    null,
+                    2
+                  )}`
+              )
+              .join('\n')
+          : 'No matches.';
+
     } catch (e) {
       $('#dw-jp-out').textContent =
         e.message;
@@ -1362,32 +1582,40 @@ export function renderDataWorkbench(app) {
 
     let root = p.value;
 
-    if ($('#dw-format').value === 'xml') {
+    if (
+      $('#dw-format').value === 'xml'
+    ) {
       root = xmlToJson(
         root.documentElement
       );
     }
 
     try {
-      let path = $('#dw-path').value.trim();
+      let path =
+        $('#dw-path').value.trim();
 
       path = path.startsWith('$')
         ? path
         : '$.' + path;
 
-      const r = jp(root, path);
+      const r = jp(
+        root,
+        path
+      );
 
-      $('#dw-path-out').textContent = r.length
-        ? r
-            .map(x =>
-              JSON.stringify(
-                x.v,
-                null,
-                2
+      $('#dw-path-out').textContent =
+        r.length
+          ? r
+              .map(x =>
+                JSON.stringify(
+                  x.v,
+                  null,
+                  2
+                )
               )
-            )
-            .join('\n---\n')
-        : 'No value found.';
+              .join('\n---\n')
+          : 'No value found.';
+
     } catch (e) {
       $('#dw-path-out').textContent =
         e.message;
@@ -1401,9 +1629,10 @@ export function renderDataWorkbench(app) {
 
     const p = jsonParse(fixed);
 
-    $('#dw-repair-out').textContent = p.ok
-      ? fixed
-      : `Repair result is still invalid JSON.
+    $('#dw-repair-out').textContent =
+      p.ok
+        ? fixed
+        : `Repair result is still invalid JSON.
 
 ${p.error.message}
 
