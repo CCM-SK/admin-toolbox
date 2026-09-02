@@ -323,9 +323,8 @@ export function renderTimestamp(app) {
             <div class="row between">
                 <div>
                     <h2>Timestamp / Epoch Converter</h2>
-                    <p class="muted">
-                        Convert common timestamp formats locally,
-                        or identify an unknown value heuristically.
+                    <p class="small">
+                        Convert common timestamp formats locally, or identify an unknown value heuristically.
                     </p>
                 </div>
 
