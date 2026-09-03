@@ -27,6 +27,7 @@ import { renderJwt } from './tools/jwt.js';
 import { renderTimestamp } from './tools/timestamp.js';
 import { renderCron } from "./tools/cron.js";
 import { renderGpResult } from './tools/gpresult.js';
+import { renderCronConst } from "./tools/cron_const.js";
 
 
 
@@ -58,7 +59,8 @@ const views = {
   jwt: renderJwt,
   timestamp: renderTimestamp,
   cron: renderCron,
-  gpresult: renderGpResult
+  gpresult: renderGpResult,
+  cron_const: renderCronConst,
 };
 
 const app = $('#app');
