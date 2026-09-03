@@ -25,6 +25,8 @@ import { renderIdentityMeta } from './tools/identityMeta.js';
 import { renderDataWorkbench } from './tools/jsonyamlxml.js';
 import { renderJwt } from './tools/jwt.js';
 import { renderTimestamp } from './tools/timestamp.js';
+import { renderCron } from "./tools/cron.js";
+
 
 
 const views = {
@@ -53,7 +55,8 @@ const views = {
   identityMeta: renderIdentityMeta,
   dataWorkbench: renderDataWorkbench,
   jwt: renderJwt,
-  timestamp: renderTimestamp
+  timestamp: renderTimestamp,
+  cron: renderCron
 };
 
 const app = $('#app');
