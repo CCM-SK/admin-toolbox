@@ -4,16 +4,14 @@ export function renderDashboard(app) {
 
   app.innerHTML = `
     <section class="card hero">
-      <h2>Local-only Admin Toolbox</h2>
+      <h2>Local-only Toolbox</h2>
       <p>
-        Practical utilities for administrative IT work.
-        Everything you give the app is processed inside this browser tab.
+        Practical utilities for (administrative) IT work. Everything you give the app is processed inside this browser tab.
       </p>
 
       <div class="status ok">
         <strong>Network policy:</strong>
-        this build uses no <span class="mono">fetch()</span>, WebSocket,
-        third-party script, CDN, analytics or API endpoint.
+        this build uses no <span class="mono">fetch()</span>, WebSocket, third-party script, CDN, analytics or API endpoint.
         The CSP also sets <span class="mono">connect-src 'none'</span>.
       </div>
     </section>
@@ -118,14 +116,10 @@ export function renderDashboard(app) {
     <section class="card">
       <h3>Privacy model</h3>
       <p>
-        This is deliberately a static application. It does not contain
-        a server component. Your files stay in browser memory unless you
-        explicitly download a result.
+        This is deliberately a static application. It does not contain a server component. Your files stay in browser memory unless you explicitly download a result.
       </p>
       <p class="small">
-        Note: the browser still downloads the application itself from
-        GitHub Pages. The privacy guarantee applies to the data you process
-        after the application has loaded.
+        Note: the browser still downloads the application itself from GitHub Pages. The privacy guarantee applies to the data you process after the application has loaded.
       </p>
     </section>
   `;

@@ -328,7 +328,7 @@ export function renderRangeAnalyzer(app) {
             <div class="row">
               <button class="btn secondary" id="range-example" type="button">Load example</button>
               <button class="btn secondary" id="range-clear" type="button">Clear</button>
-              <button class="btn" id="range-analyze" type="button">Analyze</button>
+              <button class="btn primary" id="range-analyze" type="button">Analyze</button>
             </div>
           </div>
         </div>

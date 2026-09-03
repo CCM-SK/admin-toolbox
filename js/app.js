@@ -24,7 +24,11 @@ import { renderRangeAnalyzer } from './tools/range.js';
 import { renderIdentityMeta } from './tools/identityMeta.js';
 import { renderDataWorkbench } from './tools/jsonyamlxml.js';
 import { renderJwt } from './tools/jwt.js';
+import { renderTimestamp } from './tools/timestamp.js';
 import { renderCron } from "./tools/cron.js";
+import { renderGpResult } from './tools/gpresult.js';
+
+
 
 const views = {
   dashboard: renderDashboard,
@@ -52,7 +56,9 @@ const views = {
   identityMeta: renderIdentityMeta,
   dataWorkbench: renderDataWorkbench,
   jwt: renderJwt,
-  cron: renderCron
+  timestamp: renderTimestamp,
+  cron: renderCron,
+  gpresult: renderGpResult
 };
 
 const app = $('#app');

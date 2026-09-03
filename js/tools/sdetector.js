@@ -374,8 +374,8 @@ export function renderSDetector(app) {
         ></textarea>
 
         <div class="sd-toolbar">
-          <button class="sd-btn" id="sdScan">Scan</button>
-          <button class="sd-btn" id="sdClear">Clear</button>
+          <button class="btn primary" id="sdScan">Scan</button>
+          <button class="btn secondary" id="sdClear">Clear</button>
 
             <label class="checkline">
             <input
