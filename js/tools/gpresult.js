@@ -196,16 +196,16 @@ export function renderGpResult(app) {
       <div class="row between">
         <div>
           <h2>GPResult Analyzer</h2>
-          <p class="muted">Paste <span class="mono">gpresult /r</span>, <span class="mono">gpresult /z</span>, or similar output. Parsing is entirely local.</p>
+          <p class="small">Paste <span class="mono">gpresult /r</span>, <span class="mono">gpresult /z</span>, or similar output. Parsing is entirely local.</p>
         </div>
-        <span class="badge ok">LOCAL ONLY</span>
+        <span class="badge ok"></span>
       </div>
 
       <div class="card">
         <label for="gp-input">GPResult output</label>
         <textarea id="gp-input" rows="18" placeholder="Paste gpresult output here…"></textarea>
         <div class="row">
-          <button class="btn" type="button" id="gp-analyze">Analyze</button>
+          <button class="btn primary" type="button" id="gp-analyze">Analyze</button>
           <button class="btn secondary" type="button" id="gp-example">Load example</button>
           <button class="btn secondary" type="button" id="gp-clear">Clear</button>
         </div>
