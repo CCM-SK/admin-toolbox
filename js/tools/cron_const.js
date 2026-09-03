@@ -63,12 +63,6 @@ export function renderCronConst(app) {
       <div class="row">
 
         <button
-          class="btn primary"
-          id="generateCron">
-          Generate
-        </button>
-
-        <button
           class="btn"
           id="copyCron">
           Copy
