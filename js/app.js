@@ -24,7 +24,7 @@ import { renderRangeAnalyzer } from './tools/range.js';
 import { renderIdentityMeta } from './tools/identityMeta.js';
 import { renderDataWorkbench } from './tools/jsonyamlxml.js';
 import { renderJwt } from './tools/jwt.js';
-
+import { renderCron } from "./tools/cron.js";
 
 const views = {
   dashboard: renderDashboard,
@@ -51,7 +51,8 @@ const views = {
   range: renderRangeAnalyzer,
   identityMeta: renderIdentityMeta,
   dataWorkbench: renderDataWorkbench,
-  jwt: renderJwt
+  jwt: renderJwt,
+  cron: renderCron
 };
 
 const app = $('#app');
