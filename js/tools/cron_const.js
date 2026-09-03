@@ -1,6 +1,19 @@
 import { $, downloadText } from "../utils.js";
 
+/**
+ * Render the Cron Expression Generator.
+ *
+ * This function:
+ * 1. Builds the generator UI.
+ * 2. Provides helpers for describing cron fields in plain English.
+ * 3. Keeps the generated cron expression synchronized with the inputs.
+ * 4. Supports copying, exporting, and loading predefined cron templates.
+ */
 export function renderCronConst(app) {
+
+  // ---------------------------------------------------------------------------
+  // Render the complete Cron Expression Generator UI.
+  // ---------------------------------------------------------------------------
 
   app.innerHTML = `
     <section class="card">
@@ -142,6 +155,11 @@ export function renderCronConst(app) {
     </section>
   `;
 
+  // ---------------------------------------------------------------------------
+  // Lookup tables used when converting numeric cron values or abbreviations
+  // into readable month/day names.
+  // ---------------------------------------------------------------------------
+
   const MONTHS = [
     "January",
     "February",
@@ -167,13 +185,27 @@ export function renderCronConst(app) {
     "Saturday"
   ];
 
+  /**
+   * Convert a number into its ordinal representation.
+   *
+   * Examples:
+   *   1  -> "1st"
+   *   2  -> "2nd"
+   *   3  -> "3rd"
+   *   4  -> "4th"
+   *   11 -> "11th"
+   *   22 -> "22nd"
+   */
   function ordinal(n) {
     const num = Number(n);
 
+    // Return the original value when it is not numeric.
+    // This allows values such as "MON" to pass through safely.
     if (Number.isNaN(num)) {
       return n;
     }
 
+    // 11, 12 and 13 are special cases and always use "th".
     if (num % 100 >= 11 && num % 100 <= 13) {
       return `${num}th`;
     }
@@ -190,6 +222,14 @@ export function renderCronConst(app) {
     }
   }
 
+  /**
+   * Format an hour/minute pair as HH:MM.
+   *
+   * Numeric values are zero-padded:
+   *   9, 5 -> "09:05"
+   *
+   * Non-numeric values are returned in a sensible fallback format.
+   */
   function formatTime(hour, minute) {
     const h = Number(hour);
     const m = Number(minute);
@@ -201,12 +241,29 @@ export function renderCronConst(app) {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   }
 
+  /**
+   * Translate month and weekday values into human-readable names.
+   *
+   * Supported month values include:
+   *   1-12
+   *   JAN-DEC
+   *
+   * Supported weekday values include:
+   *   0-7
+   *   SUN-SAT
+   *
+   * The function also understands simple cron constructs such as:
+   *   1,15
+   *   1-5
+   */
   function replaceNames(value, type) {
 
+    // "*" does not need translation.
     if (!value || value === "*") {
       return value;
     }
 
+    // Map both numeric values and standard cron abbreviations to full names.
     const monthNames = {
       1: "January",
       2: "February",
@@ -254,27 +311,36 @@ export function renderCronConst(app) {
       SAT: "Saturday"
     };
 
+    // Select the appropriate lookup table.
     const map =
       type === "month"
         ? monthNames
         : weekdayNames;
 
+    // Cron lists use commas, so each item is translated separately.
     return value
       .split(",")
       .map(part => {
 
+        // A wildcard means every possible value.
         if (part === "*") {
           return "every value";
         }
 
+        // Handle step expressions such as:
+        //   */2
+        //   1-10/2
+        //   MON-FRI/2
         if (part.includes("/")) {
 
           const [base, step] = part.split("/");
 
+          // */N means "every N".
           if (base === "*") {
             return `every ${step}`;
           }
 
+          // Handle a stepped range.
           if (base.includes("-")) {
 
             const [start, end] = base.split("-");
@@ -292,6 +358,7 @@ export function renderCronConst(app) {
             return `${translatedStart} through ${translatedEnd} every ${step}`;
           }
 
+          // Handle a stepped single value.
           const translatedBase =
             map[base.toUpperCase()] ||
             map[base] ||
@@ -300,6 +367,9 @@ export function renderCronConst(app) {
           return `${translatedBase} every ${step}`;
         }
 
+        // Handle ranges such as:
+        //   JAN-MAR
+        //   MON-FRI
         if (part.includes("-")) {
 
           const [start, end] = part.split("-");
@@ -317,9 +387,7 @@ export function renderCronConst(app) {
           return `${translatedStart} through ${translatedEnd}`;
         }
 
-        /*
-         * Handle a single value.
-         */
+        // Handle a single value such as JAN or MON.
         return (
           map[part.toUpperCase()] ||
           map[part] ||
@@ -329,6 +397,14 @@ export function renderCronConst(app) {
       .join(", ");
   }
 
+  /**
+   * Produce a human-readable description of the minute field.
+   *
+   * Examples:
+   *   "*"     -> "every minute"
+   *   "1-10"  -> "every minute from 1 through 10"
+   *   "15"    -> "at minute 15"
+   */
   function describeMinute(value) {
 
     if (value === "*") {
@@ -343,10 +419,12 @@ export function renderCronConst(app) {
           return "every minute";
         }
 
+        // */N means every N minutes.
         if (part.startsWith("*/")) {
           return `every ${part.slice(2)} minutes`;
         }
 
+        // Handle stepped values and stepped ranges.
         if (part.includes("/")) {
 
           const [range, step] = part.split("/");
@@ -362,6 +440,7 @@ export function renderCronConst(app) {
           return `every ${step} minutes from minute ${range}`;
         }
 
+        // Handle minute ranges.
         if (part.includes("-")) {
 
           const [start, end] =
@@ -370,12 +449,21 @@ export function renderCronConst(app) {
           return `every minute from ${start} through ${end}`;
         }
 
+        // A plain number represents a specific minute.
         return `at minute ${part}`;
       });
 
     return descriptions.join("; ");
   }
 
+  /**
+   * Produce a human-readable description of the hour field.
+   *
+   * Examples:
+   *   "*"     -> "every hour"
+   *   "9-17"  -> "every hour from 9:00 through 17:00"
+   *   "9"     -> "at 09:00"
+   */
   function describeHour(value) {
 
     if (value === "*") {
@@ -390,10 +478,12 @@ export function renderCronConst(app) {
           return "every hour";
         }
 
+        // */N means every N hours.
         if (part.startsWith("*/")) {
           return `every ${part.slice(2)} hours`;
         }
 
+        // Handle stepped hours and stepped ranges.
         if (part.includes("/")) {
 
           const [range, step] =
@@ -410,6 +500,7 @@ export function renderCronConst(app) {
           return `every ${step} hours from ${range}:00`;
         }
 
+        // Handle an explicit hour range.
         if (part.includes("-")) {
 
           const [start, end] =
@@ -418,14 +509,25 @@ export function renderCronConst(app) {
           return `every hour from ${start}:00 through ${end}:00`;
         }
 
+        // A plain value represents a specific hour.
         return `at ${String(part).padStart(2, "0")}:00`;
       });
 
     return descriptions.join("; ");
   }
 
+  /**
+   * Produce a human-readable description of the day-of-month field.
+   *
+   * Examples:
+   *   "*"      -> ""
+   *   "1"      -> "on the 1st day of the month"
+   *   "1-5"    -> "from the 1st through the 5th day of the month"
+   */
   function describeDay(value) {
 
+    // A wildcard does not add useful information because the expression
+    // already describes the other cron fields.
     if (value === "*") {
       return "";
     }
@@ -438,10 +540,12 @@ export function renderCronConst(app) {
           return "every day";
         }
 
+        // */N means every N days.
         if (part.startsWith("*/")) {
           return `every ${part.slice(2)} days`;
         }
 
+        // Handle stepped values and ranges.
         if (part.includes("/")) {
 
           const [range, step] =
@@ -462,6 +566,7 @@ export function renderCronConst(app) {
           return `every ${step} days starting on the ${ordinal(range)} day of the month`;
         }
 
+        // Handle an explicit day-of-month range.
         if (part.includes("-")) {
 
           const [start, end] =
@@ -470,12 +575,21 @@ export function renderCronConst(app) {
           return `from the ${ordinal(start)} through the ${ordinal(end)} day of the month`;
         }
 
+        // A plain value represents one specific day of the month.
         return `on the ${ordinal(part)} day of the month`;
       });
 
     return descriptions.join("; ");
   }
 
+  /**
+   * Produce a human-readable description of the month field.
+   *
+   * Examples:
+   *   "*"       -> ""
+   *   "JAN"     -> "in January"
+   *   "JAN-MAR" -> "from January through March"
+   */
   function describeMonth(value) {
 
     if (value === "*") {
@@ -490,10 +604,12 @@ export function renderCronConst(app) {
           return "every month";
         }
 
+        // */N means every N months.
         if (part.startsWith("*/")) {
           return `every ${part.slice(2)} months`;
         }
 
+        // Handle stepped month expressions.
         if (part.includes("/")) {
 
           const [range, step] =
@@ -505,9 +621,11 @@ export function renderCronConst(app) {
           return `every ${step} months starting from ${translatedRange}`;
         }
 
+        // Translate numeric month values and JAN-DEC abbreviations.
         const translated =
           replaceNames(part, "month");
 
+        // Ranges should be described as a range instead of "in X".
         if (part.includes("-")) {
           return `from ${translated}`;
         }
@@ -518,6 +636,14 @@ export function renderCronConst(app) {
     return descriptions.join("; ");
   }
 
+  /**
+   * Produce a human-readable description of the day-of-week field.
+   *
+   * Examples:
+   *   "*"       -> ""
+   *   "MON"     -> "on Monday"
+   *   "MON-FRI" -> "on Monday through Friday"
+   */
   function describeWeekday(value) {
 
     if (value === "*") {
@@ -532,6 +658,7 @@ export function renderCronConst(app) {
           return "every day of the week";
         }
 
+        // Handle a stepped weekday expression.
         if (part.startsWith("*/")) {
           return `every ${part.slice(2)} days of the week`;
         }
@@ -547,6 +674,7 @@ export function renderCronConst(app) {
           return `every ${step} days on ${translatedRange}`;
         }
 
+        // Translate numeric weekdays and SUN-SAT abbreviations.
         const translated =
           replaceNames(part, "weekday");
 
@@ -556,6 +684,14 @@ export function renderCronConst(app) {
     return descriptions.join("; ");
   }
 
+  /**
+   * Build a complete human-readable explanation of a five-field cron
+   * expression.
+   *
+   * The function first handles common expressions with especially natural
+   * wording. For everything else, it combines descriptions of the individual
+   * cron fields.
+   */
   function describeCron(
     minute,
     hour,
@@ -563,6 +699,12 @@ export function renderCronConst(app) {
     month,
     weekday
   ) {
+
+    // -------------------------------------------------------------------------
+    // Common cron expressions get dedicated descriptions because these are
+    // more natural and easier to understand than a generic field-by-field
+    // explanation.
+    // -------------------------------------------------------------------------
 
     if (
       (minute === "*/1" || minute === "*") &&
@@ -628,6 +770,11 @@ export function renderCronConst(app) {
       return "Runs on the 1st day of every month at 00:00";
     }
 
+    // -------------------------------------------------------------------------
+    // Determine whether the minute/hour fields are simple values or contain
+    // more complex cron syntax such as *, ranges, lists, or step expressions.
+    // -------------------------------------------------------------------------
+
     const parts = [];
 
     const hasComplexMinute =
@@ -642,6 +789,7 @@ export function renderCronConst(app) {
       hour.includes("-") ||
       hour === "*";
 
+    // When both fields are simple numeric values, use a compact HH:MM format.
     if (!hasComplexMinute && !hasComplexHour) {
 
       parts.push(
@@ -650,18 +798,22 @@ export function renderCronConst(app) {
 
     } else {
 
+      // If the hour is unrestricted, the minute description carries the
+      // useful timing information.
       if (hour === "*") {
 
         parts.push(
           describeMinute(minute)
         );
 
+      // If the minute is unrestricted, describe the hour independently.
       } else if (minute === "*") {
 
         parts.push(
           describeHour(hour)
         );
 
+      // Otherwise, combine both minute and hour descriptions.
       } else {
 
         parts.push(
@@ -670,6 +822,7 @@ export function renderCronConst(app) {
       }
     }
 
+    // Generate descriptions for the remaining cron fields.
     const dayDescription =
       describeDay(day);
 
@@ -679,6 +832,7 @@ export function renderCronConst(app) {
     const monthDescription =
       describeMonth(month);
 
+    // Only append non-empty descriptions.
     if (dayDescription) {
       parts.push(dayDescription);
     }
@@ -694,8 +848,15 @@ export function renderCronConst(app) {
     return `Runs ${parts.join(" ")}`;
   }
 
+  /**
+   * Read the five cron fields from the form, create the cron expression,
+   * and update the result and its human-readable explanation.
+   */
   function generate() {
 
+    // Empty fields fall back to the conventional cron defaults:
+    // minute/hour = 0
+    // day/month/weekday = *
     const minute =
       $("#cronMinute").value.trim() || "0";
 
@@ -711,12 +872,16 @@ export function renderCronConst(app) {
     const weekday =
       $("#cronWeekday").value.trim() || "*";
 
+    // Standard five-field cron expression:
+    // minute hour day-of-month month day-of-week
     const cron =
       `${minute} ${hour} ${day} ${month} ${weekday}`;
 
+    // Update the generated expression shown to the user.
     $("#cronResult").textContent =
       cron;
 
+    // Update the natural-language explanation.
     $("#cronDescription").textContent =
       describeCron(
         minute,
@@ -727,24 +892,40 @@ export function renderCronConst(app) {
       );
   }
 
+  /**
+   * Load an existing five-field cron expression into the form.
+   *
+   * Invalid expressions are ignored rather than partially populating
+   * the controls.
+   */
   function loadCron(cron) {
 
+    // Split on one or more whitespace characters so expressions using
+    // multiple spaces are still parsed correctly.
     const parts =
       cron.trim().split(/\s+/);
 
+    // Standard cron expressions contain exactly five fields.
     if (parts.length !== 5) {
       return;
     }
 
+    // Populate each corresponding form field.
     $("#cronMinute").value = parts[0];
     $("#cronHour").value = parts[1];
     $("#cronDay").value = parts[2];
     $("#cronMonth").value = parts[3];
     $("#cronWeekday").value = parts[4];
 
+    // Refresh the generated output and description.
     generate();
   }
 
+  // ---------------------------------------------------------------------------
+  // Copy button
+  // ---------------------------------------------------------------------------
+
+  // Copy the currently generated cron expression to the clipboard.
   $("#copyCron").onclick =
     async () => {
 
@@ -754,6 +935,11 @@ export function renderCronConst(app) {
 
     };
 
+  // ---------------------------------------------------------------------------
+  // Export button
+  // ---------------------------------------------------------------------------
+
+  // Save the currently generated expression as a plain-text file.
   $("#exportCron").onclick = () => {
 
     downloadText(
@@ -763,6 +949,12 @@ export function renderCronConst(app) {
 
   };
 
+  // ---------------------------------------------------------------------------
+  // Quick template buttons
+  // ---------------------------------------------------------------------------
+
+  // Each template stores a complete cron expression in its data-cron
+  // attribute. Clicking a template loads that expression into the form.
   document
     .querySelectorAll(".cron-template")
     .forEach(btn => {
@@ -773,6 +965,11 @@ export function renderCronConst(app) {
 
     });
 
+  // ---------------------------------------------------------------------------
+  // Live input updates
+  // ---------------------------------------------------------------------------
+
+  // Regenerate the cron expression whenever any of the five fields changes.
   [
     "#cronMinute",
     "#cronHour",
@@ -788,5 +985,10 @@ export function renderCronConst(app) {
 
   });
 
+  // ---------------------------------------------------------------------------
+  // Initial state
+  // ---------------------------------------------------------------------------
+
+  // Populate the initial result using the default form values.
   generate();
 }
