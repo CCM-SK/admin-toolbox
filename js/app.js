@@ -26,6 +26,7 @@ import { renderDataWorkbench } from './tools/jsonyamlxml.js';
 import { renderJwt } from './tools/jwt.js';
 import { renderTimestamp } from './tools/timestamp.js';
 import { renderCron } from "./tools/cron.js";
+import { renderGpResult } from './tools/gpresult.js';
 
 
 
@@ -56,7 +57,8 @@ const views = {
   dataWorkbench: renderDataWorkbench,
   jwt: renderJwt,
   timestamp: renderTimestamp,
-  cron: renderCron
+  cron: renderCron,
+  gpresult: renderGpResult
 };
 
 const app = $('#app');
