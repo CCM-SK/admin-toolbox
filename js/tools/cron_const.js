@@ -93,7 +93,7 @@ export function renderCronConst(app) {
       <br>
 
       <div class="notice">
-        <strong>Description:</strong>
+        <strong>Interpretation:</strong>
         <span id="cronDescription">
           Runs every day at 00:00
         </span>
@@ -179,10 +179,14 @@ export function renderCronConst(app) {
     }
 
     switch (num % 10) {
-      case 1: return `${num}st`;
-      case 2: return `${num}nd`;
-      case 3: return `${num}rd`;
-      default: return `${num}th`;
+      case 1:
+        return `${num}st`;
+      case 2:
+        return `${num}nd`;
+      case 3:
+        return `${num}rd`;
+      default:
+        return `${num}th`;
     }
   }
 
@@ -258,11 +262,18 @@ export function renderCronConst(app) {
     return value
       .split(",")
       .map(part => {
+
+        if (part === "*") {
+          return "every value";
+        }
+
         if (part.includes("/")) {
 
           const [base, step] = part.split("/");
 
-          let translatedBase;
+          if (base === "*") {
+            return `every ${step}`;
+          }
 
           if (base.includes("-")) {
 
@@ -278,16 +289,13 @@ export function renderCronConst(app) {
               map[end] ||
               end;
 
-            translatedBase =
-              `${translatedStart} through ${translatedEnd}`;
-
-          } else {
-
-            translatedBase =
-              map[base.toUpperCase()] ||
-              map[base] ||
-              base;
+            return `${translatedStart} through ${translatedEnd} every ${step}`;
           }
+
+          const translatedBase =
+            map[base.toUpperCase()] ||
+            map[base] ||
+            base;
 
           return `${translatedBase} every ${step}`;
         }
@@ -309,6 +317,9 @@ export function renderCronConst(app) {
           return `${translatedStart} through ${translatedEnd}`;
         }
 
+        /*
+         * Handle a single value.
+         */
         return (
           map[part.toUpperCase()] ||
           map[part] ||
@@ -324,40 +335,45 @@ export function renderCronConst(app) {
       return "every minute";
     }
 
-    if (value.startsWith("*/")) {
-      return `every ${value.slice(2)} minutes`;
-    }
+    const descriptions = value
+      .split(",")
+      .map(part => {
 
-    if (value.includes("/")) {
+        if (part === "*") {
+          return "every minute";
+        }
 
-      const [range, step] = value.split("/");
+        if (part.startsWith("*/")) {
+          return `every ${part.slice(2)} minutes`;
+        }
 
-      if (range === "*") {
-        return `every ${step} minutes`;
-      }
+        if (part.includes("/")) {
 
-      if (range.includes("-")) {
+          const [range, step] = part.split("/");
 
-        const [start, end] = range.split("-");
+          if (range.includes("-")) {
 
-        return `every ${step} minutes from minute ${start} through ${end}`;
-      }
+            const [start, end] =
+              range.split("-");
 
-      return `every ${step} minutes`;
-    }
+            return `every ${step} minutes from minute ${start} through ${end}`;
+          }
 
-    if (value.includes(",")) {
-      return `at minutes ${value.split(",").join(", ")}`;
-    }
+          return `every ${step} minutes from minute ${range}`;
+        }
 
-    if (value.includes("-")) {
+        if (part.includes("-")) {
 
-      const [start, end] = value.split("-");
+          const [start, end] =
+            part.split("-");
 
-      return `every minute from ${start} through ${end}`;
-    }
+          return `every minute from ${start} through ${end}`;
+        }
 
-    return `at minute ${value}`;
+        return `at minute ${part}`;
+      });
+
+    return descriptions.join("; ");
   }
 
   function describeHour(value) {
@@ -366,36 +382,46 @@ export function renderCronConst(app) {
       return "every hour";
     }
 
-    if (value.startsWith("*/")) {
-      return `every ${value.slice(2)} hours`;
-    }
+    const descriptions = value
+      .split(",")
+      .map(part => {
 
-    if (value.includes("/")) {
+        if (part === "*") {
+          return "every hour";
+        }
 
-      const [range, step] = value.split("/");
+        if (part.startsWith("*/")) {
+          return `every ${part.slice(2)} hours`;
+        }
 
-      if (range.includes("-")) {
+        if (part.includes("/")) {
 
-        const [start, end] = range.split("-");
+          const [range, step] =
+            part.split("/");
 
-        return `every ${step} hours from ${start}:00 through ${end}:00`;
-      }
+          if (range.includes("-")) {
 
-      return `every ${step} hours`;
-    }
+            const [start, end] =
+              range.split("-");
 
-    if (value.includes(",")) {
-      return `at hours ${value.split(",").join(", ")}`;
-    }
+            return `every ${step} hours from ${start}:00 through ${end}:00`;
+          }
 
-    if (value.includes("-")) {
+          return `every ${step} hours from ${range}:00`;
+        }
 
-      const [start, end] = value.split("-");
+        if (part.includes("-")) {
 
-      return `every hour from ${start}:00 through ${end}:00`;
-    }
+          const [start, end] =
+            part.split("-");
 
-    return `at ${String(value).padStart(2, "0")}:00`;
+          return `every hour from ${start}:00 through ${end}:00`;
+        }
+
+        return `at ${String(part).padStart(2, "0")}:00`;
+      });
+
+    return descriptions.join("; ");
   }
 
   function describeDay(value) {
@@ -404,33 +430,50 @@ export function renderCronConst(app) {
       return "";
     }
 
-    if (value.startsWith("*/")) {
-      return `every ${value.slice(2)} days`;
-    }
+    const descriptions = value
+      .split(",")
+      .map(part => {
 
-    if (value.includes("/")) {
+        if (part === "*") {
+          return "every day";
+        }
 
-      const [range, step] = value.split("/");
+        if (part.startsWith("*/")) {
+          return `every ${part.slice(2)} days`;
+        }
 
-      if (range === "*") {
-        return `every ${step} days`;
-      }
+        if (part.includes("/")) {
 
-      return `every ${step} days within ${range}`;
-    }
+          const [range, step] =
+            part.split("/");
 
-    if (value.includes(",")) {
-      return `on days ${value.split(",").join(", ")}`;
-    }
+          if (range === "*") {
+            return `every ${step} days`;
+          }
 
-    if (value.includes("-")) {
+          if (range.includes("-")) {
 
-      const [start, end] = value.split("-");
+            const [start, end] =
+              range.split("-");
 
-      return `from the ${ordinal(start)} through the ${ordinal(end)} day of the month`;
-    }
+            return `every ${step} days from the ${ordinal(start)} through the ${ordinal(end)} day of the month`;
+          }
 
-    return `on the ${ordinal(value)} day of the month`;
+          return `every ${step} days starting on the ${ordinal(range)} day of the month`;
+        }
+
+        if (part.includes("-")) {
+
+          const [start, end] =
+            part.split("-");
+
+          return `from the ${ordinal(start)} through the ${ordinal(end)} day of the month`;
+        }
+
+        return `on the ${ordinal(part)} day of the month`;
+      });
+
+    return descriptions.join("; ");
   }
 
   function describeMonth(value) {
@@ -439,22 +482,40 @@ export function renderCronConst(app) {
       return "";
     }
 
-    if (value.startsWith("*/")) {
-      return `every ${value.slice(2)} months`;
-    }
+    const descriptions = value
+      .split(",")
+      .map(part => {
 
-    const translated =
-      replaceNames(value, "month");
+        if (part === "*") {
+          return "every month";
+        }
 
-    if (value.includes(",")) {
-      return `in ${translated}`;
-    }
+        if (part.startsWith("*/")) {
+          return `every ${part.slice(2)} months`;
+        }
 
-    if (value.includes("-")) {
-      return `from ${translated}`;
-    }
+        if (part.includes("/")) {
 
-    return `in ${translated}`;
+          const [range, step] =
+            part.split("/");
+
+          const translatedRange =
+            replaceNames(range, "month");
+
+          return `every ${step} months starting from ${translatedRange}`;
+        }
+
+        const translated =
+          replaceNames(part, "month");
+
+        if (part.includes("-")) {
+          return `from ${translated}`;
+        }
+
+        return `in ${translated}`;
+      });
+
+    return descriptions.join("; ");
   }
 
   function describeWeekday(value) {
@@ -463,22 +524,36 @@ export function renderCronConst(app) {
       return "";
     }
 
-    if (value.startsWith("*/")) {
-      return `every ${value.slice(2)} days of the week`;
-    }
+    const descriptions = value
+      .split(",")
+      .map(part => {
 
-    const translated =
-      replaceNames(value, "weekday");
+        if (part === "*") {
+          return "every day of the week";
+        }
 
-    if (value.includes(",")) {
-      return `on ${translated}`;
-    }
+        if (part.startsWith("*/")) {
+          return `every ${part.slice(2)} days of the week`;
+        }
 
-    if (value.includes("-")) {
-      return `on ${translated}`;
-    }
+        if (part.includes("/")) {
 
-    return `on ${translated}`;
+          const [range, step] =
+            part.split("/");
+
+          const translatedRange =
+            replaceNames(range, "weekday");
+
+          return `every ${step} days on ${translatedRange}`;
+        }
+
+        const translated =
+          replaceNames(part, "weekday");
+
+        return `on ${translated}`;
+      });
+
+    return descriptions.join("; ");
   }
 
   function describeCron(
@@ -534,7 +609,11 @@ export function renderCronConst(app) {
       hour === "0" &&
       day === "*" &&
       month === "*" &&
-      (weekday === "0" || weekday === "7" || weekday === "SUN")
+      (
+        weekday === "0" ||
+        weekday === "7" ||
+        weekday.toUpperCase() === "SUN"
+      )
     ) {
       return "Runs every Sunday at 00:00";
     }
@@ -550,16 +629,20 @@ export function renderCronConst(app) {
     }
 
     const parts = [];
-    if (
-      minute !== "*" &&
-      !minute.includes("/") &&
-      !minute.includes(",") &&
-      !minute.includes("-") &&
-      hour !== "*" &&
-      !hour.includes("/") &&
-      !hour.includes(",") &&
-      !hour.includes("-")
-    ) {
+
+    const hasComplexMinute =
+      minute.includes(",") ||
+      minute.includes("/") ||
+      minute.includes("-") ||
+      minute === "*";
+
+    const hasComplexHour =
+      hour.includes(",") ||
+      hour.includes("/") ||
+      hour.includes("-") ||
+      hour === "*";
+
+    if (!hasComplexMinute && !hasComplexHour) {
 
       parts.push(
         `at ${formatTime(hour, minute)}`
@@ -567,28 +650,22 @@ export function renderCronConst(app) {
 
     } else {
 
-      const minuteDescription =
-        describeMinute(minute);
-
-      const hourDescription =
-        describeHour(hour);
-
       if (hour === "*") {
 
         parts.push(
-          minuteDescription
+          describeMinute(minute)
         );
 
       } else if (minute === "*") {
 
         parts.push(
-          hourDescription
+          describeHour(hour)
         );
 
       } else {
 
         parts.push(
-          `${minuteDescription} ${hourDescription}`
+          `${describeMinute(minute)} ${describeHour(hour)}`
         );
       }
     }
@@ -596,11 +673,11 @@ export function renderCronConst(app) {
     const dayDescription =
       describeDay(day);
 
-    const monthDescription =
-      describeMonth(month);
-
     const weekdayDescription =
       describeWeekday(weekday);
+
+    const monthDescription =
+      describeMonth(month);
 
     if (dayDescription) {
       parts.push(dayDescription);
