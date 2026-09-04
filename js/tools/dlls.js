@@ -1,4 +1,4 @@
-const $ = (root, s) => root.querySelector(s);
+const $ = s => document.querySelector(s);
 const esc = v => String(v ?? '')
   .replace(/&/g,'&amp;').replace(/</g,'&lt;')
   .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
