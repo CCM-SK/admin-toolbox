@@ -263,7 +263,7 @@ function endpointBroad(ep) {
 
 function endpointsOverlap(a, b) {
   if (endpointBroad(a) || endpointBroad(b)) return true;
-  if (a.type === 'object-group' || b.type === 'object-group') return true; // conservative without full tuple expansion
+  if (a.type === 'object-group' || b.type === 'object-group') return true;
   if (a.type === 'object' || b.type === 'object') return true;
   if (a.type === 'host' && b.type === 'host') return a.value === b.value;
   if (a.type === 'host' && b.type === 'subnet') return cidrContains(b.value, a.value);
@@ -329,7 +329,6 @@ function analyze(data) {
     }
   }
 
-  // Shadow / overlap analysis within each ACL, preserving first-match semantics.
   for (const [acl, rules] of Object.entries(aclMap)) {
     for (let i=0;i<rules.length;i++) {
       const later = rules[i];
@@ -491,9 +490,8 @@ access-list DMZ_IN extended permit tcp any host 10.30.20.10 eq 443
           <div class="stat"><span>Object-groups</span><strong>${Object.keys(data.objectGroups).length}</strong></div>
           <div class="stat"><span>High-risk findings</span><strong>${high}</strong></div>
         </div>
-        <div class="muted" style="margin-top:.75rem">
-          Analysis is based only on the pasted text. It does not know interface direction, NAT behavior,
-          routing, inspection policy, VPN policy, identity rules, or platform-version-specific semantics unless those are included in the pasted configuration.
+        <div class="small " style="margin-top:.75rem">
+          Analysis is based only on the pasted text. It does not know interface direction, NAT behavior, routing, inspection policy, VPN policy, identity rules, or platform-version-specific semantics unless those are included in the pasted configuration.
         </div>
       </div>
 
