@@ -29,6 +29,7 @@ import { renderCron } from "./tools/cron.js";
 import { renderGpResult } from './tools/gpresult.js';
 import { renderCronConst } from "./tools/cron_const.js";
 import { renderCiscoFirewall } from "./tools/ciscoacl.js";
+import { renderDllAnalyzer } from "./tools/dlls.js";
 
 
 
@@ -62,7 +63,8 @@ const views = {
   cron: renderCron,
   gpresult: renderGpResult,
   cron_const: renderCronConst,
-  ciscofirewall: renderCiscoFirewall
+  ciscofirewall: renderCiscoFirewall,
+  dlls: renderDllAnalyzer
 };
 
 const app = $('#app');
