@@ -429,9 +429,9 @@ export function renderCiscoFirewall(app) {
       <div class="row between">
         <div>
           <h2>Cisco Firewall Rule Analyzer</h2>
-          <p class="muted">Paste Cisco ASA / ASA-like ACL and object-group configuration. The tool explains rule meaning locally and highlights likely policy problems.</p>
+          <p class="small">Paste Cisco ASA / ASA-like ACL and object-group configuration. The tool explains rule meaning locally and highlights likely policy problems.</p>
         </div>
-        <span class="badge ok">LOCAL ONLY</span>
+        <span class="badge ok"></span>
       </div>
 
       <div class="card">
