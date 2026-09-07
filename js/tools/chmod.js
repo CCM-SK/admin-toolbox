@@ -93,72 +93,107 @@ function parseLsPermission(input) {
     return { mode, type };
 }
 
-function parseSymbolic(input, initialMode = 0) {
+function parseSymbolic(input, initialMode = 0, type = '-') {
     let mode = initialMode;
     const expr = String(input).trim();
 
-    if (!expr) throw new Error('Enter a symbolic mode such as u=rwx,g=rx,o=rx.');
+    if (!expr) {
+        throw new Error('Enter a symbolic mode such as u=rwx,g=rx,o=rx.');
+    }
 
     for (const rawClause of expr.split(',')) {
         const clause = rawClause.trim();
-        const m = clause.match(/^([ugoas]*)([+=-])([rwxXstugo]*)(?:([0-7]+))?$/i);
-        if (!m) throw new Error(`Invalid symbolic clause: ${clause}`);
+        const m = clause.match(/^([ugoas]*)([+=-])([rwxXstugo]*)(?:([0-7]+))?$/);
+
+        if (!m) {
+            throw new Error(`Invalid symbolic clause: ${clause}`);
+        }
 
         const whoRaw = m[1].toLowerCase() || 'a';
         const op = m[2];
-        const perms = m[3].toLowerCase();
+        const perms = m[3];
         const numeric = m[4];
 
         let who = new Set();
+
         if (whoRaw.includes('a') || whoRaw === 'a') {
             who = new Set(['u', 'g', 'o']);
         } else {
-            for (const c of whoRaw) who.add(c);
+            for (const c of whoRaw) {
+                who.add(c);
+            }
         }
 
         if (numeric) {
             const d = parseInt(numeric, 8);
-            if (numeric.length > 1) throw new Error('Numeric symbolic mode must use one octal digit per selected class.');
+
+            if (numeric.length > 1) {
+                throw new Error(
+                    'Numeric symbolic mode must use one octal digit per selected class.'
+                );
+            }
+
             for (const w of who) {
                 const shift = w === 'u' ? 6 : w === 'g' ? 3 : 0;
                 const mask = 7 << shift;
-                if (op === '=') mode = (mode & ~mask) | (d << shift);
-                else if (op === '+') mode |= (d << shift);
-                else mode &= ~(d << shift);
+
+                if (op === '=') {
+                    mode = (mode & ~mask) | (d << shift);
+                } else if (op === '+') {
+                    mode |= d << shift;
+                } else {
+                    mode &= ~(d << shift);
+                }
             }
+
             continue;
         }
-
         let ordinary = 0;
         let special = 0;
-
+        let hasX = false;
         for (const p of perms) {
             if (p === 'r') ordinary |= 4;
             if (p === 'w') ordinary |= 2;
             if (p === 'x') ordinary |= 1;
+            if (p === 'X') {
+                hasX = true;
+            }
             if (p === 's' && (who.has('u') || who.has('g'))) {
                 if (who.has('u')) special |= 0o4000;
                 if (who.has('g')) special |= 0o2000;
             }
-            if (p === 't' && who.has('o')) special |= 0o1000;
-            if (p === 'X') ordinary |= 1;
+            if (p === 't' && who.has('o')) {
+                special |= 0o1000;
+            }
         }
 
-        if (perms.includes('X')) {
-            const anyExec = ((mode & 0o111) !== 0);
-            if (!anyExec) ordinary &= ~1;
-        }
+        if (hasX) {
+            const anyExec = (mode & 0o111) !== 0;
 
+            if (type === 'd' || anyExec) {
+                ordinary |= 1;
+            }
+        }
         for (const w of who) {
             const shift = w === 'u' ? 6 : w === 'g' ? 3 : 0;
             const mask = 7 << shift;
-            if (op === '=') mode &= ~mask;
-            if (op === '+') mode |= ordinary << shift;
-            if (op === '-') mode &= ~(ordinary << shift);
-            if (op === '=') mode |= ordinary << shift;
+            if (op === '=') {
+                mode &= ~mask;
+                mode |= ordinary << shift;
+            } else if (op === '+') {
+                mode |= ordinary << shift;
+            } else if (op === '-') {
+                mode &= ~(ordinary << shift);
+            }
         }
 
-        mode = op === '-' ? (mode & ~special) : op === '+' ? (mode | special) : (mode & ~0o7000) | special;
+        if (op === '-') {
+            mode &= ~special;
+        } else if (op === '+') {
+            mode |= special;
+        } else {
+            mode = (mode & ~0o7000) | special;
+        }
     }
 
     return mode;
@@ -273,6 +308,8 @@ function symbolicSuggestion(mode) {
 }
 
 function renderDetails(root, mode, type = '-') {
+    const $ = s => root.querySelector(s);
+
     const octal = modeToOctal(mode);
     const symbolic = modeToSymbolic(mode, type);
     const rows = permissionMeaning(mode);
@@ -301,7 +338,11 @@ function renderDetails(root, mode, type = '-') {
 
     const findings = riskFindings(mode, type);
     $('#chmod-findings').innerHTML = findings.length
-        ? findings.map(f => `<div class="notice ${f.level==='high'?'bad':f.level==='warning'?'warn':'success'}"><b>${esc(f.title)}</b><br>${esc(f.detail)}</div>`).join('')
+        ? findings.map(f =>
+            `<div class="notice ${f.level === 'high' ? 'bad' : f.level === 'warning' ? 'warn' : 'success'}">
+                <b>${esc(f.title)}</b><br>${esc(f.detail)}
+             </div>`
+          ).join('')
         : '<div class="notice success"><b>No obvious permission red flags</b><br>The selected mode did not trigger the built-in heuristics.</div>';
 
     $('#chmod-symbolic-suggestion').textContent = symbolicSuggestion(mode);
@@ -315,7 +356,7 @@ export function renderChmod(app) {
             <h2>CHMOD Calculator / Parser</h2>
             <p class="small">Convert octal, symbolic and <span class="mono">ls -l</span> permissions locally.</p>
           </div>
-          <span class="badge ok">LOCAL ONLY</span>
+          <span class="badge ok"></span>
         </div>
 
         <div class="grid two">
@@ -422,7 +463,7 @@ export function renderChmod(app) {
             const parsed = parseLsPermission(input.value);
             mode = parsed.mode;
         } else {
-            mode = parseSymbolic(input.value);
+            mode = parseSymbolic(input.value, 0, type);
         }
 
         renderDetails(app, mode, type);
