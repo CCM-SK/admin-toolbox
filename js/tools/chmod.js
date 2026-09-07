@@ -1,3 +1,5 @@
+import { $, escapeHtml } from '../utils.js';
+
 function esc(v) {
     return String(v ?? '')
         .replace(/&/g, '&amp;').replace(/</g, '&lt;')
