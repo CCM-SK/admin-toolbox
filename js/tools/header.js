@@ -32,6 +32,7 @@ export function renderHeader(app) {
       <div id="mailHeaderFileInfo" class="small" style="margin-top:10px"></div>
     </section>
     <section class="card" id="mailHeaderResult" hidden></section>
+    </div>
   `;
 
 /*
