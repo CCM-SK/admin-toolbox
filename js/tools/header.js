@@ -93,7 +93,7 @@ export function renderHeader(app) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analyze();
   });
 
-  // enableToolDragging( $('#mailHeaderWindow'), $('#mailHeaderDragHandle'));
+  enableToolDragging( $('#mailHeaderWindow'), $('#mailHeaderDragHandle'));
 
   function analyze() {
     const raw = $('#mailHeaders').value;
