@@ -925,6 +925,7 @@ html[data-theme="modern"] .diff-same {
   position: relative;
   width: 75%;
 }
+/*
 .tool-window-header {
   display: flex;
   align-items: center;
@@ -936,6 +937,23 @@ html[data-theme="modern"] .diff-same {
   user-select: none;
   touch-action: none;
 }
+  */
+.tool-window-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  user-select: none;
+}
+body.sidebar-detached .tool-window-header {
+  cursor: grab;
+  touch-action: none;
+}
+body.sidebar-detached .tool-window-header.dragging {
+  cursor: grabbing;
+}  
 .tool-window-header.dragging {
   cursor: grabbing;
 }
@@ -945,3 +963,6 @@ html[data-theme="modern"] .diff-same {
   line-height: 1;
   letter-spacing: -3px;
 }
+body.sidebar-detached .tool-drag-grip {
+  opacity: 0.55;
+}  
