@@ -259,35 +259,38 @@ export function enableToolDragging(windowEl, handleEl, isEnabled = () => true) {
   let offsetY = 0;
   handleEl.style.touchAction = 'none';
   handleEl.style.userSelect = 'none';
-
   handleEl.addEventListener('pointerdown', event => {
     if (!isEnabled()) return;
     if (event.button !== 0) return;
-
     if (event.target.closest('button, input, select, textarea, a')) {
       return;
     }
-
     dragging = true;
     pointerId = event.pointerId;
     startX = event.clientX;
     startY = event.clientY;
-    offsetX = 0;
-    offsetY = 0;
+    const transform = window.getComputedStyle(windowEl).transform;
+
+    if (transform && transform !== 'none') {
+      const matrix = new DOMMatrix(transform);
+      offsetX = matrix.m41;
+      offsetY = matrix.m42;
+    } else {
+      offsetX = 0;
+      offsetY = 0;
+    }
     handleEl.setPointerCapture(pointerId);
     handleEl.classList.add('dragging');
-
     event.preventDefault();
   });
 
   handleEl.addEventListener('pointermove', event => {
     if (!dragging || event.pointerId !== pointerId) return;
-    offsetX = event.clientX - startX;
-    offsetY = event.clientY - startY;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
     windowEl.style.transform =
-      `translate(${offsetX}px, ${offsetY}px)`;
+      `translate(${offsetX + dx}px, ${offsetY + dy}px)`;
   });
-
   function stopDragging(event) {
     if (!dragging || event.pointerId !== pointerId) return;
     dragging = false;
@@ -295,10 +298,8 @@ export function enableToolDragging(windowEl, handleEl, isEnabled = () => true) {
     try {
       handleEl.releasePointerCapture(pointerId);
     } catch {}
-
     pointerId = null;
   }
-
   handleEl.addEventListener('pointerup', stopDragging);
   handleEl.addEventListener('pointercancel', stopDragging);
 }
