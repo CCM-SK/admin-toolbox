@@ -255,9 +255,8 @@ export function enableToolDragging(windowEl, handleEl, isEnabled = () => true) {
   let pointerId = null;
   let startX = 0;
   let startY = 0;
-  let originX = 0;
-  let originY = 0;
-
+  let offsetX = 0;
+  let offsetY = 0;
   handleEl.style.touchAction = 'none';
   handleEl.style.userSelect = 'none';
 
@@ -269,21 +268,12 @@ export function enableToolDragging(windowEl, handleEl, isEnabled = () => true) {
       return;
     }
 
-    const rect = windowEl.getBoundingClientRect();
-
     dragging = true;
     pointerId = event.pointerId;
     startX = event.clientX;
     startY = event.clientY;
-    originX = rect.left;
-    originY = rect.top;
-
-    windowEl.style.position = 'fixed';
-    windowEl.style.left = `${originX}px`;
-    windowEl.style.top = `${originY}px`;
-    windowEl.style.margin = '0';
-    windowEl.style.zIndex = '1000';
-
+    offsetX = 0;
+    offsetY = 0;
     handleEl.setPointerCapture(pointerId);
     handleEl.classList.add('dragging');
 
@@ -292,37 +282,16 @@ export function enableToolDragging(windowEl, handleEl, isEnabled = () => true) {
 
   handleEl.addEventListener('pointermove', event => {
     if (!dragging || event.pointerId !== pointerId) return;
-
-    const dx = event.clientX - startX;
-    const dy = event.clientY - startY;
-    const rect = windowEl.getBoundingClientRect();
-
-    const minVisible = 80;
-    const margin = 20;
-
-    let left = originX + dx;
-    let top = originY + dy;
-
-    left = Math.max(
-      margin - rect.width + minVisible,
-      Math.min(left, window.innerWidth - minVisible)
-    );
-
-    top = Math.max(
-      margin,
-      Math.min(top, window.innerHeight - minVisible)
-    );
-
-    windowEl.style.left = `${left}px`;
-    windowEl.style.top = `${top}px`;
+    offsetX = event.clientX - startX;
+    offsetY = event.clientY - startY;
+    windowEl.style.transform =
+      `translate(${offsetX}px, ${offsetY}px)`;
   });
 
   function stopDragging(event) {
     if (!dragging || event.pointerId !== pointerId) return;
-
     dragging = false;
     handleEl.classList.remove('dragging');
-
     try {
       handleEl.releasePointerCapture(pointerId);
     } catch {}
