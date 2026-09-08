@@ -927,7 +927,7 @@ html[data-theme="modern"] .diff-same {
 }
 .tool-window {
   position: relative;
-  width: 100%;
+  width: 66%;
 }
 .tool-window-header {
   display: flex;

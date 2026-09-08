@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Analyze message headers locally',
   path: '/#header'
 };
-/*
+
 export function renderHeader(app) {
   app.innerHTML = `
     <div class="tool-window" id="mailHeaderWindow">
@@ -33,8 +33,8 @@ export function renderHeader(app) {
     </section>
     <section class="card" id="mailHeaderResult" hidden></section>
   `;
-*/
 
+/*
 export function renderHeader(app) {
   app.innerHTML = `
     <section class="card">
@@ -56,7 +56,7 @@ export function renderHeader(app) {
     </section>
     <section class="card" id="mailHeaderResult" hidden></section>
   `;
-
+*/
   $('#mailHeaderPick').onclick = () => $('#mailHeaderFile').click();
   $('#mailHeaderFile').onchange = async e => {
     const f = e.target.files?.[0];
