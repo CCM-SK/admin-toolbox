@@ -440,15 +440,11 @@ body.sidebar-detached .content {
 
 .card {
   background: var(--surface);
-
   border: 1px solid var(--line);
   border-radius: var(--radius);
-
   box-shadow:
     0 8px 24px rgba(25, 39, 68, .05);
-
   padding: 18px;
-
   margin-bottom: 18px;
 }
 
@@ -927,7 +923,7 @@ html[data-theme="modern"] .diff-same {
 }
 .tool-window {
   position: relative;
-  width: 66%;
+  width: 75%;
 }
 .tool-window-header {
   display: flex;
