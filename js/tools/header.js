@@ -1,4 +1,4 @@
-import { $, escapeHtml, downloadText } from '../utils.js';
+import { $, escapeHtml, downloadText, enableToolDragging } from '../utils.js';
 
 export const metadata = {
   id: 'mail-header',
@@ -9,6 +9,11 @@ export const metadata = {
 
 export function renderHeader(app) {
   app.innerHTML = `
+    <div class="tool-window" id="mailHeaderWindow">
+    <div class="tool-window-header" id="mailHeaderDragHandle" title="Drag tool">
+      <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
+      <strong>E-mail message header analyzer</strong>
+    </div>
     <section class="card">
       <h2>E-mail message header analyzer</h2>
       <p>
@@ -64,6 +69,8 @@ export function renderHeader(app) {
   $('#mailHeaders').addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analyze();
   });
+
+  enableToolDragging( $('#mailHeaderWindow'), $('#mailHeaderDragHandle'));
 
   function analyze() {
     const raw = $('#mailHeaders').value;
