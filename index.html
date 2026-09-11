@@ -50,16 +50,13 @@
         </button>
 
         <details class="tool-group" open>
-          <summary><span class="group-icon">◈</span><span>Core diagnostics</span></summary>
+          <summary><span class="group-icon">◈</span><span>Diagnostics</span></summary>
           <div class="group-items">
             <button class="nav-item" data-tool="logs"><span class="nav-icon">▤</span><span>Log / CSV inspector</span></button>
             <button class="nav-item" data-tool="eventviewer"><span class="nav-icon">◉</span><span>Event Viewer analyzer</span></button>
             <button class="nav-item" data-tool="diff"><span class="nav-icon">⇄</span><span>Configuration diff</span></button>
             <button class="nav-item" data-tool="hash"><span class="nav-icon">#</span><span>File hashing</span></button>
             <button class="nav-item" data-tool="archivem"><span class="nav-icon">▣</span><span>Archive manifest viewer</span></button>
-            <button class="nav-item" data-tool="timestamp"><span class="nav-icon">⏱</span><span>Timestamp converter</span></button>
-            <button class="nav-item" data-tool="cron"><span class="nav-icon">⌕</span><span>Cron Generator</span></button>
-            <button class="nav-item" data-tool="gpresult"><span class="nav-icon">⌕</span><span>Group Policy Results</span></button>
           </div>
         </details>
 
@@ -68,41 +65,55 @@
           <div class="group-items">
             <button class="nav-item" data-tool="passwords"><span class="nav-icon">⌁</span><span>Password generator</span></button>
             <button class="nav-item" data-tool="sshare"><span class="nav-icon">⇪</span><span>Secure Share Password</span></button>
-            <button class="nav-item" data-tool="powershell"><span class="nav-icon">PS</span><span>PowerShell Analyzer</span></button>
-            <button class="nav-item" data-tool="identityMeta"><span class="nav-icon">ID</span><span>SID/GUID Meta Decoder</span></button>
+            <button class="nav-item" data-tool="identityMeta"><span class="nav-icon">⇄</span><span>SID/GUID Meta Decoder</span></button>
             <button class="nav-item" data-tool="certs"><span class="nav-icon">◇</span><span>Certificate / CSR inspector</span></button>
             <button class="nav-item" data-tool="sdetector"><span class="nav-icon">⌕</span><span>Secrets Detector</span></button>
-            <button class="nav-item" data-tool="jwt"><span class="nav-icon">⌕</span><span>JWT/JWS/JWK Decoder</span></button>
+            <button class="nav-item" data-tool="jwt"><span class="nav-icon">⇄</span><span>JWT/JWS/JWK Decoder</span></button>
           </div>
         </details>
 
         <details class="tool-group">
-          <summary><span class="group-icon">⌘</span><span>Network &amp; mail</span></summary>
+          <summary><span class="group-icon">⌘</span><span>Network &amp; mail &amp; firewall</span></summary>
           <div class="group-items">
             <button class="nav-item" data-tool="header"><span class="nav-icon">@</span><span>Mail-header analyzer</span></button>
             <button class="nav-item" data-tool="urlanalyzer"><span class="nav-icon">🌐︎</span><span>URL Analyzer</span></button>
             <button class="nav-item" data-tool="subnet"><span class="nav-icon">⌁</span><span>IP / subnet calculator</span></button>
             <button class="nav-item" data-tool="range"><span class="nav-icon">⌁</span><span>IP Range Analyzer</span></button>
             <button class="nav-item" data-tool="vlanplanner"><span class="nav-icon">⌁</span><span>VLAN planner</span></button>
+            <button class="nav-item" data-tool="ciscofirewall"><span class="nav-icon">⌕</span><span>Cisco ASA/ACL Analyzer</span></button>
           </div>
         </details>
 
         <details class="tool-group">
-          <summary><span class="group-icon">⌘</span><span>Developer tools</span></summary>
+          <summary><span class="group-icon">⌘</span><span>Developer &amp; data</span></summary>
           <div class="group-items">
             <button class="nav-item" data-tool="regex"><span class="nav-icon">.*</span><span>Regex Workbench</span></button>
             <button class="nav-item" data-tool="encoding"><span class="nav-icon">⇄</span><span>Encoding / decoding</span></button>
-            <button class="nav-item" data-tool="dataWorkbench"><span class="nav-icon">.*</span><span>Data Workbench</span></button>
+            <button class="nav-item" data-tool="dataWorkbench"><span class="nav-icon">◫</span><span>Data Workbench</span></button>
+            <button class="nav-item" data-tool="dlls"><span class="nav-icon">⚙︎</span><span>DLL Analyzer</span></button>
+            <button class="nav-item" data-tool="timestamp"><span class="nav-icon">⏱</span><span>Timestamp converter</span></button>
+            <button class="nav-item" data-tool="chmod"><span class="nav-icon">⌕</span><span>CHMOD Calculator / Parser</span></button>
+            <button class="nav-item" data-tool="powershell"><span class="nav-icon">PS</span><span>PowerShell Analyzer</span></button>
           </div>
         </details>
 
         <details class="tool-group">
-          <summary><span class="group-icon">▣</span><span>System &amp; hardware</span></summary>
+          <summary><span class="group-icon">▣</span><span>Windows &amp; hardware</span></summary>
           <div class="group-items">
+            <button class="nav-item" data-tool="gpresult"><span class="nav-icon">⌕</span><span>Group Policy Results</span></button>
             <button class="nav-item" data-tool="drivers"><span class="nav-icon">▦</span><span>Driver Assistant</span></button>
-            <button class="nav-item" data-tool="bios"><span class="nav-icon"> BIOS</span><span>Bios Interpreter</span></button>
+            <button class="nav-item" data-tool="bios"><span class="nav-icon">◈</span><span>Bios Interpreter</span></button>
           </div>
         </details>
+
+        <details class="tool-group">
+          <summary><span class="group-icon">⟳</span><span>Automation</span></summary>
+          <div class="group-items">
+            <button class="nav-item" data-tool="cron"><span class="nav-icon">↻</span><span>Cron Generator</span></button>
+            <button class="nav-item" data-tool="cron_const"><span class="nav-icon">↻</span><span>Cron Expression Builder</span></button>
+          </div>
+        </details>
+
       </div>
 
       <div class="sidebar-footer">

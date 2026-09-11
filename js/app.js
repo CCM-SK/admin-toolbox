@@ -27,6 +27,10 @@ import { renderJwt } from './tools/jwt.js';
 import { renderTimestamp } from './tools/timestamp.js';
 import { renderCron } from "./tools/cron.js";
 import { renderGpResult } from './tools/gpresult.js';
+import { renderCronConst } from "./tools/cron_const.js";
+import { renderCiscoFirewall } from "./tools/ciscoacl.js";
+import { renderDllAnalyzer } from "./tools/dlls.js";
+import { renderChmod } from "./tools/chmod.js";
 
 
 
@@ -58,7 +62,11 @@ const views = {
   jwt: renderJwt,
   timestamp: renderTimestamp,
   cron: renderCron,
-  gpresult: renderGpResult
+  gpresult: renderGpResult,
+  cron_const: renderCronConst,
+  ciscofirewall: renderCiscoFirewall,
+  dlls: renderDllAnalyzer,
+  chmod: renderChmod
 };
 
 const app = $('#app');
