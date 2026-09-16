@@ -33,8 +33,6 @@ import { renderDllAnalyzer } from "./tools/dlls.js";
 import { renderChmod } from "./tools/chmod.js";
 import { renderPaloAlto } from "./tools/paloalto.js";
 
-
-
 const views = {
   dashboard: renderDashboard,
   logs: renderLogs,
@@ -72,27 +70,43 @@ const views = {
 };
 
 const app = $('#app');
-
-function activate(tool) {
-  $$('.nav-item').forEach((button) => {
-    button.classList.toggle(
+function activate(tool, updateHistory = true) {
+  const button = document.querySelector(
+    `.nav-item[data-tool="${CSS.escape(tool)}"]`
+  );
+  if (!button || !views[tool]) {
+    tool = 'dashboard';
+  }
+  $$('.nav-item').forEach((item) => {
+    item.classList.toggle(
       'active',
-      button.dataset.tool === tool
+      item.dataset.tool === tool
     );
   });
-
-  history.replaceState(null, '', `#${tool}`);
+  const activeButton = document.querySelector(
+    `.nav-item[data-tool="${CSS.escape(tool)}"]`
+  );
+  const parentGroup = activeButton?.closest('.tool-group');
+  if (parentGroup) {
+    parentGroup.open = true;
+  }
+  if (updateHistory) {
+    history.pushState(null, '', `#${tool}`);
+  }
   views[tool](app);
 }
-
 $$('.nav-item').forEach((button) => {
   button.addEventListener('click', () => {
     activate(button.dataset.tool);
   });
 });
-
 window.addEventListener('popstate', () => {
-  activate(location.hash.slice(1) || 'dashboard');
+  activate(
+    location.hash.slice(1) || 'dashboard',
+    false
+  );
 });
-
-activate(location.hash.slice(1) || 'dashboard');
+activate(
+  location.hash.slice(1) || 'dashboard',
+  false
+);
