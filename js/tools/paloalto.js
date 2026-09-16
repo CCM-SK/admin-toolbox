@@ -13,7 +13,7 @@ export function renderPaloAlto(app) {
       <div class="tool-window-header" id="paloAltoDragHandle" title="Drag tool">
         <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
         <strong>Palo Alto Networks Config Analyzer</strong>
-        <span class="small" style="margin-left:auto">local only</span>
+        <span class="small" style="margin-left:auto"></span>
       </div>
       <section class="card">
         <p class="small">
