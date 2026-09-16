@@ -31,6 +31,7 @@ import { renderCronConst } from "./tools/cron_const.js";
 import { renderCiscoFirewall } from "./tools/ciscoacl.js";
 import { renderDllAnalyzer } from "./tools/dlls.js";
 import { renderChmod } from "./tools/chmod.js";
+import { renderPaloAlto } from "./tools/paloalto.js";
 
 
 
@@ -66,7 +67,8 @@ const views = {
   cron_const: renderCronConst,
   ciscofirewall: renderCiscoFirewall,
   dlls: renderDllAnalyzer,
-  chmod: renderChmod
+  chmod: renderChmod,
+  paloalto: renderPaloAlto
 };
 
 const app = $('#app');
