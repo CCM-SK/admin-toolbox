@@ -40,7 +40,8 @@ set rulebase security rules Allow-DNS from Trust to Untrust source any destinati
 
   enableToolDragging(
     $('#paloAltoWindow'),
-    $('#paloAltoDragHandle')
+    $('#paloAltoDragHandle'),
+    () => document.body.classList.contains('sidebar-detached')
   );
 
   let lastAnalysis = null;
