@@ -268,8 +268,8 @@ async function doHashes(bytes){
   return {sha256:hex(a),sha1:hex(b),md5:md5(bytes)};
 }
 
-const sectionFlags=c=>`${c&SEC_X?'X':''}${c&SEC_R?'R':''}${c&SEC_W?'W':''}`||'—';
-const formatUnix=t=>t?`${new Date(t*1000).toISOString()} (UTC)`:'—';
+const sectionFlags=c=>`${c&SEC_X?'X':''}${c&SEC_R?'R':''}${c&SEC_W?'W':''}`||'-';
+const formatUnix=t=>t?`${new Date(t*1000).toISOString()} (UTC)`:'-';
 
 function renderData(file,pe,h,strings,findings,yara){
   const type=pe.dotnet?'.NET assembly':'Native / PE image';
@@ -293,7 +293,7 @@ function renderData(file,pe,h,strings,findings,yara){
     ${findings.length?findings.map(f=>`<div class="notice ${f.level==='high'?'bad':f.level==='warning'?'warn':'success'}"><b>${esc(f.title)}</b><br>${esc(f.detail)}</div>`).join(''):'<div class="notice success">No obvious issues were identified by the built-in heuristics.</div>'}
   </div>
 
-  ${yara.length?`<div class="card"><h2>YARA results</h2>${yara.map(x=>`<div class="notice ${x.matched?'bad':'success'}"><b>${esc(x.name)}</b> — ${x.matched?'MATCH':'no match'}${x.matchedStrings.length?`<br>Matched: ${esc(x.matchedStrings.join(', '))}`:''}</div>`).join('')}</div>`:''}
+  ${yara.length?`<div class="card"><h2>YARA results</h2>${yara.map(x=>`<div class="notice ${x.matched?'bad':'success'}"><b>${esc(x.name)}</b> - ${x.matched?'MATCH':'no match'}${x.matchedStrings.length?`<br>Matched: ${esc(x.matchedStrings.join(', '))}`:''}</div>`).join('')}</div>`:''}
 
   <div class="card"><h2>PE headers</h2><table><tbody>
     <tr><th>Machine</th><td>${esc(pe.machineName)}</td></tr>
@@ -311,7 +311,7 @@ function renderData(file,pe,h,strings,findings,yara){
   </tbody></table></div>
 
   <div class="card"><h2>Imports / dependencies</h2>
-    ${pe.imports.length?pe.imports.map(i=>`<details class="card compact"><summary><b>${esc(i.dll)}</b> — ${i.functions.length} symbols</summary><div class="mono">${i.functions.slice(0,2000).map(x=>esc(x.name||`Ordinal #${x.ordinal}`)).join('<br>')}</div></details>`).join(''):'<div class="muted">No import directory parsed.</div>'}
+    ${pe.imports.length?pe.imports.map(i=>`<details class="card compact"><summary><b>${esc(i.dll)}</b> - ${i.functions.length} symbols</summary><div class="mono">${i.functions.slice(0,2000).map(x=>esc(x.name||`Ordinal #${x.ordinal}`)).join('<br>')}</div></details>`).join(''):'<div class="muted">No import directory parsed.</div>'}
   </div>
 
   <div class="card"><h2>Exports</h2>
@@ -324,7 +324,7 @@ function renderData(file,pe,h,strings,findings,yara){
       <div class="stat"><span>Relocation blocks</span><strong>${pe.relocations.length}</strong></div>
       <div class="stat"><span>TLS</span><strong>${pe.tls?'Present':'Absent'}</strong></div>
     </div>
-    ${pe.resources.length?`<ul>${pe.resources.slice(0,1000).map(x=>`<li class="mono">${esc(x.path)} — ${x.size.toLocaleString()} bytes</li>`).join('')}</ul>`:''}
+    ${pe.resources.length?`<ul>${pe.resources.slice(0,1000).map(x=>`<li class="mono">${esc(x.path)} - ${x.size.toLocaleString()} bytes</li>`).join('')}</ul>`:''}
     ${pe.tls?`<pre class="mono">${esc(JSON.stringify(pe.tls,null,2))}</pre>`:''}
   </div>
 
@@ -394,7 +394,7 @@ export function renderDllAnalyzer(app){
         yara.push(...rules.map(rule=>({name:rule.name,...matchYara(rule,reader)})));
       }
       results.innerHTML=renderData(file,pe,h,strings,findings,yara);
-      show(`Analysis complete: ${file.name} — ${file.size.toLocaleString()} bytes.`,'success');
+      show(`Analysis complete: ${file.name} - ${file.size.toLocaleString()} bytes.`,'success');
     }catch(e){results.innerHTML='<div class="card"><h2>Analysis failed</h2></div>';show(e?.message||'Could not analyze the file.')}
   });
 

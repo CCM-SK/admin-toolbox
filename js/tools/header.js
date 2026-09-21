@@ -433,7 +433,7 @@ function renderResult(a, raw) {
     </tbody></table></div>` : `<div class="status warning">No SPF/DKIM/DMARC/ARC authentication result records were found.</div>`; 
  
   const anomalyHtml = a.anomalies.length 
-    ? `<ul>${a.anomalies.map(x => `<li><strong>${escapeHtml(x.level.toUpperCase())}</strong> — ${escapeHtml(x.text)}</li>`).join('')}</ul>` 
+    ? `<ul>${a.anomalies.map(x => `<li><strong>${escapeHtml(x.level.toUpperCase())}</strong> - ${escapeHtml(x.text)}</li>`).join('')}</ul>` 
     : `<div class="status success">No basic header anomalies were detected by this local heuristic pass.</div>`; 
  
   const providerNotes = [ 
@@ -504,7 +504,7 @@ function bindExports(a, raw) {
       `Summary: ${a.summary.title}`, 
       a.summary.text, 
       '', 
-      ...a.checks.map(c => `${c.label}: ${c.value} — ${c.explanation}`), 
+      ...a.checks.map(c => `${c.label}: ${c.value} - ${c.explanation}`), 
       '', 
       `From: ${a.from.address || 'Not found'}`, 
       `Return-Path: ${a.returnPath.address || 'Not found'}`, 

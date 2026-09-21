@@ -419,12 +419,12 @@ export function renderTimestamp(app) {
                 <div class="grid two">
                     <div class="stat">
                         <span>UTC</span>
-                        <strong id="ts-utc">—</strong>
+                        <strong id="ts-utc">-</strong>
                     </div>
 
                     <div class="stat">
                         <span>Local time</span>
-                        <strong id="ts-local">—</strong>
+                        <strong id="ts-local">-</strong>
                     </div>
                 </div>
             </div>
@@ -435,37 +435,37 @@ export function renderTimestamp(app) {
                 <div class="grid two">
                     <div class="stat">
                         <span>Unix seconds</span>
-                        <strong id="ts-sec">—</strong>
+                        <strong id="ts-sec">-</strong>
                     </div>
 
                     <div class="stat">
                         <span>Unix milliseconds</span>
-                        <strong id="ts-ms">—</strong>
+                        <strong id="ts-ms">-</strong>
                     </div>
 
                     <div class="stat">
                         <span>JavaScript milliseconds</span>
-                        <strong id="ts-js">—</strong>
+                        <strong id="ts-js">-</strong>
                     </div>
 
                     <div class="stat">
                         <span>Windows FILETIME</span>
-                        <strong id="ts-ft">—</strong>
+                        <strong id="ts-ft">-</strong>
                     </div>
 
                     <div class="stat">
                         <span>FILETIME hex</span>
-                        <strong id="ts-fth">—</strong>
+                        <strong id="ts-fth">-</strong>
                     </div>
 
                     <div class="stat">
                         <span>Unix seconds hex</span>
-                        <strong id="ts-sech">—</strong>
+                        <strong id="ts-sech">-</strong>
                     </div>
 
                     <div class="stat">
                         <span>Unix milliseconds hex</span>
-                        <strong id="ts-msh">—</strong>
+                        <strong id="ts-msh">-</strong>
                     </div>
                 </div>
             </div>
@@ -679,7 +679,7 @@ export function renderTimestamp(app) {
 
         } catch (error) {
             candidates.innerHTML =
-                '<div class="muted">—</div>';
+                '<div class="muted">-</div>';
 
             $('#ts-quick').innerHTML =
                 '<div class="muted">No result.</div>';
@@ -723,11 +723,11 @@ export function renderTimestamp(app) {
             'ts-sech',
             'ts-msh'
         ].forEach(id => {
-            $('#' + id).textContent = '—';
+            $('#' + id).textContent = '-';
         });
 
         candidates.innerHTML =
-            '<div class="muted">—</div>';
+            '<div class="muted">-</div>';
 
         notice('');
     };
