@@ -32,6 +32,7 @@ import { renderCiscoFirewall } from "./tools/ciscoacl.js";
 import { renderDllAnalyzer } from "./tools/dlls.js";
 import { renderChmod } from "./tools/chmod.js";
 import { renderPaloAlto } from "./tools/paloalto.js";
+import { renderDism } from './tools/dism.js';
 
 const views = {
   dashboard: renderDashboard,
@@ -66,7 +67,8 @@ const views = {
   ciscofirewall: renderCiscoFirewall,
   dlls: renderDllAnalyzer,
   chmod: renderChmod,
-  paloalto: renderPaloAlto
+  paloalto: renderPaloAlto,
+  dism: renderDism
 };
 
 const app = $('#app');
