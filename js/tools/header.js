@@ -35,7 +35,7 @@ export function renderHeader(app) {
     </div> 
   `; 
  
-/* 
+/*  
 export function renderHeader(app) { 
   app.innerHTML = ` 
     <section class="card"> 

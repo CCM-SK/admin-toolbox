@@ -18,20 +18,13 @@ export function renderJsonViewer(app) {
         <strong>JSON Viewer</strong>
       </div>
       <div class="tool-toolbar">
-        <label class="tool-file-label">
-          <span>JSON file</span>
-          <input
-            type="file"
-            id="jsonViewerFile"
-            accept=".json,application/json,text/json"
-          >
-        </label>
-        <button type="button" id="jsonViewerLoadExample">
-          Load example
-        </button>
-        <button type="button" id="jsonViewerClear">
-          Clear
-        </button>
+        <div class="dropzone" id="jsonDrop">
+          Drop a JSON file here, or
+          <button class="btn" id="jsonPick">choose file</button>
+          <input id="jsonViewerFile" type="file" accept=".json,application/json,text/json" hidden>
+        </div>
+        <button class="btn" id="jsonViewerLoadExample">Load example</button>
+        <button class="btn" id="jsonViewerClear">Clear</button>
       </div>
       <div class="tool-section">
         <label for="jsonViewerInput">
@@ -44,23 +37,15 @@ export function renderJsonViewer(app) {
           placeholder="Paste JSON here or load a .json file..."
         ></textarea>
         <div class="tool-toolbar">
-          <button type="button" id="jsonViewerAnalyze">
-            Render JSON
-          </button>
-          <button type="button" id="jsonViewerFormat">
-            Format JSON
-          </button>
+          <button class="btn primary" id="jsonViewerAnalyze">Render JSON</button>
+          <button class="btn" id="jsonViewerFormat">Format JSON</button>
         </div>
       </div>
       <div id="jsonViewerStatus"></div>
       <div id="jsonViewerControls" hidden>
         <div class="tool-toolbar">
-          <button type="button" id="jsonViewerExpandAll">
-            Expand all
-          </button>
-          <button type="button" id="jsonViewerCollapseAll">
-            Collapse all
-          </button>
+          <button class="btn" id="jsonViewerExpandAll">Expand all</button>
+          <button class="btn" id="jsonViewerCollapseAll">Collapse all</button>
           <label>
             <span>Search</span>
             <input
