@@ -19,8 +19,7 @@ export function renderJsonViewer(app) {
       </div>
       <div class="tool-toolbar">
         <div class="dropzone" id="jsonDrop">
-          Drop a JSON file here, or
-          <button class="btn" id="jsonPick">choose file</button>
+          Drop a JSON file here, or <button type="button" class="btn" id="jsonPick"> choose file</button>
           <input id="jsonViewerFile" type="file" accept=".json,application/json,text/json" hidden>
         </div>
         <button class="btn" id="jsonViewerLoadExample">Load example</button>
@@ -113,9 +112,48 @@ export function renderJsonViewer(app) {
     input.value = JSON.stringify(createExampleJson(), null, 2);
     analyzeJson();
   });
+  const dropzone = $('#jsonDrop');
+  const pickButton = $('#jsonPick');
+  pickButton.addEventListener('click', () => {
+    fileInput.click();
+  });
   fileInput.addEventListener('change', async event => {
     const file = event.target.files?.[0];
     if (!file) return;
+    await handleFile(file);
+  });
+  dropzone.addEventListener('dragenter', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    dropzone.classList.add('dragover');
+  });
+  dropzone.addEventListener('dragover', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = 'copy';
+    dropzone.classList.add('dragover');
+  });
+  dropzone.addEventListener('dragleave', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!dropzone.contains(event.relatedTarget)) {
+      dropzone.classList.remove('dragover');
+    }
+  });
+  dropzone.addEventListener('drop', async event => {
+    event.preventDefault();
+    event.stopPropagation();
+    dropzone.classList.remove('dragover');
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+    await handleFile(file);
+  });
+
+  async function handleFile(file) {
+    if (!isJsonFile(file)) {
+      showError('Please select a JSON file.');
+      return;
+    }
     try {
       const text = await file.text();
       input.value = text;
@@ -123,7 +161,17 @@ export function renderJsonViewer(app) {
     } catch (error) {
       showError(`Unable to read file: ${error.message}`);
     }
-  });
+  }
+  function isJsonFile(file) {
+    if (!file) return false;
+    if (
+      file.type === 'application/json' ||
+      file.type === 'text/json'
+    ) {
+      return true;
+    }
+    return file.name.toLowerCase().endsWith('.json');
+  }
   $('#jsonViewerExpandAll').addEventListener('click', () => {
     setAllNodesExpanded(true);
   });
