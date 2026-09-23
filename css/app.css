@@ -966,3 +966,131 @@ body.sidebar-detached .tool-window-header.dragging {
 body.sidebar-detached .tool-drag-grip {
   opacity: 0.55;
 }  
+
+.json-viewer-result {
+  margin-top: 12px;
+  overflow: auto;
+  max-height: 70vh;
+  padding: 12px;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 8px;
+  background: var(--surface-color, #fafafa);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.json-tree {
+  min-width: max-content;
+}
+
+.json-tree-node {
+  margin: 1px 0;
+}
+
+.json-tree-node-header,
+.json-tree-value-content {
+  display: flex;
+  align-items: baseline;
+  min-height: 22px;
+}
+
+.json-tree-node-header {
+  gap: 4px;
+}
+
+.json-tree-toggle {
+  width: 22px;
+  min-width: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.json-tree-label,
+.json-tree-value-content {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.json-tree-children {
+  margin-left: 22px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border-color, #ddd);
+}
+
+.json-tree-key {
+  font-weight: 600;
+}
+
+.json-tree-separator {
+  margin-right: 6px;
+}
+
+.json-tree-type {
+  opacity: 0.65;
+}
+
+.json-tree-meta {
+  margin-left: 6px;
+  opacity: 0.55;
+  font-size: 12px;
+}
+
+.json-tree-value-string {
+  white-space: pre-wrap;
+  color: var(--json-string-color, #176b2c);
+}
+
+.json-tree-value-number {
+  color: var(--json-number-color, #2455a4);
+}
+
+.json-tree-value-boolean {
+  color: var(--json-boolean-color, #8a3f00);
+  font-weight: 600;
+}
+
+.json-tree-value-null {
+  color: var(--json-null-color, #777);
+  font-style: italic;
+}
+
+.json-viewer-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.json-viewer-stat {
+  display: flex;
+  flex-direction: column;
+  min-width: 80px;
+  padding: 7px 10px;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 6px;
+  background: var(--surface-color, #fafafa);
+}
+
+.json-viewer-stat strong {
+  font-size: 16px;
+}
+
+.json-viewer-stat span {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.json-viewer-result .json-tree-node[hidden] {
+  display: none;
+}
+
+
+
+
+
+
