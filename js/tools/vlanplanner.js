@@ -295,7 +295,7 @@ export function renderVlanPlanner(app) {
       }
 
       const usable = usableCount(prefix);
-      let gateway = "—";
+      let gateway = "-";
       if (gatewayMode === "first" && prefix <= 30) gateway = intToIpv4(network + 1);
       if (gatewayMode === "last" && prefix <= 30) gateway = intToIpv4(broadcast - 1);
       if (gatewayMode === "first" && prefix === 31) gateway = intToIpv4(network);
@@ -378,7 +378,7 @@ export function renderVlanPlanner(app) {
     if (!cidr) throw new Error("Enter a valid IPv4 subnet such as 10.20.10.0/27.");
     if (id < 1 || id > 4094) throw new Error("VLAN ID must be between 1 and 4094.");
 
-    let gateway = "—";
+    let gateway = "-";
     if (mode === "first" && cidr.prefix <= 30) gateway = intToIpv4(cidr.network + 1);
     if (mode === "last" && cidr.prefix <= 30) gateway = intToIpv4(cidr.broadcast - 1);
     if (mode === "first" && cidr.prefix === 31) gateway = intToIpv4(cidr.network);

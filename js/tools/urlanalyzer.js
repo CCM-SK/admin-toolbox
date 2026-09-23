@@ -465,7 +465,7 @@ function row(label, value, note = '') {
   return `
     <tr>
       <th>${escapeHtml(label)}</th>
-      <td class="mono">${escapeHtml(value || '—')}</td>
+      <td class="mono">${escapeHtml(value || '-')}</td>
       <td>${escapeHtml(note)}</td>
     </tr>
   `;
@@ -508,7 +508,7 @@ function renderResult(result) {
           <span class="finding-icon">${icon}</span>
           <div>
             <strong>
-              ${escapeHtml(label)} — ${escapeHtml(f.title)}
+              ${escapeHtml(label)} - ${escapeHtml(f.title)}
             </strong>
             <div>${escapeHtml(f.detail)}</div>
           </div>
@@ -584,7 +584,7 @@ function renderResult(result) {
     ),
     row(
       'Top-level domain',
-      h.tld || '—'
+      h.tld || '-'
     ),
     row(
       'Deep subdomains?',

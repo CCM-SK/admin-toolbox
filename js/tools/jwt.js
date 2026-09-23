@@ -57,7 +57,7 @@ function readableTime(seconds) {
         typeof seconds !== 'number' ||
         !Number.isFinite(seconds)
     ) {
-        return '—';
+        return '-';
     }
 
     const d = new Date(seconds * 1000);
@@ -120,7 +120,7 @@ function timeBadge(seconds, mode) {
 
 function claimText(value) {
     if (value === undefined || value === null) {
-        return '—';
+        return '-';
     }
 
     if (Array.isArray(value)) {
@@ -371,21 +371,21 @@ function renderJwk(app, obj) {
               <div class="stat">
                 <span>kid</span>
                 <strong>
-                  ${escapeHtml(key.kid || '—')}
+                  ${escapeHtml(key.kid || '-')}
                 </strong>
               </div>
 
               <div class="stat">
                 <span>alg</span>
                 <strong>
-                  ${escapeHtml(key.alg || '—')}
+                  ${escapeHtml(key.alg || '-')}
                 </strong>
               </div>
 
               <div class="stat">
                 <span>use</span>
                 <strong>
-                  ${escapeHtml(key.use || '—')}
+                  ${escapeHtml(key.use || '-')}
                 </strong>
               </div>
 
@@ -395,7 +395,7 @@ function renderJwk(app, obj) {
                   ${escapeHtml(
                       Array.isArray(key.key_ops)
                           ? key.key_ops.join(', ')
-                          : '—'
+                          : '-'
                   )}
                 </strong>
               </div>
@@ -403,7 +403,7 @@ function renderJwk(app, obj) {
               <div class="stat">
                 <span>crv</span>
                 <strong>
-                  ${escapeHtml(key.crv || '—')}
+                  ${escapeHtml(key.crv || '-')}
                 </strong>
               </div>
             </div>
@@ -583,21 +583,21 @@ function renderJws(app, token) {
           <div class="stat">
             <span>Algorithm</span>
             <strong>
-              ${escapeHtml(header.alg || '—')}
+              ${escapeHtml(header.alg || '-')}
             </strong>
           </div>
 
           <div class="stat">
             <span>Type</span>
             <strong>
-              ${escapeHtml(header.typ || '—')}
+              ${escapeHtml(header.typ || '-')}
             </strong>
           </div>
 
           <div class="stat">
             <span>Key ID</span>
             <strong>
-              ${escapeHtml(header.kid || '—')}
+              ${escapeHtml(header.kid || '-')}
             </strong>
           </div>
         </div>
@@ -766,7 +766,7 @@ function renderJws(app, token) {
               <span>Algorithm</span>
 
               <strong>
-                ${escapeHtml(header.alg || '—')}
+                ${escapeHtml(header.alg || '-')}
               </strong>
             </div>
 

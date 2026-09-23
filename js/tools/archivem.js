@@ -154,7 +154,7 @@ const APP_STYLE = `
 `;
 
 function fmtBytes(n) {
-  if (!Number.isFinite(n)) return '—';
+  if (!Number.isFinite(n)) return '-';
 
   const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
   let i = 0;
@@ -523,7 +523,7 @@ function parseTar(buffer) {
 function mTimeSafe(sec) {
   return sec
     ? new Date(sec * 1000).toISOString()
-    : '—';
+    : '-';
 }
 
 function detectFormat(bytes) {
@@ -660,14 +660,14 @@ function renderResults(state) {
           <td>
             ${
               x.compressedSize == null
-                ? '—'
+                ? '-'
                 : fmtBytes(x.compressedSize)
             }
           </td>
           <td>
             ${
               x.compression == null
-                ? '—'
+                ? '-'
                 : esc(
                     state.format === 'ZIP'
                       ? formatMethod(x.compression)
@@ -675,7 +675,7 @@ function renderResults(state) {
                   )
             }
           </td>
-          <td>${esc(x.crc32 || '—')}</td>
+          <td>${esc(x.crc32 || '-')}</td>
           <td>${x.encrypted ? 'Yes' : 'No'}</td>
         </tr>
       `

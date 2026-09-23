@@ -1030,7 +1030,7 @@ export function renderDataWorkbench(app) {
             class="muted"
             id="dw-info"
           >
-            —
+            -
           </span>
         </div>
 

@@ -220,7 +220,7 @@ function expandMembers(name, groups, seen = new Set()) {
 }
 
 function endpointText(ep, groups) {
-  if (!ep) return '—';
+  if (!ep) return '-';
   if (ep.type === 'object-group') {
     const members = expandMembers(ep.value, groups);
     if (members.some(x=>x.type === 'unresolved-group' || x.type === 'cycle')) {
@@ -410,12 +410,12 @@ function renderRule(r, groups) {
       <details>
         <summary>Parsed fields</summary>
         <table><tbody>
-          <tr><th>Protocol</th><td>${esc(r.protocol || '—')}</td></tr>
+          <tr><th>Protocol</th><td>${esc(r.protocol || '-')}</td></tr>
           <tr><th>Source</th><td>${esc(endpointText(r.source, groups))}</td></tr>
           <tr><th>Source port</th><td>${esc(r.sourcePort ? serviceMeaning(r.sourcePort) : 'Any')}</td></tr>
           <tr><th>Destination</th><td>${esc(endpointText(r.destination, groups))}</td></tr>
           <tr><th>Destination port</th><td>${esc(r.destinationPort ? serviceMeaning(r.destinationPort) : 'Any')}</td></tr>
-          <tr><th>Options</th><td class="mono">${esc(r.options.join(' ') || '—')}</td></tr>
+          <tr><th>Options</th><td class="mono">${esc(r.options.join(' ') || '-')}</td></tr>
           <tr><th>Original</th><td class="mono">${esc(r.raw)}</td></tr>
         </tbody></table>
       </details>

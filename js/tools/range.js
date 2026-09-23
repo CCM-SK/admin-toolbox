@@ -314,7 +314,7 @@ export function renderRangeAnalyzer(app) {
         <div class="row between">
           <div>
             <h2>IP Range / CIDR Overlap Analyzer</h2>
-            <p class="small">Paste IPv4 and/or IPv6 CIDRs — one per line. Everything is calculated locally.</p>
+            <p class="small">Paste IPv4 and/or IPv6 CIDRs - one per line. Everything is calculated locally.</p>
           </div>
           <span class="badge ok"></span>
         </div>
@@ -348,8 +348,8 @@ export function renderRangeAnalyzer(app) {
                 <h3>Smallest supernet</h3>
                 <span id="range-supernet-status"></span>
               </div>
-              <div class="mono" id="range-supernet">—</div>
-              <div class="muted" id="range-supernet-details">—</div>
+              <div class="mono" id="range-supernet">-</div>
+              <div class="muted" id="range-supernet-details">-</div>
             </div>
             <div class="card">
               <h3>Total address space</h3>
@@ -372,7 +372,7 @@ export function renderRangeAnalyzer(app) {
             </div>
             <div class="card">
               <h3>Gaps</h3>
-              <div id="range-gaps">—</div>
+              <div id="range-gaps">-</div>
               <div class="muted range-subnote">Gaps are measured only inside the smallest common supernet.</div>
             </div>
           </div>
@@ -380,17 +380,17 @@ export function renderRangeAnalyzer(app) {
           <div class="range-section">
             <div class="card">
               <h3>Overlaps & containment</h3>
-              <div id="range-relations">—</div>
+              <div id="range-relations">-</div>
             </div>
 
             <div class="card">
               <h3>Duplicate ranges</h3>
-              <div id="range-duplicates">—</div>
+              <div id="range-duplicates">-</div>
             </div>
 
             <div class="card">
               <h3>Mergeable CIDRs</h3>
-              <div id="range-mergeable">—</div>
+              <div id="range-mergeable">-</div>
               <div class="muted range-subnote">The tool shows a minimal CIDR cover after overlapping and adjacent input ranges are merged.</div>
             </div>
 
@@ -437,14 +437,14 @@ export function renderRangeAnalyzer(app) {
     function resetOutput() {
         ['range-count', 'range-v4', 'range-v6', 'range-total-input', 'range-total-unique',
          'range-usable-input', 'range-usable-unique'].forEach(id => { $(`#${id}`).textContent = '0'; });
-        $('#range-supernet').textContent = '—';
-        $('#range-supernet-details').textContent = '—';
+        $('#range-supernet').textContent = '-';
+        $('#range-supernet-details').textContent = '-';
         $('#range-supernet-status').textContent = '';
         $('#range-total-note').textContent = '';
-        $('#range-gaps').textContent = '—';
-        $('#range-relations').textContent = '—';
-        $('#range-duplicates').textContent = '—';
-        $('#range-mergeable').textContent = '—';
+        $('#range-gaps').textContent = '-';
+        $('#range-relations').textContent = '-';
+        $('#range-duplicates').textContent = '-';
+        $('#range-mergeable').textContent = '-';
         $('#range-table').innerHTML = '';
         lastExport = null;
     }
@@ -505,7 +505,7 @@ export function renderRangeAnalyzer(app) {
             }
             const duplicateGroups = [...duplicateMap.values()].filter(g => g.length > 1);
             $('#range-duplicates').innerHTML = duplicateGroups.length
-                ? duplicateGroups.map(g => `<div class="mono">${esc(cidrString(g[0].start, g[0].prefix, version))} — ${g.length} copies</div>`).join('')
+                ? duplicateGroups.map(g => `<div class="mono">${esc(cidrString(g[0].start, g[0].prefix, version))} - ${g.length} copies</div>`).join('')
                 : '<span class="muted">No duplicate CIDRs.</span>';
 
             const relations = [];
@@ -585,7 +585,7 @@ export function renderRangeAnalyzer(app) {
                 `).join('');
 
             lastExport = {
-                tool: 'Admin Toolbox — IP Range / CIDR Overlap Analyzer',
+                tool: 'Admin Toolbox - IP Range / CIDR Overlap Analyzer',
                 version,
                 input: lines,
                 smallestSupernet: cidrString(supernet.start, supernet.prefix, version),

@@ -332,9 +332,9 @@ function renderDetails(root, mode, type = '-') {
     $('#chmod-matrix').innerHTML = rows.map(r => `
       <tr>
         <th>${esc(r.label)}</th>
-        <td>${r.read ? '✓' : '—'}</td>
-        <td>${r.write ? '✓' : '—'}</td>
-        <td>${r.execute ? '✓' : '—'}</td>
+        <td>${r.read ? '✓' : '-'}</td>
+        <td>${r.write ? '✓' : '-'}</td>
+        <td>${r.execute ? '✓' : '-'}</td>
       </tr>
     `).join('');
 

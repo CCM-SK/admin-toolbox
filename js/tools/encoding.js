@@ -149,7 +149,7 @@ export function renderEncoding(app) {
           <textarea id="encoding-source" rows="6" placeholder="Enter a value…"></textarea>
           <div class="row between">
             <span class="muted" id="encoding-source-stats">0 bytes</span>
-            <span class="muted" id="encoding-source-utf8">UTF-8: —</span>
+            <span class="muted" id="encoding-source-utf8">UTF-8: -</span>
           </div>
         </div>
 
