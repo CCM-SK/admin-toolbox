@@ -46,7 +46,13 @@
     "ssh-share",
     "driver-inspector",
     "identity-inspector",
-    "header-analyzer"
+    "header-analyzer",
+    "ip-range-analyzer",
+    "dll-analyzer",
+    "chmod-analyzer",
+    "paloalto-analyzer",
+    "dism-analyzer",
+    "gpresult-analyzer"
   ],
   "limitations": [
     "Certificate inspector is a conservative ASN.1 string inspector, not a PKI validator.",
