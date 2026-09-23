@@ -47,11 +47,7 @@ export function renderJsonViewer(app) {
           <button class="btn" id="jsonViewerCollapseAll">Collapse all</button>
           <label>
             <span>Search</span>
-            <input
-              type="search"
-              id="jsonViewerSearch"
-              placeholder="Search keys and values..."
-            >
+            <input type="search" id="jsonViewerSearch" placeholder="Search keys and values...">
           </label>
         </div>
         <div id="jsonViewerStats"></div>
@@ -63,12 +59,8 @@ export function renderJsonViewer(app) {
       ></div>
       <div id="jsonViewerActions" hidden>
         <div class="tool-toolbar">
-          <button type="button" id="jsonViewerCopy">
-            Copy formatted JSON
-          </button>
-          <button type="button" id="jsonViewerDownload">
-            Download formatted JSON
-          </button>
+          <button type="btn" id="jsonViewerCopy">Copy formatted JSON</button>
+          <button type="btn" id="jsonViewerDownload">Download formatted JSON</button>
         </div>
       </div>
     </div>
