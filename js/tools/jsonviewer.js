@@ -227,13 +227,14 @@ export function renderJsonViewer(app) {
     }
     result.appendChild(root);
   }
-  function createNode(
+    function createNode(
     value,
     key,
     parent,
     expanded = true,
-    isRoot = false
-  ) {
+    isRoot = false,
+    depth = 0
+    ) {
     const type = getJsonType(value);
     if (type === 'object' || type === 'array') {
       return createContainerNode(
@@ -241,31 +242,35 @@ export function renderJsonViewer(app) {
         key,
         parent,
         expanded,
-        isRoot
-      );
+        isRoot,
+        depth
+        );
     }
     return createValueNode(
-      value,
-      key,
-      type,
-      parent,
-      isRoot
-    );
+        value,
+        key,
+        type,
+        parent,
+        isRoot,
+        depth
+        );
   }
   function createContainerNode(
     value,
     key,
     parent,
     expanded,
-    isRoot
-  ) {
+    isRoot,
+    depth
+    ) {
     const type = Array.isArray(value) ? 'array' : 'object';
     const entries = Array.isArray(value)
       ? value.map((item, index) => [index, item])
       : Object.entries(value);
     const nodeId = `jsonViewerNode${++nodeCounter}`;
     const wrapper = document.createElement('div');
-    wrapper.className = 'json-tree-node json-tree-container';
+    const depthClass = Math.min(depth, 10);
+    wrapper.className = `json-tree-node json-tree-container json-tree-depth-${depthClass}`;
     wrapper.dataset.nodeId = nodeId;
     const header = document.createElement('div');
     header.className = 'json-tree-node-header';
@@ -310,8 +315,9 @@ export function renderJsonViewer(app) {
         childKey,
         value,
         true,
-        false
-      );
+        false,
+        depth + 1
+        );
       if (childNode) {
         children.appendChild(childNode);
       }
@@ -336,10 +342,12 @@ export function renderJsonViewer(app) {
     key,
     type,
     parent,
-    isRoot
-  ) {
+    isRoot,
+    depth
+    ) {
     const wrapper = document.createElement('div');
-    wrapper.className = 'json-tree-node json-tree-value';
+    const depthClass = Math.min(depth, 10);
+    wrapper.className = `json-tree-node json-tree-value json-tree-depth-${depthClass}`;
     const content = document.createElement('div');
     content.className = 'json-tree-value-content';
     if (!isRoot) {
