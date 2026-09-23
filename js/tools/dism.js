@@ -1,4 +1,4 @@
-import { $, escapeHtml, downloadText } from '../utils.js';
+import { $, escapeHtml, downloadText, enableToolDragging } from '../utils.js';
 
 export const metadata = {
   id: 'dism',
@@ -8,52 +8,54 @@ export const metadata = {
 };
 
 export function renderDism(app) {
-  app.innerHTML = `
+    app.innerHTML = `
     <div class="tool-window" id="dismWindow">
-      <div class="tool-window-header" id="dismDragHandle" title="Drag tool">
+        <div class="tool-window-header" id="dismDragHandle" title="Drag tool">
         <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
         <strong>DISM Analyzer</strong>
-      </div>
+        </div>
 
-      <section class="card">
+        <section class="card">
         <h2>DISM output analyzer</h2>
 
         <p class="small">
-          Paste output from <code>DISM</code>, <code>DISM /Online</code>,
-          <code>/Get-*</code>, <code>/ScanHealth</code>,
-          <code>/CheckHealth</code>, <code>/RestoreHealth</code>,
-          package/feature/capability queries or similar commands.
-          Everything is parsed locally in your browser.
+            Paste output from <code>DISM</code>, <code>DISM /Online</code>,
+            <code>/Get-*</code>, <code>/ScanHealth</code>,
+            <code>/CheckHealth</code>, <code>/RestoreHealth</code>,
+            package/feature/capability queries or similar commands.
+            Everything is parsed locally in your browser.
         </p>
 
         <textarea
-          id="dismInput"
-          spellcheck="false"
-          placeholder="Paste DISM output here...
+            id="dismInput"
+            spellcheck="false"
+            placeholder="Paste DISM output here...
 
-Example:
+    Example:
 
-Deployment Image Servicing and Management tool
-Version: 10.0.26100.1
+    Deployment Image Servicing and Management tool
+    Version: 10.0.26100.1
 
-Image Version: 10.0.26100.1742
+    Image Version: 10.0.26100.1742
 
-No component store corruption detected.
-The operation completed successfully."
+    [==========================100.0%==========================]
+
+    No component store corruption detected.
+    The operation completed successfully."
         ></textarea>
 
         <div class="row" style="margin-top:10px">
-          <button class="btn primary" id="dismAnalyze">Analyze</button>
-          <button class="btn" id="dismClear">Clear</button>
-          <button class="btn" id="dismExample">Load example</button>
+            <button class="btn primary" id="dismAnalyze">Analyze</button>
+            <button class="btn" id="dismClear">Clear</button>
+            <button class="btn" id="dismExample">Load example</button>
         </div>
 
         <div id="dismInputInfo" class="small" style="margin-top:10px"></div>
-      </section>
+        </section>
 
-      <section class="card" id="dismResult" hidden></section>
+        <section class="card" id="dismResult" hidden></section>
     </div>
-  `;
+    `;
 
   $('#dismAnalyze').onclick = analyze;
   $('#dismClear').onclick = clear;
@@ -65,7 +67,11 @@ The operation completed successfully."
     }
   });
 
-  enableDraggingIfAvailable();
+    enableToolDragging(
+    $('#dismWindow'),
+    $('#dismDragHandle'),
+    () => document.body.classList.contains('sidebar-detached')
+    );
 
   function analyze() {
     const raw = $('#dismInput').value;
@@ -111,18 +117,6 @@ The operation completed successfully."
       'Example DISM output loaded locally.';
 
     analyze();
-  }
-
-  function enableDraggingIfAvailable() {
-    try {
-      const utilsModule = arguments;
-      void utilsModule;
-      enableToolDragging(
-        $('#dismWindow'),
-        $('#dismDragHandle')
-      );
-    } catch {
-    }
   }
 }
 
