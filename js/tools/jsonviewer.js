@@ -1,7 +1,7 @@
 import { $, escapeHtml, downloadText, enableToolDragging} from '../utils.js';
 export const metadata = {
   id: 'jsonviewer', title: 'JSON Viewer', description: 'Render and explore JSON data locally', path: '/#jsonviewer'};
-  
+
 export function renderJsonViewer(app) {
   app.innerHTML = `
     <div class="tool-window" id="jsonViewerWindow">
@@ -644,4 +644,3 @@ export function renderJsonViewer(app) {
       }
     ];
   }
-}
