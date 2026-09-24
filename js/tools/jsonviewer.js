@@ -12,7 +12,7 @@ export const metadata = {
 };
 export function renderJsonViewer(app) {
   app.innerHTML = `
-    <div class="tool-window" id="jsonViewerWindow">
+    <div class="card tool-window" id="jsonViewerWindow">
       <div class="tool-window-header" id="jsonViewerDragHandle" title="Drag tool">
         <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
         <strong>JSON Viewer</strong>
