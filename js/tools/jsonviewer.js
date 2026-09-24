@@ -1,70 +1,58 @@
-import {
-  $,
-  escapeHtml,
-  downloadText,
-  enableToolDragging
-} from '../utils.js';
+import { $, escapeHtml, downloadText, enableToolDragging} from '../utils.js';
 export const metadata = {
-  id: 'jsonviewer',
-  title: 'JSON Viewer',
-  description: 'Render and explore JSON data locally',
-  path: '/#jsonviewer'
-};
+  id: 'jsonviewer', title: 'JSON Viewer', description: 'Render and explore JSON data locally', path: '/#jsonviewer'};
+  
 export function renderJsonViewer(app) {
   app.innerHTML = `
-    <div class="card tool-window" id="jsonViewerWindow">
+    <div class="tool-window" id="jsonViewerWindow">
       <div class="tool-window-header" id="jsonViewerDragHandle" title="Drag tool">
         <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
         <strong>JSON Viewer</strong>
       </div>
-      <div class="tool-toolbar">
-        <div class="dropzone" id="jsonDrop">
-          Drop a JSON file here, or <button type="button" class="btn" id="jsonPick"> choose file</button>
-          <input id="jsonViewerFile" type="file" accept=".json,application/json,text/json" hidden>
-        </div>
-        <button class="btn" id="jsonViewerLoadExample">Load example</button>
-        <button class="btn" id="jsonViewerClear">Clear</button>
-      </div>
-      <div class="tool-section">
-        <label for="jsonViewerInput">
-          <strong>JSON input</strong>
-        </label>
-        <textarea
-          id="jsonViewerInput"
-          rows="12"
-          spellcheck="false"
-          placeholder="Paste JSON here or load a .json file..."
-        ></textarea>
+      <section class="card">
+        <h2>JSON Viewer</h2>
         <div class="tool-toolbar">
-          <button class="btn primary" id="jsonViewerAnalyze">Render JSON</button>
-          <button class="btn" id="jsonViewerFormat">Format JSON</button>
+          <div class="dropzone" id="jsonDrop">
+            Drop a JSON file here, or <button type="button" class="btn" id="jsonPick">choose file</button>
+            <input id="jsonViewerFile" type="file" accept=".json,application/json,text/json" hidden>
+          </div>
+          <button class="btn" id="jsonViewerLoadExample">Load example</button>
+          <button class="btn" id="jsonViewerClear">Clear</button>
         </div>
-      </div>
-      <div id="jsonViewerStatus"></div>
-      <div id="jsonViewerControls" hidden>
-        <div class="tool-toolbar">
-          <button class="btn" id="jsonViewerExpandAll">Expand all</button>
-          <button class="btn" id="jsonViewerCollapseAll">Collapse all</button>
-          <label>
-            <span>Search</span>
-            <input type="search" id="jsonViewerSearch" placeholder="Search keys and values...">
-          </label>
+        <div class="tool-section">
+          <label for="jsonViewerInput"><strong>JSON input</strong></label>
+          <textarea id="jsonViewerInput" rows="12" spellcheck="false" placeholder="Paste JSON here or load a .json file..."></textarea>
+          <div class="tool-toolbar">
+            <button class="btn primary" id="jsonViewerAnalyze">Render JSON</button>
+            <button class="btn" id="jsonViewerFormat">Format JSON</button>
+          </div>
         </div>
-        <div id="jsonViewerStats"></div>
-      </div>
-      <div
-        id="jsonViewerResult"
-        class="json-viewer-result"
-        aria-live="polite"
-      ></div>
-      <div id="jsonViewerActions" hidden>
+        <div id="jsonViewerStatus"></div>
+      </section>
+      <section class="card" id="jsonViewerResultSection">
+        <div id="jsonViewerControls" hidden>
+          <div class="tool-toolbar">
+            <button class="btn" id="jsonViewerExpandAll">Expand all</button>
+            <button class="btn" id="jsonViewerCollapseAll">Collapse all</button>
+            <label>
+              <span>Search</span>
+              <input type="search" id="jsonViewerSearch" placeholder="Search keys and values..."
+              >
+            </label>
+          </div>
+          <div id="jsonViewerStats"></div>
+        </div>
+        <div id="jsonViewerResult" class="json-viewer-result" aria-live="polite"></div>
+      </section>
+      <section class="card" id="jsonViewerActions" hidden>
         <div class="tool-toolbar">
           <button class="btn" id="jsonViewerCopy">Copy formatted JSON</button>
           <button class="btn" id="jsonViewerDownload">Download formatted JSON</button>
         </div>
-      </div>
+      </section>
     </div>
   `;
+}
   enableToolDragging(
     $('#jsonViewerWindow'),
     $('#jsonViewerDragHandle'),
