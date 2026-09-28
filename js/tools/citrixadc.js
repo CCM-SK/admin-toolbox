@@ -1,10 +1,5 @@
-import {
-  $,
-  escapeHtml,
-  downloadText,
-  dropBinder,
-  enableToolDragging
-} from '../utils.js';
+import { $, escapeHtml, downloadText, dropBinder, enableToolDragging } from '../utils.js';
+
 export const metadata = {
   id: 'citrixadc',
   title: 'Citrix ADC Config Parser',
@@ -12,10 +7,8 @@ export const metadata = {
     'Turn a Citrix ADC / NetScaler VPX running configuration into a readable, cross-referenced report locally',
   path: '/#citrixadc'
 };
-const VSERVER_ATTACH = [
-  'lb vserver', 'cs vserver', 'gslb vserver',
-  'vpn vserver', 'authentication vserver', 'aaa vserver'
-];
+const VSERVER_ATTACH = ['lb vserver', 'cs vserver', 'gslb vserver', 'vpn vserver', 'authentication vserver', 'aaa vserver'];
+// Comments for my own piece of mind
 const TYPE_DEFS = [
   // Virtual servers
   ['lb vserver', 'Load balancing virtual server', 'vserver', ['protocol', 'ip', 'port']],
@@ -392,6 +385,8 @@ const POS_LABELS = {
   stringBuilderExpr: 'Value expression', permissions: 'Permissions',
   destination: 'Destination'
 };
+// end of weird constants
+
 function tokenize(line) {
   const out = [];
   const n = line.length;
@@ -1703,11 +1698,6 @@ function cacheOther(model) {
   const html = otherCache ? otherCache(model) : '';
   return html;
 }
-
-
-
-
-
 function md(s) {
   return String(s ?? '').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
 }
@@ -1889,6 +1879,8 @@ function renderOther(cache) {
     <p class="small">These were still read as objects with their parameters, but they are not interpreted further.</p>` +
     [...groups].map(([label, items]) => `<h4>${h(label)} (${items.length})</h4>${renderCatalogueTable(items)}`).join('');
 }
+// End of weird functions
+
 export function renderCitrixAdc(app) {
   app.innerHTML = `
     <div class="tool-window" id="cxWindow">
@@ -2095,7 +2087,6 @@ export function renderCitrixAdc(app) {
   });
 }
 export const _internals = { parseConfig, analyze, buildCache, toMarkdown, toJson, tokenize };
-/* Example */
 const EXAMPLE_CONFIG = String.raw`#NS13.1 Build 53.17
 # Last modified by ` + "`save config`" + String.raw`, Mon Sep 28 08:12:41 2026
 set ns config -IPAddress 10.10.0.10 -netmask 255.255.255.0
