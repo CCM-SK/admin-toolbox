@@ -34,6 +34,7 @@ import { renderChmod } from "./tools/chmod.js";
 import { renderPaloAlto } from "./tools/paloalto.js";
 import { renderDism } from './tools/dism.js';
 import { renderJsonViewer } from './tools/jsonviewer.js';
+import { renderCitrixAdc } from './tools/citrixadc.js';
 
 const views = {
   dashboard: renderDashboard,
@@ -70,7 +71,8 @@ const views = {
   chmod: renderChmod,
   paloalto: renderPaloAlto,
   dism: renderDism,
-  jsonviewer: renderJsonViewer
+  jsonviewer: renderJsonViewer,
+  citrixadc: renderCitrixAdc
 };
 
 const app = $('#app');
