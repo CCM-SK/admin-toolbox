@@ -294,7 +294,7 @@ function analyzeCookie(cookie) {
   } else {
     findings.push({
       level: 'ok',
-      title: 'No Domain attribute \u2014 host-only cookie',
+      title: 'No Domain attribute - host-only cookie',
       detail: 'The cookie is only sent back to the exact host that set it, not to any subdomain. This is generally the safer default.'
     });
   }
@@ -310,7 +310,7 @@ function analyzeCookie(cookie) {
     findings.push({
       level: 'warn',
       title: 'No Path attribute',
-      detail: 'Without an explicit Path, the browser derives a default from the path of the request that set the cookie (roughly, up to the last "/") \u2014 not "/". Set Path explicitly if the cookie should apply site-wide.'
+      detail: 'Without an explicit Path, the browser derives a default from the path of the request that set the cookie (roughly, up to the last "/") - not "/". Set Path explicitly if the cookie should apply site-wide.'
     });
   }
   if (attrs.maxAge !== null) {
@@ -355,15 +355,15 @@ function analyzeCookie(cookie) {
         level: isPast ? 'warn' : 'ok',
         title: `Expires=${parsed.toUTCString()}${isPast ? ' (already in the past)' : ''}`,
         detail: isPast
-          ? 'A date in the past deletes the cookie immediately \u2014 this may be intentional, e.g. a logout response.'
+          ? 'A date in the past deletes the cookie immediately - this may be intentional, e.g. a logout response.'
           : 'The cookie persists across browser restarts until this date.'
       });
     }
   } else {
     findings.push({
       level: 'ok',
-      title: 'No Expires/Max-Age \u2014 session cookie',
-      detail: 'The cookie is kept only for the current browser session and discarded when the browser \u2014 not just the tab \u2014 closes. Note: some browsers\u2019 "continue where you left off" feature can make session cookies outlive a literal close/reopen.'
+      title: 'No Expires/Max-Age - session cookie',
+      detail: 'The cookie is kept only for the current browser session and discarded when the browser - not just the tab - closes. Note: some browsers\u2019 "continue where you left off" feature can make session cookies outlive a literal close/reopen.'
     });
   }
   if (attrs.priority) {
@@ -393,7 +393,7 @@ function analyzeCookie(cookie) {
       detail: problems.length
         ? `A cookie named __Host-\u2026 must have Secure, Path=/, and no Domain attribute. Browsers reject it because: ${problems.join(', ')}.`
         : 'Requirements satisfied (Secure, Path=/, no Domain). Browsers additionally lock this cookie to being ' +
-          'host-only and reject it from insecure origins \u2014 one of the strongest guarantees available.'
+          'host-only and reject it from insecure origins - one of the strongest guarantees available.'
     });
   } else if (name.startsWith('__Secure-')) {
     findings.push({
@@ -407,7 +407,7 @@ function analyzeCookie(cookie) {
     findings.push({
       level: 'warn',
       title: 'Looks like a miscased __Host- prefix',
-      detail: `Cookie name prefixes are case-sensitive. "${name}" does not match "__Host-" exactly, so the browser enforces none of the __Host- guarantees \u2014 it is treated as an ordinary cookie name.`
+      detail: `Cookie name prefixes are case-sensitive. "${name}" does not match "__Host-" exactly, so the browser enforces none of the __Host- guarantees - it is treated as an ordinary cookie name.`
     });
   } else if (/^__secure-/i.test(name)) {
     findings.push({
@@ -420,7 +420,7 @@ function analyzeCookie(cookie) {
     findings.push({
       level: 'warn',
       title: 'Value looks like a JWT',
-      detail: 'Three dot-separated Base64URL segments \u2014 this may be a JSON Web Token. Use the JWT/JWS/JWK Decoder tool to inspect its header and claims. Treat the value as a live credential if it is a session token.'
+      detail: 'Three dot-separated Base64URL segments - this may be a JSON Web Token. Use the JWT/JWS/JWK Decoder tool to inspect its header and claims. Treat the value as a live credential if it is a session token.'
     });
   }
   const size = approxByteSize(name, value);
@@ -478,12 +478,12 @@ function renderCookieCard(cookie, index) {
       ? 'Sent to this domain and all its subdomains.'
       : 'Sent only to the exact host that set it.'),
     attrRow('Path', a.path || '(not set \u2192 derived from request path)', 'Restricts which URL paths receive the cookie.'),
-    attrRow('Expires', a.expires || '\u2014', 'Legacy expiry date; ignored when Max-Age is also present.'),
-    attrRow('Max-Age', a.maxAge ?? '\u2014', 'Expiry in seconds from now; takes precedence over Expires.'),
+    attrRow('Expires', a.expires || '-', 'Legacy expiry date; ignored when Max-Age is also present.'),
+    attrRow('Max-Age', a.maxAge ?? '-', 'Expiry in seconds from now; takes precedence over Expires.'),
     attrRow('Secure', a.secure ? 'Yes' : 'No', 'HTTPS-only transmission when Yes.'),
     attrRow('HttpOnly', a.httpOnly ? 'Yes' : 'No', 'Hidden from JavaScript (document.cookie) when Yes.'),
     attrRow('SameSite', a.sameSite || '(not set)', 'Controls cross-site sending behaviour.'),
-    attrRow('Priority', a.priority || '\u2014', 'Chromium-only eviction hint.'),
+    attrRow('Priority', a.priority || '-', 'Chromium-only eviction hint.'),
     attrRow('Partitioned', a.partitioned ? 'Yes' : 'No', 'CHIPS partitioned storage when Yes.')
   ].join('');
   const unknownRow = a.unknown && a.unknown.length
@@ -491,7 +491,7 @@ function renderCookieCard(cookie, index) {
       <tr>
         <th>Unrecognized</th>
         <td class="mono">${escapeHtml(a.unknown.join('; '))}</td>
-        <td class="small">Not a standard attribute \u2014 vendor-specific extension or a typo.</td>
+        <td class="small">Not a standard attribute - vendor-specific extension or a typo.</td>
       </tr>
     `
     : '';
@@ -529,7 +529,7 @@ function renderRequestCard(pairs) {
     <section class="card">
       <h3>Request-side Cookie header (${pairs.length} ${pairs.length === 1 ? 'cookie' : 'cookies'})</h3>
       <div class="notice">
-        This looks like a <span class="mono">Cookie:</span> request header \u2014 what the browser sends <em>to</em> the server. Attributes such as Domain, Path, Secure, HttpOnly, SameSite and expiry are decided by the server via <span class="mono">Set-Cookie</span> and are stripped by the browser before the request is sent, so they cannot be recovered here. Paste the response's <span class="mono">Set-Cookie</span> header(s) instead to inspect those.
+        This looks like a <span class="mono">Cookie:</span> request header - what the browser sends <em>to</em> the server. Attributes such as Domain, Path, Secure, HttpOnly, SameSite and expiry are decided by the server via <span class="mono">Set-Cookie</span> and are stripped by the browser before the request is sent, so they cannot be recovered here. Paste the response's <span class="mono">Set-Cookie</span> header(s) instead to inspect those.
       </div>
       <div class="table-wrap">
         <table>
@@ -591,7 +591,7 @@ function renderResult(result) {
   if (result.mode === 'table') {
     return `
       <div class="notice">
-        Parsed as a DevTools cookie-table paste. Column mapping is best-effort and can vary slightly between browser versions \u2014 for full accuracy, paste the raw <span class="mono">Set-Cookie</span> response header instead.
+        Parsed as a DevTools cookie-table paste. Column mapping is best-effort and can vary slightly between browser versions - for full accuracy, paste the raw <span class="mono">Set-Cookie</span> response header instead.
       </div>
       ${renderSummary(result.cookies)}
       ${result.cookies.map((c, i) => renderCookieCard(c, i)).join('')}
@@ -630,7 +630,7 @@ export function renderCookies(app) {
     <section class="card">
       <h2>Cookie analyzer</h2>
       <p class="small">
-        Paste one or more <span class="mono">Set-Cookie</span> response headers, a browser <span class="mono">Cookie:</span> request header, or rows copied from DevTools' Application/Storage \u2192 Cookies table. Everything is parsed locally in this browser \u2014 the tool never reads this tab's real cookie jar (<span class="mono">document.cookie</span> is never accessed) and makes no network requests.
+        Paste one or more <span class="mono">Set-Cookie</span> response headers, a browser <span class="mono">Cookie:</span> request header, or rows copied from DevTools' Application/Storage \u2192 Cookies table. Everything is parsed locally in this browser - the tool never reads this tab's real cookie jar (<span class="mono">document.cookie</span> is never accessed) and makes no network requests.
       </p>
       <label for="cookieInput">Cookie data</label>
       <textarea
