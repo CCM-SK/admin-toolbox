@@ -1,4 +1,4 @@
-import { $, escapeHtml, downloadText } from '../utils.js';
+import { $, escapeHtml, downloadText, enableToolDragging } from '../utils.js';
 async function copyText(text) {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
@@ -597,7 +597,6 @@ function renderResult(result) {
       ${result.cookies.map((c, i) => renderCookieCard(c, i)).join('')}
     `;
   }
-  // mode === 'lines'
   const parts = [];
   parts.push(renderSummary(result.responseCookies));
   parts.push(result.responseCookies.map((c, i) => renderCookieCard(c, i)).join(''));
@@ -625,8 +624,14 @@ function safeExport(result) {
   }
   return result;
 }
+
 export function renderCookies(app) {
   app.innerHTML = `
+    <div class="tool-window" id="cookieWindow">
+    <div class="tool-window-header" id="cookieDragHandle" title="Drag tool">
+      <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
+      <strong>Cookie analyzer</strong>
+    </div>
     <section class="card">
       <h2>Cookie analyzer</h2>
       <p class="small">
@@ -636,10 +641,8 @@ export function renderCookies(app) {
       <textarea
         id="cookieInput"
         spellcheck="false"
-        placeholder="sessionid=abc123; Domain=.example.com; Path=/; Expires=Wed, 21 Oct 2026 07:28:00 GMT; HttpOnly; Secure; SameSite=Lax
-__Host-csrftoken=xyz789; Path=/; Secure; SameSite=Strict
-Set-Cookie: cart=1a2b3c; Max-Age=3600; Path=/checkout
-One Set-Cookie value per line. A plain 'Cookie: a=1; b=2' request header and DevTools table pastes are also supported."
+        placeholder="sessionid=abc123; Domain=.example.com; Path=/; Expires=Wed, 21 Oct 2026 07:28:00 GMT; HttpOnly; Secure; SameSite=Lax __Host-csrftoken=xyz789; Path=/; Secure; SameSite=Strict Set-Cookie: cart=1a2b3c; Max-Age=3600; Path=/checkout
+        One Set-Cookie value per line. A plain 'Cookie: a=1; b=2' request header and DevTools table pastes are also supported."
       ></textarea>
       <div class="row" style="margin-top:10px">
         <button class="btn primary" id="cookieAnalyze">Analyze</button>
@@ -649,6 +652,7 @@ One Set-Cookie value per line. A plain 'Cookie: a=1; b=2' request header and Dev
       </div>
     </section>
     <div id="cookieResults"></div>
+    </div>
   `;
   const input = $('#cookieInput');
   const results = $('#cookieResults');
@@ -679,4 +683,11 @@ One Set-Cookie value per line. A plain 'Cookie: a=1; b=2' request header and Dev
   input.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') run();
   });
+
+  enableToolDragging(
+    $('#cookieWindow'),
+    $('#cookieDragHandle'),
+    () => document.body.classList.contains('sidebar-detached')
+  );
+
 }
