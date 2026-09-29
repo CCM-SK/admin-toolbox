@@ -52,7 +52,8 @@
     "chmod-analyzer",
     "paloalto-analyzer",
     "dism-analyzer",
-    "gpresult-analyzer"
+    "gpresult-analyzer",
+    "json-viewer"
   ],
   "limitations": [
     "Certificate inspector is a conservative ASN.1 string inspector, not a PKI validator.",

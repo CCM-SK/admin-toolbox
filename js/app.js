@@ -33,6 +33,8 @@ import { renderDllAnalyzer } from "./tools/dlls.js";
 import { renderChmod } from "./tools/chmod.js";
 import { renderPaloAlto } from "./tools/paloalto.js";
 import { renderDism } from './tools/dism.js';
+import { renderJsonViewer } from './tools/jsonviewer.js';
+import { renderCitrixAdc } from './tools/citrixadc.js';
 
 const views = {
   dashboard: renderDashboard,
@@ -68,7 +70,9 @@ const views = {
   dlls: renderDllAnalyzer,
   chmod: renderChmod,
   paloalto: renderPaloAlto,
-  dism: renderDism
+  dism: renderDism,
+  jsonviewer: renderJsonViewer,
+  citrixadc: renderCitrixAdc
 };
 
 const app = $('#app');

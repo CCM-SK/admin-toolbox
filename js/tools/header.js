@@ -10,10 +10,10 @@ export const metadata = {
 export function renderHeader(app) { 
   app.innerHTML = ` 
     <div class="tool-window" id="mailHeaderWindow"> 
-    <div class="tool-window-header" id="mailHeaderDragHandle" title="Drag tool"> 
-      <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span> 
-      <strong>E-mail message header analyzer</strong> 
-    </div> 
+      <div class="tool-window-header" id="mailHeaderDragHandle" title="Drag tool"> 
+        <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span> 
+        <strong>E-mail message header analyzer</strong> 
+      </div> 
     <section class="card"> 
       <h2>E-mail message header analyzer</h2> 
       <p> 
@@ -35,7 +35,7 @@ export function renderHeader(app) {
     </div> 
   `; 
  
-/* 
+/*  
 export function renderHeader(app) { 
   app.innerHTML = ` 
     <section class="card"> 
