@@ -23,7 +23,7 @@ const SAMESITE_INFO = {
   lax:
     'Sent with same-site requests and with top-level, "safe" cross-site navigations (plain links, GET). Not sent on cross-site subrequests such as images, iframes or fetch/XHR, or on cross-site form POSTs. Most current browsers apply this automatically when SameSite is not set at all.',
   none:
-    'Sent on every request, including cross-site subrequests and third-party embeds. Requires the Secure attribute — current browsers reject a SameSite=None cookie that is not also Secure.'
+    'Sent on every request, including cross-site subrequests and third-party embeds. Requires the Secure attribute - current browsers reject a SameSite=None cookie that is not also Secure.'
 };
 const PRIORITY_INFO = {
   low: 'Chromium-only hint: evicted first when the browser enforces its per-domain cookie jar limits.',
@@ -246,7 +246,7 @@ function analyzeCookie(cookie) {
     findings.push({
       level: 'warn',
       title: 'HttpOnly is missing',
-      detail: 'Any JavaScript on the page — including code injected via XSS or a compromised third-party script - can read this cookie via document.cookie. Only omit HttpOnly if client-side script genuinely needs the value.'
+      detail: 'Any JavaScript on the page - including code injected via XSS or a compromised third-party script - can read this cookie via document.cookie. Only omit HttpOnly if client-side script genuinely needs the value.'
     });
   }
   const sameSiteRaw = attrs.sameSite;
@@ -274,7 +274,7 @@ function analyzeCookie(cookie) {
     findings.push({
       level: 'danger',
       title: 'SameSite=None without Secure',
-      detail: 'This combination is invalid under the current cookie spec. Chrome, Firefox and Edge reject a SameSite=None cookie that is not also marked Secure — the browser will not store it at all.'
+      detail: 'This combination is invalid under the current cookie spec. Chrome, Firefox and Edge reject a SameSite=None cookie that is not also marked Secure - the browser will not store it at all.'
     });
   }
   if (attrs.domain) {
