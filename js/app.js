@@ -36,6 +36,7 @@ import { renderDism } from './tools/dism.js';
 import { renderJsonViewer } from './tools/jsonviewer.js';
 import { renderCitrixAdc } from './tools/citrixadc.js';
 import { renderCookies } from './tools/cookies.js';
+import { renderRoute } from './tools/route.js';
 
 const views = {
   dashboard: renderDashboard,
@@ -74,7 +75,8 @@ const views = {
   dism: renderDism,
   jsonviewer: renderJsonViewer,
   citrixadc: renderCitrixAdc,
-  cookies: renderCookies
+  cookies: renderCookies,
+  route: renderRoute
 };
 
 const app = $('#app');
