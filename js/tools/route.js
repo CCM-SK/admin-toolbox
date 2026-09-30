@@ -949,6 +949,7 @@ export function renderRoute(app) {
       prefix: parsedPrefix.prefix,
       network: parsedPrefix.network,
       prefixLength: parsedPrefix.prefixLength,
+      mask: parsedPrefix.mask,
       nextHop: data.nextHop || '',
       interfaceName: data.interfaceName || '',
       metric:
