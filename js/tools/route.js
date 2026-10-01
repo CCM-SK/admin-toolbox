@@ -868,9 +868,7 @@ export function renderRoute(app) {
             source: rawLine
           })
         );
-      } catch {
-        // Ignore non-route lines.
-      }
+      } catch {  }
     }
     return routes;
   }
@@ -881,15 +879,6 @@ export function renderRoute(app) {
       if (!line) {
         continue;
       }
-      /*
-       * Supports common forms such as:
-       *
-       * 10.20.30.0/24     *[Static/5] 00:12:30
-       *                    > to 10.20.30.1 via ge-0/0/1
-       *
-       * 10.0.0.0/8        *[OSPF/10] ...
-       *                    > via 10.0.0.1
-       */
       const prefixMatch =
         line.match(
           /^(\S+\/\d+)\s+\*\[([^/]+)\/(\d+)\]/
