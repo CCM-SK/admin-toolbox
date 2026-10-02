@@ -37,6 +37,7 @@ import { renderJsonViewer } from './tools/jsonviewer.js';
 import { renderCitrixAdc } from './tools/citrixadc.js';
 import { renderCookies } from './tools/cookies.js';
 import { renderRoute } from './tools/route.js';
+import { renderSddl } from './tools/sddl.js';
 
 const views = {
   dashboard: renderDashboard,
@@ -76,7 +77,8 @@ const views = {
   jsonviewer: renderJsonViewer,
   citrixadc: renderCitrixAdc,
   cookies: renderCookies,
-  route: renderRoute
+  route: renderRoute,
+  sddl: renderSddl
 };
 
 const app = $('#app');
