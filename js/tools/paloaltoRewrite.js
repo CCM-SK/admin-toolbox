@@ -1,12 +1,10 @@
 import { $, escapeHtml, downloadText, enableToolDragging } from '../utils.js';
-
 export const metadata = {
   id: 'paloalto',
   title: 'Palo Alto Config Analyzer',
   description: 'Parse Palo Alto Networks PAN-OS configurations and security rule exports locally',
   path: '/#paloalto'
 };
-
 export function renderPaloAlto(app) {
   app.innerHTML = `
     <div class="tool-window" id="paloAltoWindow">
@@ -37,21 +35,16 @@ set rulebase security rules Allow-DNS from Trust to Untrust source any destinati
       <section class="card" id="paloAltoResult" hidden></section>
     </div>
   `;
-
   enableToolDragging(
     $('#paloAltoWindow'),
     $('#paloAltoDragHandle'),
     () => document.body.classList.contains('sidebar-detached')
   );
-
   let lastAnalysis = null;
-
   $('#paloAltoPick').onclick = () => $('#paloAltoFile').click();
-
   $('#paloAltoFile').onchange = async e => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     try {
       const text = await readLocalFile(file);
       $('#paloAltoInput').value = text;
@@ -62,7 +55,6 @@ set rulebase security rules Allow-DNS from Trust to Untrust source any destinati
       showError(err.message || 'The file could not be read.');
     }
   };
-
   $('#paloAltoClear').onclick = () => {
     $('#paloAltoInput').value = '';
     $('#paloAltoFile').value = '';
@@ -84,7 +76,6 @@ set rulebase security rules Allow-DNS from Trust to Untrust source any destinati
       'application/json;charset=utf-8'
     );
   };
-
   function analyze() {
     const raw = $('#paloAltoInput').value;
     const result = $('#paloAltoResult');
@@ -110,20 +101,16 @@ set rulebase security rules Allow-DNS from Trust to Untrust source any destinati
       `<div class="status danger">${escapeHtml(message)}</div>`;
   }
 }
-
 function analyzePaloAlto(raw) {
   const text = String(raw || '').replace(/^\uFEFF/, '');
   const format = detectFormat(text);
-
   if (format === 'xml') {
     const parsed = parseXmlConfig(text);
     const findings = analyzeXmlConfiguration(parsed);
     const stats = buildXmlStats(parsed, findings);
-
     return {
       note:
-        'Local-only Palo Alto Networks PAN-OS configuration analysis. ' +
-        'No DNS, threat intelligence, WildFire, cloud lookup, or remote service is used.',
+        'Local-only Palo Alto Networks PAN-OS configuration analysis. No DNS, threat intelligence, WildFire, cloud lookup, or remote service is used.',
       format,
       metadata: parsed.metadata,
       stats,
@@ -138,13 +125,11 @@ function analyzePaloAlto(raw) {
       generatedAt: new Date().toISOString()
     };
   }
-
   let rules = [];
   let objects = [];
   let interfaces = [];
   let zones = [];
   let metadata = {};
-
   if (format === 'set') {
     ({ rules, objects, interfaces, zones, metadata } = parseSetConfig(text));
   } else if (format === 'csv') {
@@ -152,14 +137,11 @@ function analyzePaloAlto(raw) {
   } else {
     ({ rules, objects, interfaces, zones, metadata } = parseTextShow(text));
   }
-
   const findings = analyzeRules(rules);
   const stats = buildStats(rules, findings);
-
   return {
     note:
-      'Local-only Palo Alto Networks PAN-OS configuration analysis. ' +
-      'This tool does not contact Palo Alto, DNS, threat intelligence, or any remote service.',
+      'Local-only Palo Alto Networks PAN-OS configuration analysis. This tool does not contact Palo Alto, DNS, threat intelligence, or any remote service.',
     format,
     metadata,
     stats,
@@ -173,35 +155,28 @@ function analyzePaloAlto(raw) {
     generatedAt: new Date().toISOString()
   };
 }
-
 function detectFormat(text) {
   const t = text.trim();
   if (/^<\?xml\b|^<config[\s>]/i.test(t) || /<security><rules>/i.test(t)) return 'xml';
   if (/^\s*set\s+(?:deviceconfig|rulebase|vsys|shared|network)\b/im.test(text)) {
     return 'set';
   }
-
   const firstLines = t.split(/\r?\n/).slice(0, 8);
   if (firstLines.some(x => /(?:^|,)rule(?:name)?(?:,|$)/i.test(x)) ||
       firstLines.some(x => /from,to,source,destination,application/i.test(x))) {
     return 'csv';
   }
-
   return 'text';
 }
-
 function parseXmlConfig(text) {
   const doc = parseXmlDocument(text);
   const root = doc.documentElement;
-
   const ctx = {
     doc,
     root,
     findings: [],
     inventory: buildXmlInventory(root),
-
     metadata: {},
-
     configuration: {
       management: {},
       shared: {},
@@ -210,34 +185,27 @@ function parseXmlConfig(text) {
       templateStacks: [],
       state: {}
     },
-
     securityRules: [],
     objects: [],
     interfaces: [],
     zones: [],
-
     coveredRoots: new Set()
   };
-
   parseXmlMetadata(ctx);
   parseXmlManagement(ctx);
   parseXmlShared(ctx);
   parseXmlDevices(ctx);
   parseXmlTemplates(ctx);
   parseXmlState(ctx);
-
   const duplicateFindings = detectXmlDuplicateEntries(ctx);
   const referenceFindings = detectXmlReferences(ctx);
   const validationFindings = validateXmlConfiguration(ctx);
-
   ctx.findings.push(
     ...duplicateFindings,
     ...referenceFindings,
     ...validationFindings
   );
-
   const coverage = buildXmlCoverage(ctx);
-
   return {
     metadata: ctx.metadata,
     securityRules: ctx.securityRules,
@@ -250,7 +218,6 @@ function parseXmlConfig(text) {
     inventory: ctx.inventory
   };
 }
-
 function parseXmlDocument(text) {
   let doc;
   try {
@@ -271,7 +238,6 @@ function parseXmlDocument(text) {
   }
   return doc;
 }
-
 function parseXmlMetadata(ctx) {
   const root = ctx.root;
   ctx.metadata.configVersion = attr(root, 'version');
@@ -291,15 +257,11 @@ function parseXmlMetadata(ctx) {
     ]) || '';
   ctx.coveredRoots.add('config');
 }
-
 function parseXmlManagement(ctx) {
   const node = firstPath(ctx.root, ['mgt-config']);
   if (!node) return;
-
   ctx.coveredRoots.add('mgt-config');
-
   const management = ctx.configuration.management;
-
   const users = childEntries(firstPath(node, ['users']));
   management.users = users.map(entry => ({
     ...recordEntry(entry, 'management-user'),
@@ -309,31 +271,24 @@ function parseXmlManagement(ctx) {
       ['permissions', 'role-based', 'vsysadmin']
     )
   }));
-
   const passwordComplexity =
     firstPath(node, ['password-complexity']);
-
   management.passwordComplexity =
     passwordComplexity
       ? flattenXml(passwordComplexity)
       : null;
 }
-
 function parseXmlShared(ctx) {
   const shared = firstPath(ctx.root, ['shared']);
   if (!shared) return;
-
   ctx.coveredRoots.add('shared');
-
   const out = ctx.configuration.shared;
-
   out.addresses = parseNamedEntries(
     firstPath(shared, ['address']),
     'address',
     entry => {
       const ipNetmask = attr(entry, 'ip-netmask');
       const fqdn = textAt(entry, ['fqdn']);
-
       return recordEntry(entry, 'address', {
         value: ipNetmask || fqdn || '',
         ipNetmask,
@@ -342,7 +297,6 @@ function parseXmlShared(ctx) {
       });
     }
   );
-
   out.addressGroups = parseNamedEntries(
     firstPath(shared, ['address-group']),
     'address-group',
@@ -357,7 +311,6 @@ function parseXmlShared(ctx) {
       filter: textAt(entry, ['dynamic', 'filter'])
     })
   );
-
   out.services = parseNamedEntries(
     firstPath(shared, ['service']),
     'service',
@@ -366,7 +319,6 @@ function parseXmlShared(ctx) {
       protocols: parseServiceProtocols(entry)
     })
   );
-
   out.serviceGroups = parseNamedEntries(
     firstPath(shared, ['service-group']),
     'service-group',
@@ -375,7 +327,6 @@ function parseXmlShared(ctx) {
       members: valuesAt(entry, ['members', 'member'])
     })
   );
-
   out.applications = parseNamedEntries(
     firstPath(shared, ['application']),
     'application',
@@ -388,7 +339,6 @@ function parseXmlShared(ctx) {
       evasive: textAt(entry, ['evasive'])
     })
   );
-
   out.applicationGroups = parseNamedEntries(
     firstPath(shared, ['application-group']),
     'application-group',
@@ -399,7 +349,6 @@ function parseXmlShared(ctx) {
           .concat(valuesAt(entry, ['static', 'member']))
     })
   );
-
   out.applicationFilters = parseNamedEntries(
     firstPath(shared, ['application-filter']),
     'application-filter',
@@ -407,7 +356,6 @@ function parseXmlShared(ctx) {
       scope: 'shared'
     })
   );
-
   out.tags = parseNamedEntries(
     firstPath(shared, ['tag']),
     'tag',
@@ -416,12 +364,10 @@ function parseXmlShared(ctx) {
       color: textAt(entry, ['color'])
     })
   );
-
   const logSettings = firstPath(shared, ['log-settings']);
   out.logSettings = logSettings
     ? flattenXml(logSettings)
     : null;
-
   ctx.objects.push(
     ...out.addresses,
     ...out.addressGroups,
@@ -432,21 +378,16 @@ function parseXmlShared(ctx) {
     ...out.applicationFilters
   );
 }
-
 function parseXmlDevices(ctx) {
   const devices = firstPath(ctx.root, ['devices']);
   if (!devices) return;
-
   ctx.coveredRoots.add('devices');
-
   for (const deviceEntry of childEntries(devices)) {
     const deviceName =
       attr(deviceEntry, 'name') || '(unnamed-device)';
-
     const device = {
       name: deviceName,
       path: xmlPath(deviceEntry),
-
       deviceconfig: {},
       network: {
         interfaces: [],
@@ -461,42 +402,32 @@ function parseXmlDevices(ctx) {
         },
         pbfRules: []
       },
-
       vsys: [],
       plugins: [],
-
       raw: flattenXml(deviceEntry)
     };
-
     const deviceConfig =
       firstPath(deviceEntry, ['deviceconfig']);
-
     if (deviceConfig) {
       device.deviceconfig = parseXmlDeviceConfig(
         deviceConfig
       );
     }
-
     const network =
       firstPath(deviceEntry, ['network']);
-
     if (network) {
       device.network =
         parseXmlNetwork(network, ctx, deviceName);
     }
-
     const vsys =
       firstPath(deviceEntry, ['vsys']);
-
     if (vsys) {
       device.vsys = childEntries(vsys).map(vsysEntry =>
         parseXmlVsys(vsysEntry, ctx, deviceName)
       );
     }
-
     const plugins =
       firstPath(deviceEntry, ['plugins']);
-
     if (plugins) {
       device.plugins = childEntries(plugins).map(entry =>
         recordEntry(entry, 'plugin', {
@@ -504,41 +435,32 @@ function parseXmlDevices(ctx) {
         })
       );
     }
-
     ctx.configuration.devices[deviceName] = device;
   }
 }
-
 function parseXmlDeviceConfig(node) {
   const result = {
     system: firstPath(node, ['system'])
       ? flattenXml(firstPath(node, ['system']))
       : null,
-
     management: firstPath(node, ['config'])
       ? flattenXml(firstPath(node, ['config']))
       : null,
-
     serverProfiles: {}
   };
-
   const serverProfiles =
     firstPath(node, ['server-profile']);
-
   if (serverProfiles) {
     for (const child of elementChildren(serverProfiles)) {
       const type = localName(child);
-
       result.serverProfiles[type] =
         childEntries(child).map(entry =>
           recordEntry(entry, `${type}-server-profile`)
         );
     }
   }
-
   return result;
 }
-
 function parseXmlNetwork(node, ctx, deviceName) {
   const result = {
     interfaces: [],
@@ -553,10 +475,8 @@ function parseXmlNetwork(node, ctx, deviceName) {
     },
     pbfRules: []
   };
-
   const interfaceRoot =
     firstPath(node, ['interface']);
-
   if (interfaceRoot) {
     const interfaceFamilies = [
       {
@@ -585,13 +505,10 @@ function parseXmlNetwork(node, ctx, deviceName) {
         entries: ['units', 'entry']
       }
     ];
-
     for (const family of interfaceFamilies) {
       const container =
         firstPath(interfaceRoot, [family.container]);
-
       if (!container) continue;
-
       const parent =
         family.entries.length === 1
           ? container
@@ -599,12 +516,10 @@ function parseXmlNetwork(node, ctx, deviceName) {
               container,
               family.entries.slice(0, -1)
             );
-
       for (const entry of childEntries(parent)) {
         const ips =
           entryNamesAt(entry, ['layer3', 'ip'])
             .concat(entryNamesAt(entry, ['ip']));
-
         const record = recordEntry(
           entry,
           family.type,
@@ -622,19 +537,15 @@ function parseXmlNetwork(node, ctx, deviceName) {
               valuesAt(entry, ['interface', 'member'])
           }
         );
-
         record.tap =
           hasPath(entry, ['tap', 'yes']);
-
         result.interfaces.push(record);
         ctx.interfaces.push(record);
       }
     }
   }
-
   const zoneRoot =
     firstPath(node, ['zone']);
-
   if (zoneRoot) {
     for (const entry of childEntries(zoneRoot)) {
       const members =
@@ -645,7 +556,6 @@ function parseXmlNetwork(node, ctx, deviceName) {
           .concat(
             valuesAt(entry, ['network', 'tunnel', 'member'])
           );
-
       const record = recordEntry(
         entry,
         'zone',
@@ -667,15 +577,12 @@ function parseXmlNetwork(node, ctx, deviceName) {
             )
         }
       );
-
       result.zones.push(record);
       ctx.zones.push(record);
     }
   }
-
   const virtualRouterRoot =
     firstPath(node, ['virtual-router']);
-
   if (virtualRouterRoot) {
     for (const entry of childEntries(virtualRouterRoot)) {
       const record = recordEntry(
@@ -687,12 +594,10 @@ function parseXmlNetwork(node, ctx, deviceName) {
             valuesAt(entry, ['interface', 'member'])
         }
       );
-
       record.protocols =
         parseRoutingProtocols(
           firstPath(entry, ['protocol'])
         );
-
       record.staticRoutes =
         childEntries(
           firstPath(
@@ -700,42 +605,33 @@ function parseXmlNetwork(node, ctx, deviceName) {
             ['routing-table', 'ip', 'static-route']
           )
         ).map(route => flattenXml(route));
-
       result.virtualRouters.push(record);
     }
   }
-
   const dhcpRoot =
     firstPath(node, ['dhcp']);
-
   if (dhcpRoot) {
     result.dhcp =
       childEntries(dhcpRoot).map(entry =>
         recordEntry(entry, 'dhcp-server')
       );
   }
-
   const dnsProxyRoot =
     firstPath(node, ['dns-proxy']);
-
   if (dnsProxyRoot) {
     result.dnsProxy =
       childEntries(dnsProxyRoot).map(entry =>
         recordEntry(entry, 'dns-proxy')
       );
   }
-
   const ikeRoot =
     firstPath(node, ['ike']);
-
   if (ikeRoot) {
     result.ike =
       parseIkeConfiguration(ikeRoot);
   }
-
   const pbfRoot =
     firstPath(node, ['pbf', 'rules']);
-
   if (pbfRoot) {
     result.pbfRules =
       childEntries(pbfRoot).map(entry => ({
@@ -756,34 +652,27 @@ function parseXmlNetwork(node, ctx, deviceName) {
           numberValue(textAt(entry, ['metric']))
       }));
   }
-
   return result;
 }
-
 function parseRoutingProtocols(node) {
   if (!node) return {};
-
   return {
     bgp: firstPath(node, ['bgp'])
       ? flattenXml(firstPath(node, ['bgp']))
       : null,
-
     ospf: firstPath(node, ['ospf'])
       ? flattenXml(firstPath(node, ['ospf']))
       : null
   };
 }
-
 function parseIkeConfiguration(node) {
   const result = {
     cryptoProfiles: {},
     gateways: [],
     ipsecTunnels: []
   };
-
   const crypto =
     firstPath(node, ['crypto-profiles']);
-
   if (crypto) {
     result.cryptoProfiles.ike =
       childEntries(
@@ -794,7 +683,6 @@ function parseIkeConfiguration(node) {
       ).map(entry =>
         recordEntry(entry, 'ike-crypto-profile')
       );
-
     result.cryptoProfiles.ipsec =
       childEntries(
         firstPath(
@@ -805,44 +693,32 @@ function parseIkeConfiguration(node) {
         recordEntry(entry, 'ipsec-crypto-profile')
       );
   }
-
   const gateways =
     firstPath(node, ['gateway']);
-
   if (gateways) {
     result.gateways =
       childEntries(gateways).map(entry =>
         recordEntry(entry, 'ike-gateway')
       );
   }
-
   const tunnels =
     firstPath(node, ['ipsec-tunnel']);
-
   if (tunnels) {
     result.ipsecTunnels =
       childEntries(tunnels).map(entry =>
         recordEntry(entry, 'ipsec-tunnel')
       );
   }
-
   return result;
 }
-
-/* -------------------------------------------------------------------------- */
-/* VSYS                                                                       */
-/* -------------------------------------------------------------------------- */
-
 function parseXmlVsys(node, ctx, deviceName) {
   const vsysName =
     attr(node, 'name') || '(unnamed-vsys)';
-
   const vsys = {
     name: vsysName,
     device: deviceName,
     displayName:
       textAt(node, ['display-name']),
-
     imports: {
       interfaces:
         valuesAt(
@@ -855,32 +731,24 @@ function parseXmlVsys(node, ctx, deviceName) {
           ['import', 'zone', 'member']
         )
     },
-
     objects: {},
-
     schedules: [],
     profiles: {},
     profileGroups: [],
-
     securityRules: [],
     natRules: [],
     qosRules: [],
     applicationOverrideRules: [],
     decryptionRules: [],
-
     certificates: [],
     authenticationProfiles: [],
     serverProfiles: {},
-
     globalProtect: {},
     userId: {},
-
     hipObjects: [],
     hipProfiles: [],
-
     raw: flattenXml(node)
   };
-
   const objectTypes = [
     'address',
     'address-group',
@@ -889,11 +757,9 @@ function parseXmlVsys(node, ctx, deviceName) {
     'application-group',
     'application-filter'
   ];
-
   for (const type of objectTypes) {
     const container =
       firstPath(node, [type]);
-
     const records =
       parseNamedEntries(
         container,
@@ -908,21 +774,17 @@ function parseXmlVsys(node, ctx, deviceName) {
                 device: deviceName
               }
             );
-
           if (type === 'address') {
             record.ipNetmask =
               attr(entry, 'ip-netmask');
-
             record.fqdn =
               textAt(entry, ['fqdn']);
-
             record.value =
               record.ipNetmask ||
               record.fqdn ||
               textAt(entry, ['value']) ||
               '';
           }
-
           if (type === 'address-group') {
             record.mode =
               hasPath(entry, ['static'])
@@ -930,25 +792,21 @@ function parseXmlVsys(node, ctx, deviceName) {
                 : hasPath(entry, ['dynamic'])
                   ? 'dynamic'
                   : 'unknown';
-
             record.members =
               valuesAt(
                 entry,
                 ['static', 'member']
               );
-
             record.filter =
               textAt(
                 entry,
                 ['dynamic', 'filter']
               );
           }
-
           if (type === 'service') {
             record.protocols =
               parseServiceProtocols(entry);
           }
-
           if (type === 'service-group') {
             record.members =
               valuesAt(
@@ -956,7 +814,6 @@ function parseXmlVsys(node, ctx, deviceName) {
                 ['members', 'member']
               );
           }
-
           if (type === 'application-group') {
             record.members =
               valuesAt(
@@ -969,18 +826,14 @@ function parseXmlVsys(node, ctx, deviceName) {
                 )
               );
           }
-
           return record;
         }
       );
-
     vsys.objects[type] = records;
     ctx.objects.push(...records);
   }
-
   const schedule =
     firstPath(node, ['schedule']);
-
   if (schedule) {
     vsys.schedules =
       childEntries(schedule).map(entry =>
@@ -990,10 +843,8 @@ function parseXmlVsys(node, ctx, deviceName) {
         })
       );
   }
-
   const profiles =
     firstPath(node, ['profiles']);
-
   if (profiles) {
     vsys.profiles =
       parseVsysProfiles(
@@ -1002,10 +853,8 @@ function parseXmlVsys(node, ctx, deviceName) {
         deviceName
       );
   }
-
   const profileGroup =
     firstPath(node, ['profile-group']);
-
   if (profileGroup) {
     vsys.profileGroups =
       childEntries(profileGroup).map(entry =>
@@ -1050,13 +899,11 @@ function parseXmlVsys(node, ctx, deviceName) {
         )
       );
   }
-
   const security =
     firstPath(
       node,
       ['rulebase', 'security', 'rules']
     );
-
   if (security) {
     vsys.securityRules =
       childEntries(security).map(
@@ -1071,19 +918,16 @@ function parseXmlVsys(node, ctx, deviceName) {
                 rulebase: 'security'
               }
             );
-
           ctx.securityRules.push(rule);
           return rule;
         }
       );
   }
-
   const nat =
     firstPath(
       node,
       ['rulebase', 'nat', 'rules']
     );
-
   if (nat) {
     vsys.natRules =
       childEntries(nat).map(
@@ -1124,13 +968,11 @@ function parseXmlVsys(node, ctx, deviceName) {
         })
       );
   }
-
   const qos =
     firstPath(
       node,
       ['rulebase', 'qos', 'rules']
     );
-
   if (qos) {
     vsys.qosRules =
       childEntries(qos).map(
@@ -1155,7 +997,6 @@ function parseXmlVsys(node, ctx, deviceName) {
         })
       );
   }
-
   const override =
     firstPath(
       node,
@@ -1165,7 +1006,6 @@ function parseXmlVsys(node, ctx, deviceName) {
         'rules'
       ]
     );
-
   if (override) {
     vsys.applicationOverrideRules =
       childEntries(override).map(
@@ -1184,13 +1024,11 @@ function parseXmlVsys(node, ctx, deviceName) {
         })
       );
   }
-
   const decryption =
     firstPath(
       node,
       ['rulebase', 'decryption', 'rules']
     );
-
   if (decryption) {
     vsys.decryptionRules =
       childEntries(decryption).map(
@@ -1211,10 +1049,8 @@ function parseXmlVsys(node, ctx, deviceName) {
         })
       );
   }
-
   const certificates =
     firstPath(node, ['certificate']);
-
   if (certificates) {
     vsys.certificates =
       childEntries(certificates).map(
@@ -1238,13 +1074,11 @@ function parseXmlVsys(node, ctx, deviceName) {
           )
       );
   }
-
   const auth =
     firstPath(
       node,
       ['authentication-profile']
     );
-
   if (auth) {
     vsys.authenticationProfiles =
       childEntries(auth).map(
@@ -1259,17 +1093,14 @@ function parseXmlVsys(node, ctx, deviceName) {
           )
       );
   }
-
   const serverProfiles =
     firstPath(
       node,
       ['server-profile']
     );
-
   if (serverProfiles) {
     for (const child of elementChildren(serverProfiles)) {
       const key = localName(child);
-
       vsys.serverProfiles[key] =
         childEntries(child).map(
           entry =>
@@ -1284,10 +1115,8 @@ function parseXmlVsys(node, ctx, deviceName) {
         );
     }
   }
-
   const globalProtect =
     firstPath(node, ['global-protect']);
-
   if (globalProtect) {
     vsys.globalProtect = {
       portal:
@@ -1306,7 +1135,6 @@ function parseXmlVsys(node, ctx, deviceName) {
             }
           )
         ),
-
       gateway:
         childEntries(
           firstPath(
@@ -1325,10 +1153,8 @@ function parseXmlVsys(node, ctx, deviceName) {
         )
     };
   }
-
   const userId =
     firstPath(node, ['user-id']);
-
   if (userId) {
     vsys.userId = {
       collectorSettings:
@@ -1347,7 +1173,6 @@ function parseXmlVsys(node, ctx, deviceName) {
             }
           )
         ),
-
       groupMapping:
         childEntries(
           firstPath(
@@ -1366,10 +1191,8 @@ function parseXmlVsys(node, ctx, deviceName) {
         )
     };
   }
-
   const hipObjects =
     firstPath(node, ['hip-objects']);
-
   if (hipObjects) {
     vsys.hipObjects =
       childEntries(hipObjects).map(entry =>
@@ -1383,10 +1206,8 @@ function parseXmlVsys(node, ctx, deviceName) {
         )
       );
   }
-
   const hipProfiles =
     firstPath(node, ['hip-profiles']);
-
   if (hipProfiles) {
     vsys.hipProfiles =
       childEntries(hipProfiles).map(entry =>
@@ -1400,10 +1221,8 @@ function parseXmlVsys(node, ctx, deviceName) {
         )
       );
   }
-
   return vsys;
 }
-
 function parseVsysProfiles(node, scope, device) {
   const mappings = [
     ['url-filtering', 'urlFiltering'],
@@ -1414,15 +1233,11 @@ function parseVsysProfiles(node, scope, device) {
     ['wildfire-analysis', 'wildfireAnalysis'],
     ['data-filtering', 'dataFiltering']
   ];
-
   const result = {};
-
   for (const [xmlName, key] of mappings) {
     const container =
       firstPath(node, [xmlName]);
-
     if (!container) continue;
-
     result[key] =
       childEntries(container).map(
         entry =>
@@ -1436,110 +1251,89 @@ function parseVsysProfiles(node, scope, device) {
           )
       );
   }
-
   return result;
 }
-
 function parseSecurityRuleXml(node, context = {}) {
   const rule = recordEntry(
     node,
     'security-rule',
     context
   );
-
   rule.from =
     valuesAt(node, ['from', 'member']);
-
   rule.to =
     valuesAt(node, ['to', 'member']);
-
   rule.sourceAddresses =
     valuesAt(
       node,
       ['source', 'member']
     );
-
   rule.destinationAddresses =
     valuesAt(
       node,
       ['destination', 'member']
     );
-
   rule.applications =
     valuesAt(
       node,
       ['application', 'member']
     );
-
   rule.services =
     valuesAt(
       node,
       ['service', 'member']
     );
-
   rule.categories =
     valuesAt(
       node,
       ['category', 'member']
     );
-
   rule.users =
     valuesAt(
       node,
       ['source-user', 'member']
     );
-
   rule.tags =
     valuesAt(
       node,
       ['tag', 'member']
     );
-
   rule.action =
     textAt(node, ['action']) ||
     'unknown';
-
   rule.disabled =
     parseBoolean(
       textAt(node, ['disabled']),
       false
     );
-
   rule.logStart =
     parseBoolean(
       textAt(node, ['log-start']),
       false
     );
-
   rule.logEnd =
     parseBoolean(
       textAt(node, ['log-end']),
       false
     );
-
   rule.description =
     textAt(node, ['description']);
-
   rule.uuid =
     attr(node, 'uuid') ||
     textAt(node, ['uuid']);
-
   rule.ruleType =
     textAt(node, ['rule-type']) ||
     'universal';
-
   rule.negateSource =
     parseBoolean(
       textAt(node, ['negate-source']),
       false
     );
-
   rule.negateDestination =
     parseBoolean(
       textAt(node, ['negate-destination']),
       false
     );
-
   rule.profileGroups =
     valuesAt(
       node,
@@ -1549,10 +1343,8 @@ function parseSecurityRuleXml(node, context = {}) {
         'member'
       ]
     );
-
   return rule;
 }
-
 function parsePolicyRuleXml(node, type, context = {}) {
   return {
     ...recordEntry(
@@ -1560,31 +1352,25 @@ function parsePolicyRuleXml(node, type, context = {}) {
       type,
       context
     ),
-
     from:
       valuesAt(node, ['from', 'member']),
-
     to:
       valuesAt(node, ['to', 'member']),
-
     sourceAddresses:
       valuesAt(
         node,
         ['source', 'member']
       ),
-
     destinationAddresses:
       valuesAt(
         node,
         ['destination', 'member']
       ),
-
     applications:
       valuesAt(
         node,
         ['application', 'member']
       ),
-
     services:
       valuesAt(
         node,
@@ -1592,23 +1378,18 @@ function parsePolicyRuleXml(node, type, context = {}) {
       )
   };
 }
-
 function parseXmlTemplates(ctx) {
   const devices =
     firstPath(ctx.root, ['devices']);
-
   if (!devices) return;
-
   const stacks = [];
   const templates = [];
-
   for (const device of childEntries(devices)) {
     const stack =
       firstPath(
         device,
         ['template-stack']
       );
-
     if (stack) {
       stacks.push(
         ...childEntries(stack).map(
@@ -1620,13 +1401,11 @@ function parseXmlTemplates(ctx) {
         )
       );
     }
-
     const template =
       firstPath(
         device,
         ['template']
       );
-
     if (template) {
       templates.push(
         ...childEntries(template).map(
@@ -1639,25 +1418,19 @@ function parseXmlTemplates(ctx) {
       );
     }
   }
-
   ctx.configuration.templateStacks = stacks;
   ctx.configuration.templates = templates;
 }
-
 function parseXmlState(ctx) {
   const state = ctx.configuration.state;
-
   const readonly =
     firstPath(ctx.root, ['readonly']);
-
   if (readonly) {
     state.readonly =
       flattenXml(readonly);
   }
-
   const locks =
     firstPath(ctx.root, ['config-locks']);
-
   if (locks) {
     state.configLocks =
       childEntries(locks).map(
@@ -1668,10 +1441,8 @@ function parseXmlState(ctx) {
           )
       );
   }
-
   const audit =
     firstPath(ctx.root, ['audit']);
-
   if (audit) {
     state.audit =
       childEntries(audit).map(
@@ -1682,37 +1453,27 @@ function parseXmlState(ctx) {
           )
       );
   }
-
   ctx.coveredRoots.add('readonly');
   ctx.coveredRoots.add('config-locks');
   ctx.coveredRoots.add('audit');
 }
-
 function detectXmlDuplicateEntries(ctx) {
   const findings = [];
   const buckets = new Map();
-
   walkElements(ctx.root, node => {
     if (localName(node) !== 'entry') return;
-
     const name = attr(node, 'name');
     const parent = node.parentElement;
-
     if (!name || !parent) return;
-
     const key =
       `${xmlPath(parent)}::${name}`;
-
     const list =
       buckets.get(key) || [];
-
     list.push(node);
     buckets.set(key, list);
   });
-
   for (const [key, entries] of buckets) {
     if (entries.length < 2) continue;
-
     findings.push({
       severity: 'warn',
       rule:
@@ -1724,32 +1485,26 @@ function detectXmlDuplicateEntries(ctx) {
         `occurs ${entries.length} times under ${key.split('::')[0]}.`
     });
   }
-
   return findings;
 }
-
 function detectXmlReferences(ctx) {
   const findings = [];
-
   const addressObjects =
     ctx.objects.filter(
       x =>
         x.type === 'address' ||
         x.type === 'address-group'
     );
-
   const serviceObjects =
     ctx.objects.filter(
       x =>
         x.type === 'service' ||
         x.type === 'service-group'
     );
-
   const addressNames =
     new Set(
       addressObjects.map(x => x.name)
     );
-
   const serviceNames =
     new Set(
       serviceObjects.map(x => x.name)
@@ -1779,7 +1534,6 @@ function detectXmlReferences(ctx) {
         }
       }
     }
-
     if (object.type === 'service-group') {
       for (const ref of object.members || []) {
         if (ref === object.name) {
@@ -1805,8 +1559,6 @@ function detectXmlReferences(ctx) {
       }
     }
   }
-
-  /* Security rule references. */
   for (const rule of ctx.securityRules) {
     for (const ref of [
       ...(rule.sourceAddresses || []),
@@ -1826,7 +1578,6 @@ function detectXmlReferences(ctx) {
         });
       }
     }
-
     for (const ref of rule.services || []) {
       if (
         !looksLikeBuiltInAny(ref) &&
@@ -1844,12 +1595,10 @@ function detectXmlReferences(ctx) {
       }
     }
   }
-
   const devices =
     Object.values(
       ctx.configuration.devices || {}
     );
-
   const allVsysNames =
     new Set(
       devices.flatMap(
@@ -1859,7 +1608,6 @@ function detectXmlReferences(ctx) {
           )
       )
     );
-
   for (const user of ctx.configuration.management.users || []) {
     for (const vsys of user.vsysAdmins || []) {
       if (
@@ -1876,14 +1624,12 @@ function detectXmlReferences(ctx) {
       }
     }
   }
-
   for (const device of devices) {
     const interfaceNames =
       new Set(
         (device.network.interfaces || [])
           .map(x => x.name)
       );
-
     const tunnelNames =
       new Set(
         (device.network.interfaces || [])
@@ -1892,13 +1638,11 @@ function detectXmlReferences(ctx) {
           )
           .map(x => x.name)
       );
-
     const templateNames =
       new Set(
         (ctx.configuration.templates || [])
           .map(x => x.name)
       );
-
     for (const zone of device.network.zones || []) {
       for (const member of zone.members || []) {
         if (
@@ -1917,7 +1661,6 @@ function detectXmlReferences(ctx) {
         }
       }
     }
-
     for (const vr of device.network.virtualRouters || []) {
       for (const member of vr.interfaces || []) {
         if (
@@ -1935,14 +1678,12 @@ function detectXmlReferences(ctx) {
         }
       }
     }
-
     for (const vsys of device.vsys || []) {
       const profileGroupNames =
         new Set(
           (vsys.profileGroups || [])
             .map(x => x.name)
         );
-
       for (const rule of vsys.securityRules || []) {
         for (const group of rule.profileGroups || []) {
           if (
@@ -1960,7 +1701,6 @@ function detectXmlReferences(ctx) {
           }
         }
       }
-
       for (const nat of vsys.natRules || []) {
         for (const ref of [
           ...(nat.sourceAddresses || []),
@@ -1982,7 +1722,6 @@ function detectXmlReferences(ctx) {
           }
         }
       }
-
       for (const tunnel of vsys.globalProtect?.gateway || []) {
         for (const auth of findLeafValues(
           tunnel.properties,
@@ -2007,7 +1746,6 @@ function detectXmlReferences(ctx) {
         }
       }
     }
-
     for (const stack of ctx.configuration.templateStacks || []) {
       for (const ref of findLeafValues(
         stack.properties,
@@ -2028,7 +1766,6 @@ function detectXmlReferences(ctx) {
         }
       }
     }
-
     for (const tunnel of device.network.ike?.ipsecTunnels || []) {
       for (const ref of findLeafValues(
         tunnel.properties,
@@ -2050,10 +1787,8 @@ function detectXmlReferences(ctx) {
       }
     }
   }
-
   return findings;
 }
-
 function validateXmlConfiguration(ctx) {
   const findings = [];
   for (const object of ctx.objects) {
@@ -2071,7 +1806,6 @@ function validateXmlConfiguration(ctx) {
             `Address object ${object.name} has no IP/netmask or FQDN value.`
         });
       }
-
       if (
         object.ipNetmask &&
         !validIpOrCidr(object.ipNetmask)
@@ -2086,7 +1820,6 @@ function validateXmlConfiguration(ctx) {
         });
       }
     }
-
     if (object.type === 'service') {
       for (const protocol of object.protocols || []) {
         for (const port of protocol.ports || []) {
@@ -2102,13 +1835,11 @@ function validateXmlConfiguration(ctx) {
           }
         }
       }
-
       const protocols =
         new Set(
           (object.protocols || [])
             .map(x => x.protocol)
         );
-
       if (
         protocols.has('tcp') &&
         protocols.has('udp')
@@ -2123,14 +1854,12 @@ function validateXmlConfiguration(ctx) {
       }
     }
   }
-
   for (const device of Object.values(
     ctx.configuration.devices || {}
   )) {
     for (const iface of device.network.interfaces || []) {
       const duplicateIps =
         duplicateValues(iface.ips || []);
-
       if (duplicateIps.length) {
         findings.push({
           severity: 'warn',
@@ -2141,7 +1870,6 @@ function validateXmlConfiguration(ctx) {
             duplicateIps.join(', ') + '.'
         });
       }
-
       for (const ip of iface.ips || []) {
         if (
           ip &&
@@ -2157,7 +1885,6 @@ function validateXmlConfiguration(ctx) {
           });
         }
       }
-
       if (iface.tap) {
         findings.push({
           severity: 'info',
@@ -2168,13 +1895,11 @@ function validateXmlConfiguration(ctx) {
         });
       }
     }
-
     for (const zone of device.network.zones || []) {
       const duplicateMembers =
         duplicateValues(
           zone.members || []
         );
-
       if (duplicateMembers.length) {
         findings.push({
           severity: 'warn',
@@ -2185,7 +1910,6 @@ function validateXmlConfiguration(ctx) {
             duplicateMembers.join(', ') + '.'
         });
       }
-
       if (!(zone.members || []).length) {
         findings.push({
           severity: 'info',
@@ -2201,7 +1925,6 @@ function validateXmlConfiguration(ctx) {
         duplicateValues(
           vr.interfaces || []
         );
-
       if (duplicateInterfaces.length) {
         findings.push({
           severity: 'warn',
@@ -2212,7 +1935,6 @@ function validateXmlConfiguration(ctx) {
             duplicateInterfaces.join(', ') + '.'
         });
       }
-
       for (const asn of findLeafValues(
         vr.protocols?.bgp,
         'peer-as'
@@ -2235,20 +1957,16 @@ function validateXmlConfiguration(ctx) {
           });
         }
       }
-
       const destinations = [];
-
       for (const route of vr.staticRoutes || []) {
         const destination =
           textAtProperties(
             route,
             ['destination']
           );
-
         if (destination) {
           destinations.push(destination);
         }
-
         const metric =
           numberValue(
             textAtProperties(
@@ -2256,7 +1974,6 @@ function validateXmlConfiguration(ctx) {
               ['metric']
             )
           );
-
         if (
           metric !== null &&
           metric < 0
@@ -2269,7 +1986,6 @@ function validateXmlConfiguration(ctx) {
               `Static route ${destination || '(unnamed)'} has negative metric ${metric}.`
           });
         }
-
         const adminDistance =
           numberValue(
             textAtProperties(
@@ -2277,7 +1993,6 @@ function validateXmlConfiguration(ctx) {
               ['admin-dist']
             )
           );
-
         if (
           adminDistance !== null &&
           (
@@ -2294,10 +2009,8 @@ function validateXmlConfiguration(ctx) {
           });
         }
       }
-
       const duplicateDestinations =
         duplicateValues(destinations);
-
       if (duplicateDestinations.length) {
         findings.push({
           severity: 'warn',
@@ -2309,37 +2022,29 @@ function validateXmlConfiguration(ctx) {
         });
       }
     }
-
-    /* DHCP. */
     for (const dhcp of device.network.dhcp || []) {
       const pools =
         valuesAtProperties(
           dhcp.properties,
           ['ip-pool', 'member']
         );
-
       const parsedPools = [];
-
       for (const pool of pools) {
         const [startIp, endIp] =
           String(pool).split('-');
-
         if (
           validIp(startIp) &&
           validIp(endIp)
         ) {
           const start =
             ipToInt(startIp);
-
           const end =
             ipToInt(endIp);
-
           parsedPools.push({
             raw: pool,
             start,
             end
           });
-
           if (start > end) {
             findings.push({
               severity: 'warn',
@@ -2351,12 +2056,10 @@ function validateXmlConfiguration(ctx) {
           }
         }
       }
-
       for (let i = 0; i < parsedPools.length; i++) {
         for (let j = i + 1; j < parsedPools.length; j++) {
           const a = parsedPools[i];
           const b = parsedPools[j];
-
           if (
             a.start <= b.end &&
             b.start <= a.end
@@ -2371,7 +2074,6 @@ function validateXmlConfiguration(ctx) {
           }
         }
       }
-
       const lease =
         numberValue(
           textAtProperties(
@@ -2379,7 +2081,6 @@ function validateXmlConfiguration(ctx) {
             ['lease']
           )
         );
-
       if (
         lease !== null &&
         lease < 0
@@ -2400,13 +2101,11 @@ function validateXmlConfiguration(ctx) {
             rule.properties,
             'static-ip'
           ).length > 0;
-
         const hasDynamic =
           findLeafValues(
             rule.properties,
             'dynamic-ip-and-port'
           ).length > 0;
-
         if (
           hasStatic &&
           hasDynamic
@@ -2421,10 +2120,8 @@ function validateXmlConfiguration(ctx) {
           });
         }
       }
-
       for (const rule of vsys.qosRules || []) {
         const qosClass = rule.class;
-
         if (
           qosClass !== null &&
           (
@@ -2440,7 +2137,6 @@ function validateXmlConfiguration(ctx) {
               `QoS rule ${rule.name} has invalid class ${qosClass}.`
           });
         }
-
         const kbps =
           numberValue(
             textAtProperties(
@@ -2448,7 +2144,6 @@ function validateXmlConfiguration(ctx) {
               ['guaranteed-kbps']
             )
           );
-
         if (
           kbps !== null &&
           kbps < 0
@@ -2462,7 +2157,6 @@ function validateXmlConfiguration(ctx) {
           });
         }
       }
-
       for (const rule of vsys.applicationOverrideRules || []) {
         if (
           rule.port &&
@@ -2479,14 +2173,12 @@ function validateXmlConfiguration(ctx) {
           });
         }
       }
-
       for (const rule of vsys.decryptionRules || []) {
         const types =
           findLeafValues(
             rule.actionDetails,
             'type'
           );
-
         for (const type of types) {
           if (
             /unknown-/i.test(type)
@@ -2501,8 +2193,6 @@ function validateXmlConfiguration(ctx) {
           }
         }
       }
-
-      /* Profiles. */
       for (const profileList of Object.values(
         vsys.profiles || {}
       )) {
@@ -2512,13 +2202,11 @@ function validateXmlConfiguration(ctx) {
               profile.properties,
               'block'
             );
-
           const allowValues =
             findLeafValues(
               profile.properties,
               'allow'
             );
-
           if (
             blockValues.includes('any') &&
             allowValues.includes('any')
@@ -2531,7 +2219,6 @@ function validateXmlConfiguration(ctx) {
                 `Profile ${profile.name} contains both block=any and allow=any.`
             });
           }
-
           if (
             profile.type === 'fileblocking' ||
             profile.type === 'fileBlocking' ||
@@ -2588,7 +2275,6 @@ function validateXmlConfiguration(ctx) {
           });
         }
       }
-
       for (const schedule of vsys.schedules || []) {
         for (const time of findLeafValues(
           schedule.properties,
@@ -2616,7 +2302,6 @@ function validateXmlConfiguration(ctx) {
   }
   const pc =
     ctx.configuration.management.passwordComplexity;
-
   if (
     pc &&
     Number(
@@ -2634,7 +2319,6 @@ function validateXmlConfiguration(ctx) {
         'Password history count is negative.'
     });
   }
-
   for (const item of ctx.inventory) {
     if (
       item.kind !== 'element' ||
@@ -2642,15 +2326,12 @@ function validateXmlConfiguration(ctx) {
     ) {
       continue;
     }
-
     const name =
       String(item.name || '')
         .toLowerCase();
-
     const value =
       String(item.value || '')
         .trim();
-
     if (
       (name === 'date' ||
        name === 'date-only') &&
@@ -2665,7 +2346,6 @@ function validateXmlConfiguration(ctx) {
           `Date-like XML value ${value} is not a valid calendar date.`
       });
     }
-
     if (
       /^timestamp(?:-|$)/i.test(name) &&
       value &&
@@ -2682,11 +2362,9 @@ function validateXmlConfiguration(ctx) {
       });
     }
   }
-
   for (const audit of ctx.configuration.state.audit || []) {
     const timestamp =
       audit.attributes?.timestamp;
-
     if (
       timestamp &&
       !validTimestamp(timestamp)
@@ -2699,10 +2377,8 @@ function validateXmlConfiguration(ctx) {
           `Audit entry contains invalid timestamp ${timestamp}.`
       });
     }
-
     const result =
       audit.attributes?.result;
-
     if (
       result &&
       ![
@@ -2722,7 +2398,6 @@ function validateXmlConfiguration(ctx) {
       });
     }
   }
-
   for (const device of Object.values(
     ctx.configuration.devices || {}
   )) {
@@ -2732,7 +2407,6 @@ function validateXmlConfiguration(ctx) {
           plugin.properties,
           'enabled'
         )[0];
-
       if (
         enabled &&
         !/^(yes|no|true|false)$/i.test(
@@ -2749,33 +2423,27 @@ function validateXmlConfiguration(ctx) {
       }
     }
   }
-
   return findings;
 }
-
 function analyzeXmlConfiguration(parsed) {
   const findings = [
     ...(parsed.findings || [])
   ];
-
   findings.push(
     ...analyzeRules(
       parsed.securityRules
     )
   );
-
   findings.push(
     ...analyzeSemanticRuleOverlap(
       parsed.securityRules
     )
   );
-
   findings.push(
     ...analyzeSecurityRuleMetadata(
       parsed.securityRules
     )
   );
-
   if (
     parsed.coverage?.unrecognizedMajorSections?.length
   ) {
@@ -2790,23 +2458,16 @@ function analyzeXmlConfiguration(parsed) {
       });
     }
   }
-
   return dedupeFindings(findings);
 }
-
 function analyzeSemanticRuleOverlap(rules) {
   const findings = [];
-
   for (let i = 0; i < rules.length; i++) {
     const earlier = rules[i];
-
     if (earlier.disabled) continue;
-
     for (let j = i + 1; j < rules.length; j++) {
       const later = rules[j];
-
       if (later.disabled) continue;
-
       if (
         sameMatchScope(
           earlier,
@@ -2815,7 +2476,6 @@ function analyzeSemanticRuleOverlap(rules) {
       ) {
         continue;
       }
-
       if (
         !ruleScopeContains(
           earlier,
@@ -2824,17 +2484,14 @@ function analyzeSemanticRuleOverlap(rules) {
       ) {
         continue;
       }
-
       const earlierAction =
         String(
           earlier.action || ''
         ).toLowerCase();
-
       const laterAction =
         String(
           later.action || ''
         ).toLowerCase();
-
       if (
         /^(deny|drop|reject)$/.test(
           earlierAction
@@ -2876,13 +2533,10 @@ function analyzeSemanticRuleOverlap(rules) {
       }
     }
   }
-
   return findings;
 }
-
 function analyzeSecurityRuleMetadata(rules) {
   const findings = [];
-
   for (const rule of rules) {
     if (
       !rule.name ||
@@ -2896,7 +2550,6 @@ function analyzeSecurityRuleMetadata(rules) {
           'Security rule has no usable name.'
       });
     }
-
     if (
       rule.action === 'unknown'
     ) {
@@ -2921,10 +2574,8 @@ function analyzeSecurityRuleMetadata(rules) {
       });
     }
   }
-
   return findings;
 }
-
 function sameMatchScope(a, b) {
   const fields = [
     'from',
@@ -2936,7 +2587,6 @@ function sameMatchScope(a, b) {
     'categories',
     'users'
   ];
-
   return fields.every(
     key =>
       setEqual(
@@ -2945,7 +2595,6 @@ function sameMatchScope(a, b) {
       )
   );
 }
-
 function ruleScopeContains(broad, narrow) {
   if (
     broad.negateSource ||
@@ -2955,7 +2604,6 @@ function ruleScopeContains(broad, narrow) {
   ) {
     return false;
   }
-
   const fields = [
     'from',
     'to',
@@ -2966,7 +2614,6 @@ function ruleScopeContains(broad, narrow) {
     'categories',
     'users'
   ];
-
   return fields.every(
     key =>
       matchFieldContains(
@@ -2975,27 +2622,20 @@ function ruleScopeContains(broad, narrow) {
       )
   );
 }
-
 function matchFieldContains(broad, narrow) {
   const b =
     normalizeMatchField(broad);
-
   const n =
     normalizeMatchField(narrow);
-
   if (b.any) return true;
-
   if (n.any) return false;
-
   for (const value of n.values) {
     if (!b.values.has(value)) {
       return false;
     }
   }
-
   return true;
 }
-
 function normalizeMatchField(values) {
   const normalized =
     (values || [])
@@ -3006,7 +2646,6 @@ function normalizeMatchField(values) {
             .toLowerCase()
       )
       .filter(Boolean);
-
   return {
     any:
       normalized.length === 0 ||
@@ -3016,7 +2655,6 @@ function normalizeMatchField(values) {
           x === 'all' ||
           x === '*'
       ),
-
     values:
       new Set(normalized)
   };
@@ -3025,7 +2663,6 @@ function buildXmlCoverage(ctx) {
   const rootNames =
     elementChildren(ctx.root)
       .map(localName);
-
   const knownRootSections = [
     'mgt-config',
     'shared',
@@ -3034,35 +2671,29 @@ function buildXmlCoverage(ctx) {
     'config-locks',
     'audit'
   ];
-
   return {
     totalElements:
       ctx.inventory.filter(
         x => x.kind === 'element'
       ).length,
-
     leafElements:
       ctx.inventory.filter(
         x =>
           x.kind === 'element' &&
           x.isLeaf
       ).length,
-
     attributeCount:
       ctx.inventory.filter(
         x => x.kind === 'attribute'
       ).length,
-
     commentCount:
       ctx.inventory.filter(
         x => x.kind === 'comment'
       ).length,
-
     recognizedMajorSections:
       knownRootSections.filter(
         x => rootNames.includes(x)
       ),
-
     unrecognizedMajorSections:
       unique(
         rootNames.filter(
@@ -3070,22 +2701,18 @@ function buildXmlCoverage(ctx) {
             !knownRootSections.includes(x)
         )
       ),
-
     guarantee:
       'Every XML element, attribute and comment is retained in the browser-side inventory.'
   };
 }
-
 function buildXmlInventory(root) {
   const rows = [];
-
   walkXmlNodes(
     root,
     (node, parent) => {
       if (node.nodeType === 1) {
         const children =
           elementChildren(node);
-
         rows.push({
           kind: 'element',
           path: xmlPath(node),
@@ -3097,7 +2724,6 @@ function buildXmlInventory(root) {
           attributes:
             attributesOf(node)
         });
-
         for (const attribute of Array.from(
           node.attributes || []
         )) {
@@ -3114,7 +2740,6 @@ function buildXmlInventory(root) {
           });
         }
       }
-
       if (node.nodeType === 8) {
         rows.push({
           kind: 'comment',
@@ -3127,7 +2752,6 @@ function buildXmlInventory(root) {
           attributes: {}
         });
       }
-
       if (node.nodeType === 7) {
         rows.push({
           kind: 'processing-instruction',
@@ -3143,29 +2767,23 @@ function buildXmlInventory(root) {
       }
     }
   );
-
   return rows;
 }
-
 function flattenXml(node) {
   if (!node) return null;
-
   const result = {
     tag: localName(node),
     attributes:
       attributesOf(node),
     children: {}
   };
-
   for (const child of elementChildren(node)) {
     const key =
       localName(child);
-
     const value =
       elementChildren(child).length
         ? flattenXml(child)
         : directText(child);
-
     if (
       Object.prototype.hasOwnProperty.call(
         result.children,
@@ -3181,25 +2799,20 @@ function flattenXml(node) {
           result.children[key]
         ];
       }
-
       result.children[key].push(value);
     } else {
       result.children[key] = value;
     }
   }
-
   return result;
 }
-
 function walkXmlNodes(
   node,
   callback,
   parent = null
 ) {
   if (!node) return;
-
   callback(node, parent);
-
   for (const child of Array.from(
     node.childNodes || []
   )) {
@@ -3210,12 +2823,9 @@ function walkXmlNodes(
     );
   }
 }
-
 function walkElements(node, callback) {
   if (!node || node.nodeType !== 1) return;
-
   callback(node);
-
   for (const child of elementChildren(node)) {
     walkElements(
       child,
@@ -3223,13 +2833,11 @@ function walkElements(node, callback) {
     );
   }
 }
-
 function elementChildren(node) {
   return node
     ? Array.from(node.children || [])
     : [];
 }
-
 function childEntries(node) {
   return elementChildren(node)
     .filter(
@@ -3237,18 +2845,15 @@ function childEntries(node) {
         localName(node) === 'entry'
     );
 }
-
 function parseNamedEntries(
   node,
   type,
   mapper
 ) {
   if (!node) return [];
-
   return childEntries(node)
     .map(mapper);
 }
-
 function localName(node) {
   return String(
     node?.localName ||
@@ -3259,22 +2864,17 @@ function localName(node) {
     .pop()
     .toLowerCase();
 }
-
 function xmlPath(node) {
   const parts = [];
-
   let current = node;
-
   while (
     current &&
     current.nodeType === 1
   ) {
     const name =
       localName(current);
-
     const parent =
       current.parentElement;
-
     const siblings =
       parent
         ? elementChildren(parent)
@@ -3284,26 +2884,20 @@ function xmlPath(node) {
                 name
             )
         : [];
-
     const index =
       siblings.indexOf(current);
-
     parts.unshift(
       siblings.length > 1 &&
       index >= 0
         ? `${name}[${index + 1}]`
         : name
     );
-
     current = parent;
   }
-
   return '/' + parts.join('/');
 }
-
 function firstPath(root, parts) {
   let node = root;
-
   for (const part of parts) {
     node =
       elementChildren(node)
@@ -3312,56 +2906,42 @@ function firstPath(root, parts) {
             localName(x) ===
             String(part).toLowerCase()
         );
-
     if (!node) return null;
   }
-
   return node;
 }
-
 function firstTextAt(root, paths) {
   for (const path of paths) {
     const node =
       firstPath(root, path);
-
     if (!node) continue;
-
     const text =
       directText(node);
-
     if (text) return text;
   }
-
   return '';
 }
-
 function textAt(root, path) {
   const node =
     firstPath(root, path);
-
   return node
     ? directText(node)
     : '';
 }
-
 function valuesAt(root, path) {
   if (!root || !path.length) {
     return [];
   }
-
   const parent =
     firstPath(
       root,
       path.slice(0, -1)
     );
-
   if (!parent) return [];
-
   const wanted =
     String(
       path[path.length - 1]
     ).toLowerCase();
-
   return elementChildren(parent)
     .filter(
       child =>
@@ -3377,13 +2957,10 @@ function valuesAt(root, path) {
     )
     .filter(Boolean);
 }
-
 function entryNamesAt(root, path) {
   const parent =
     firstPath(root, path);
-
   if (!parent) return [];
-
   return childEntries(parent)
     .map(
       entry =>
@@ -3392,33 +2969,26 @@ function entryNamesAt(root, path) {
     )
     .filter(Boolean);
 }
-
 function hasPath(root, path) {
   return Boolean(
     firstPath(root, path)
   );
 }
-
 function attr(node, name) {
   return node?.getAttribute?.(name) || '';
 }
-
 function attributesOf(node) {
   const result = {};
-
   for (const attribute of Array.from(
     node?.attributes || []
   )) {
     result[attribute.name] =
       attribute.value;
   }
-
   return result;
 }
-
 function directText(node) {
   if (!node) return '';
-
   return Array.from(
     node.childNodes || []
   )
@@ -3434,7 +3004,6 @@ function directText(node) {
     .join('')
     .trim();
 }
-
 function recordEntry(
   node,
   type,
@@ -3444,28 +3013,21 @@ function recordEntry(
     name:
       attr(node, 'name') ||
       '(unnamed)',
-
     type,
-
     path:
       xmlPath(node),
-
     attributes:
       attributesOf(node),
-
     properties:
       flattenXml(node),
-
     ...extra
   };
 }
-
 function findLeafValues(
   object,
   leafName
 ) {
   const result = [];
-
   function visit(value, key = '') {
     if (
       value === null ||
@@ -3473,7 +3035,6 @@ function findLeafValues(
     ) {
       return;
     }
-
     if (
       typeof value ===
       'string'
@@ -3485,14 +3046,12 @@ function findLeafValues(
       }
       return;
     }
-
     if (Array.isArray(value)) {
       for (const item of value) {
         visit(item, key);
       }
       return;
     }
-
     if (
       typeof value ===
       'object'
@@ -3512,20 +3071,15 @@ function findLeafValues(
       }
     }
   }
-
   visit(object);
-
   return result;
 }
-
 function valuesAtProperties(
   object,
   path
 ) {
   if (!object) return [];
-
   let value = object;
-
   for (const part of path) {
     if (
       value &&
@@ -3538,12 +3092,10 @@ function valuesAtProperties(
       return [];
     }
   }
-
   const values =
     Array.isArray(value)
       ? value
       : [value];
-
   return values
     .map(
       item =>
@@ -3555,7 +3107,6 @@ function valuesAtProperties(
     )
     .filter(Boolean);
 }
-
 function textAtProperties(
   object,
   path
@@ -3565,10 +3116,8 @@ function textAtProperties(
       object,
       path
     );
-
   return values[0] || '';
 }
-
 function xmlRecordEntries(
   properties,
   containerName
@@ -3577,19 +3126,14 @@ function xmlRecordEntries(
     properties?.children?.[
       containerName
     ];
-
   if (!container) return [];
-
   const entry =
     container?.children?.entry;
-
   if (!entry) return [];
-
   return Array.isArray(entry)
     ? entry
     : [entry];
 }
-
 function hasNamedRecord(
   records,
   name
@@ -3602,7 +3146,6 @@ function hasNamedRecord(
       )
   );
 }
-
 function parseServiceProtocols(
   node
 ) {
@@ -3611,7 +3154,6 @@ function parseServiceProtocols(
       node,
       ['protocol']
     );
-
   if (!protocol) return [];
   return elementChildren(
     protocol
@@ -3619,7 +3161,6 @@ function parseServiceProtocols(
     child => ({
       protocol:
         localName(child),
-
       ports:
         descendantsNamed(
           child,
@@ -3630,19 +3171,16 @@ function parseServiceProtocols(
               directText(port)
           )
           .filter(Boolean),
-
       properties:
         flattenXml(child)
     })
   );
 }
-
 function descendantsNamed(
   root,
   wanted
 ) {
   const result = [];
-
   walkElements(
     root,
     node => {
@@ -3657,7 +3195,6 @@ function descendantsNamed(
   );
   return result;
 }
-
 function parseBoolean(
   value,
   fallback = false
@@ -3665,7 +3202,6 @@ function parseBoolean(
   if (value === '') {
     return fallback;
   }
-
   if (
     /^(yes|true|1|on)$/i.test(
       value
@@ -3673,7 +3209,6 @@ function parseBoolean(
   ) {
     return true;
   }
-
   if (
     /^(no|false|0|off)$/i.test(
       value
@@ -3681,10 +3216,8 @@ function parseBoolean(
   ) {
     return false;
   }
-
   return fallback;
 }
-
 function numberValue(value) {
   if (
     value === '' ||
@@ -3693,55 +3226,42 @@ function numberValue(value) {
   ) {
     return null;
   }
-
   const n = Number(value);
-
   return Number.isFinite(n)
     ? n
     : null;
 }
-
 function validIpOrCidr(value) {
   const s =
     String(value || '')
       .trim();
-
   if (!s) return false;
-
   const parts =
     s.split('/');
-
   const ip =
     parts[0];
-
   if (!validIp(ip)) {
     return false;
   }
-
   if (parts.length === 1) {
     return true;
   }
-
   if (
     parts.length !== 2 ||
     !/^\d+$/.test(parts[1])
   ) {
     return false;
   }
-
   const prefix =
     Number(parts[1]);
-
   return ip.includes(':')
     ? prefix <= 128
     : prefix <= 32;
 }
-
 function validIp(value) {
   const s =
     String(value || '')
       .trim();
-
   if (
     /^\d+(?:\.\d+){3}$/.test(s)
   ) {
@@ -3753,47 +3273,38 @@ function validIp(value) {
           Number(octet) <= 255
       );
   }
-
   if (s.includes(':')) {
     return validIpv6(s);
   }
-
   return false;
 }
-
 function validIpv6(value) {
   const s =
     String(value || '')
       .toLowerCase();
-
   if (
     !/^[0-9a-f:]+$/.test(s)
   ) {
     return false;
   }
-
   if (
     s.includes(':::')
   ) {
     return false;
   }
-
   const halves =
     s.split('::');
-
   if (
     halves.length > 2
   ) {
     return false;
   }
-
   const left =
     halves[0]
       ? halves[0]
           .split(':')
           .filter(Boolean)
       : [];
-
   const right =
     halves.length === 2 &&
     halves[1]
@@ -3801,7 +3312,6 @@ function validIpv6(value) {
           .split(':')
           .filter(Boolean)
       : [];
-
   if (
     left.some(
       x => x.length > 4
@@ -3812,7 +3322,6 @@ function validIpv6(value) {
   ) {
     return false;
   }
-
   if (
     halves.length === 2
   ) {
@@ -3822,12 +3331,10 @@ function validIpv6(value) {
       8
     );
   }
-
   return (
     left.length === 8
   );
 }
-
 function looksLikeIpOrCidr(
   value
 ) {
@@ -3835,31 +3342,25 @@ function looksLikeIpOrCidr(
     String(value || '')
   );
 }
-
 function validPortExpression(
   value
 ) {
   const s =
     String(value || '')
       .trim();
-
   const match =
     s.match(
       /^(\d+)(?:-(\d+))?$/
     );
-
   if (!match) {
     return false;
   }
-
   const start =
     Number(match[1]);
-
   const end =
     match[2] === undefined
       ? start
       : Number(match[2]);
-
   return (
     start >= 1 &&
     start <= 65535 &&
@@ -3868,38 +3369,30 @@ function validPortExpression(
     start <= end
   );
 }
-
 function validTimestamp(value) {
   const s =
     String(value || '')
       .trim();
-
   if (!s) return false;
-
   const date =
     new Date(s);
-
   return Number.isFinite(
     date.getTime()
   );
 }
-
 function validDateOnly(value) {
   const match =
     String(value || '')
       .match(
         /^(\d{4})-(\d{2})-(\d{2})$/
       );
-
   if (!match) {
     return false;
   }
-
   const date =
     new Date(
       `${value}T00:00:00Z`
     );
-
   return (
     date.getUTCFullYear() ===
       Number(match[1]) &&
@@ -3909,7 +3402,6 @@ function validDateOnly(value) {
       Number(match[3])
   );
 }
-
 function validClockTime(
   value
 ) {
@@ -3918,15 +3410,11 @@ function validClockTime(
       .match(
         /^(\d{2}):(\d{2})$/
       );
-
   if (!match) return false;
-
   const hours =
     Number(match[1]);
-
   const minutes =
     Number(match[2]);
-
   return (
     hours >= 0 &&
     hours <= 23 &&
@@ -3934,13 +3422,11 @@ function validClockTime(
     minutes <= 59
   );
 }
-
 function ipToInt(value) {
   const octets =
     String(value || '')
       .split('.')
       .map(Number);
-
   if (
     octets.length !== 4 ||
     octets.some(
@@ -3952,7 +3438,6 @@ function ipToInt(value) {
   ) {
     return NaN;
   }
-
   return (
     (
       (
@@ -3964,32 +3449,25 @@ function ipToInt(value) {
     octets[3]
   );
 }
-
 function duplicateValues(
   values
 ) {
   const seen =
     new Set();
-
   const duplicates = [];
-
   for (const value of values || []) {
     if (seen.has(value)) {
       duplicates.push(value);
     }
-
     seen.add(value);
   }
-
   return unique(duplicates);
 }
-
 function unique(values) {
   return [
     ...new Set(values)
   ];
 }
-
 function looksLikeBuiltInAny(
   value
 ) {
@@ -4003,13 +3481,11 @@ function looksLikeBuiltInAny(
       .toLowerCase()
   );
 }
-
 function dedupeFindings(
   findings
 ) {
   const seen =
     new Set();
-
   return findings.filter(
     finding => {
       const key =
@@ -4019,38 +3495,31 @@ function dedupeFindings(
           finding.rule,
           finding.text
         ].join('|');
-
       if (seen.has(key)) {
         return false;
       }
-
       seen.add(key);
       return true;
     }
   );
 }
-
 function buildXmlStats(
   parsed,
   findings
 ) {
   const rules =
     parsed.securityRules || [];
-
   return {
     totalRules:
       rules.length,
-
     enabledRules:
       rules.filter(
         rule => !rule.disabled
       ).length,
-
     disabledRules:
       rules.filter(
         rule => rule.disabled
       ).length,
-
     allowRules:
       rules.filter(
         rule =>
@@ -4058,7 +3527,6 @@ function buildXmlStats(
             rule.action
           )
       ).length,
-
     denyRules:
       rules.filter(
         rule =>
@@ -4066,7 +3534,6 @@ function buildXmlStats(
             rule.action
           )
       ).length,
-
     unknownActions:
       rules.filter(
         rule =>
@@ -4074,46 +3541,35 @@ function buildXmlStats(
             rule.action
           )
       ).length,
-
     warnings:
       findings.filter(
         x =>
           x.severity === 'warn'
       ).length,
-
     info:
       findings.filter(
         x =>
           x.severity === 'info'
       ).length,
-
     objects:
       parsed.objects.length,
-
     interfaces:
       parsed.interfaces.length,
-
     zones:
       parsed.zones.length,
-
     xmlElements:
       parsed.coverage.totalElements,
-
     xmlLeaves:
       parsed.coverage.leafElements,
-
     xmlAttributes:
       parsed.coverage.attributeCount,
-
     xmlComments:
       parsed.coverage.commentCount
   };
 }
-
 function renderAnalysis(a) {
   const s =
     a.stats || {};
-
   const overall =
     s.warnings
       ? `
@@ -4129,7 +3585,6 @@ function renderAnalysis(a) {
           This does not prove that the configuration is secure or operationally correct.
         </div>
       `;
-
   const statCards = [
     ['Rules', s.totalRules],
     ['Enabled', s.enabledRules],
@@ -4154,17 +3609,14 @@ function renderAnalysis(a) {
         `
     )
     .join('');
-
   const findings =
     renderFindings(
       a.findings || []
     );
-
   const rules =
     renderSecurityRules(
       a.rules || []
     );
-
   if (a.format !== 'xml') {
     return `
       ${overall}
@@ -4181,27 +3633,20 @@ function renderAnalysis(a) {
             : ''
         }
       </p>
-
       <h3>Rule analysis</h3>
       ${findings}
-
       <h3>Effective rule view</h3>
       ${rules}
-
       <h3>Objects</h3>
       ${renderObjects(a.objects || [])}
-
       <h3>Interfaces</h3>
-      ${renderSimpleRecords(a.interfaces || [])}
+      ${renderRecordTable(a.interfaces || [])}
     `;
   }
-
   return `
     ${overall}
-
     <h3>Configuration overview</h3>
     <div class="grid">${statCards}</div>
-
     <p class="small">
       Detected format:
       <strong>XML</strong>
@@ -4226,46 +3671,36 @@ function renderAnalysis(a) {
           : ''
       }
     </p>
-
     <h3>Findings</h3>
     ${findings}
-
     <h3>Security policy</h3>
     ${rules}
-
     <h3>Objects</h3>
     ${renderObjects(a.objects || [])}
-
     <h3>Shared configuration</h3>
     ${renderSharedConfiguration(
       a.configuration?.shared
     )}
-
     <h3>Network and routing</h3>
     ${renderNetworkConfiguration(
       a.configuration?.devices || {}
     )}
-
     <h3>Other policy rulebases</h3>
     ${renderPolicyRulebases(
       a.configuration?.devices || {}
     )}
-
     <h3>Profiles, authentication and remote access</h3>
     ${renderProfilesConfiguration(
       a.configuration?.devices || {}
     )}
-
     <h3>Management and configuration state</h3>
     ${renderManagementState(
       a.configuration
     )}
-
     <h3>Parser coverage</h3>
     ${renderCoverage(
       a.coverage
     )}
-
     <h3>Complete XML inventory</h3>
     <p class="small">
       This table is the loss-resistant fallback. Every XML element,
@@ -4278,7 +3713,6 @@ function renderAnalysis(a) {
     )}
   `;
 }
-
 function renderFindings(
   findings
 ) {
@@ -4289,7 +3723,6 @@ function renderFindings(
       </div>
     `;
   }
-
   return `
     <div class="table-wrap">
       <table>
@@ -4343,7 +3776,6 @@ function renderFindings(
     </div>
   `;
 }
-
 function renderSecurityRules(
   rules
 ) {
@@ -4354,7 +3786,6 @@ function renderSecurityRules(
       </div>
     `;
   }
-
   return `
     <div class="table-wrap">
       <table>
@@ -4443,7 +3874,6 @@ function renderSecurityRules(
     </div>
   `;
 }
-
 function renderObjects(
   objects
 ) {
@@ -4454,7 +3884,6 @@ function renderObjects(
       </p>
     `;
   }
-
   return `
     <div class="table-wrap">
       <table>
@@ -4501,16 +3930,13 @@ function renderObjects(
     </div>
   `;
 }
-
 function renderSharedConfiguration(
   shared
 ) {
   if (!shared) {
     return '<p class="small">No shared configuration.</p>';
   }
-
   const blocks = [];
-
   if (shared.tags?.length) {
     blocks.push(`
       <h4>Tags</h4>
@@ -4519,7 +3945,6 @@ function renderSharedConfiguration(
       )}
     `);
   }
-
   if (shared.applications?.length) {
     blocks.push(`
       <h4>Applications</h4>
@@ -4528,7 +3953,6 @@ function renderSharedConfiguration(
       )}
     `);
   }
-
   if (shared.applicationGroups?.length) {
     blocks.push(`
       <h4>Application groups</h4>
@@ -4537,7 +3961,6 @@ function renderSharedConfiguration(
       )}
     `);
   }
-
   if (shared.applicationFilters?.length) {
     blocks.push(`
       <h4>Application filters</h4>
@@ -4546,7 +3969,6 @@ function renderSharedConfiguration(
       )}
     `);
   }
-
   if (shared.logSettings) {
     blocks.push(`
       <h4>Log settings</h4>
@@ -4555,21 +3977,17 @@ function renderSharedConfiguration(
       )}
     `);
   }
-
   return blocks.join('') ||
     '<p class="small">No additional shared sections.</p>';
 }
-
 function renderNetworkConfiguration(
   devices
 ) {
   const list =
     Object.values(devices || {});
-
   if (!list.length) {
     return '<p class="small">No device configuration.</p>';
   }
-
   return list
     .map(
       device => `
@@ -4579,64 +3997,52 @@ function renderNetworkConfiguration(
               ${escapeHtml(device.name)}
             </strong>
           </summary>
-
           <h4>System</h4>
           ${renderProperties(
             device.deviceconfig?.system
           )}
-
           <h4>Management</h4>
           ${renderProperties(
             device.deviceconfig?.management
           )}
-
           <h4>Interfaces</h4>
           ${renderRecordTable(
             device.network?.interfaces
           )}
-
           <h4>Zones</h4>
           ${renderRecordTable(
             device.network?.zones
           )}
-
           <h4>Virtual routers</h4>
           ${renderRecordTable(
             device.network?.virtualRouters
           )}
-
           <h4>DHCP</h4>
           ${renderRecordTable(
             device.network?.dhcp
           )}
-
           <h4>DNS proxy</h4>
           ${renderRecordTable(
             device.network?.dnsProxy
           )}
-
           <h4>IKE crypto profiles</h4>
           ${renderRecordTable(
             Object.values(
               device.network?.ike?.cryptoProfiles || {}
             ).flat()
           )}
-
           <h4>IKE gateways</h4>
           ${renderRecordTable(
             device.network?.ike?.gateways
           )}
-
           <h4>IPsec tunnels</h4>
           ${renderRecordTable(
             device.network?.ike?.ipsecTunnels
           )}
-
           <h4>PBF</h4>
           ${renderRecordTable(
             device.network?.pbfRules
           )}
-
           <h4>Device-level server profiles</h4>
           ${renderProfileCollections(
             device.deviceconfig?.serverProfiles
@@ -4646,12 +4052,10 @@ function renderNetworkConfiguration(
     )
     .join('');
 }
-
 function renderPolicyRulebases(
   devices
 ) {
   const output = [];
-
   for (const device of Object.values(
     devices || {}
   )) {
@@ -4665,22 +4069,18 @@ function renderPolicyRulebases(
               ${escapeHtml(vsys.name)}
             </strong>
           </summary>
-
           <h4>NAT</h4>
           ${renderRecordTable(
             vsys.natRules
           )}
-
           <h4>QoS</h4>
           ${renderRecordTable(
             vsys.qosRules
           )}
-
           <h4>Application Override</h4>
           ${renderRecordTable(
             vsys.applicationOverrideRules
           )}
-
           <h4>Decryption</h4>
           ${renderRecordTable(
             vsys.decryptionRules
@@ -4689,16 +4089,13 @@ function renderPolicyRulebases(
       `);
     }
   }
-
   return output.join('') ||
     '<p class="small">No additional policy rulebases.</p>';
 }
-
 function renderProfilesConfiguration(
   devices
 ) {
   const output = [];
-
   for (const device of Object.values(
     devices || {}
   )) {
@@ -4712,52 +4109,42 @@ function renderProfilesConfiguration(
               ${escapeHtml(vsys.name)}
             </strong>
           </summary>
-
           <h4>Schedules</h4>
           ${renderRecordTable(
             vsys.schedules
           )}
-
           <h4>Security profiles</h4>
           ${renderProfileCollections(
             vsys.profiles
           )}
-
           <h4>Profile groups</h4>
           ${renderRecordTable(
             vsys.profileGroups
           )}
-
           <h4>Certificates</h4>
           ${renderRecordTable(
             vsys.certificates
           )}
-
           <h4>Authentication profiles</h4>
           ${renderRecordTable(
             vsys.authenticationProfiles
           )}
-
           <h4>Server profiles</h4>
           ${renderProfileCollections(
             vsys.serverProfiles
           )}
-
           <h4>GlobalProtect</h4>
           ${renderProfileCollections(
             vsys.globalProtect
           )}
-
           <h4>User-ID</h4>
           ${renderProfileCollections(
             vsys.userId
           )}
-
           <h4>HIP objects</h4>
           ${renderRecordTable(
             vsys.hipObjects
           )}
-
           <h4>HIP profiles</h4>
           ${renderRecordTable(
             vsys.hipProfiles
@@ -4766,16 +4153,13 @@ function renderProfilesConfiguration(
       `);
     }
   }
-
   return output.join('') ||
     '<p class="small">No VSYS profile configuration.</p>';
 }
-
 function renderManagementState(
   configuration
 ) {
   const output = [];
-
   if (
     configuration?.management?.users?.length
   ) {
@@ -4786,7 +4170,6 @@ function renderManagementState(
       )}
     `);
   }
-
   if (
     configuration?.management?.passwordComplexity
   ) {
@@ -4797,7 +4180,6 @@ function renderManagementState(
       )}
     `);
   }
-
   if (
     configuration?.state?.readonly
   ) {
@@ -4808,7 +4190,6 @@ function renderManagementState(
       )}
     `);
   }
-
   if (
     configuration?.state?.configLocks?.length
   ) {
@@ -4819,7 +4200,6 @@ function renderManagementState(
       )}
     `);
   }
-
   if (
     configuration?.state?.audit?.length
   ) {
@@ -4830,7 +4210,6 @@ function renderManagementState(
       )}
     `);
   }
-
   if (
     configuration?.templateStacks?.length
   ) {
@@ -4841,7 +4220,6 @@ function renderManagementState(
       )}
     `);
   }
-
   if (
     configuration?.templates?.length
   ) {
@@ -4852,7 +4230,6 @@ function renderManagementState(
       )}
     `);
   }
-
   const plugins =
     Object.values(
       configuration?.devices || {}
@@ -4861,7 +4238,6 @@ function renderManagementState(
         device =>
           device.plugins || []
       );
-
   if (plugins.length) {
     output.push(`
       <h4>Plugins</h4>
@@ -4870,40 +4246,33 @@ function renderManagementState(
       )}
     `);
   }
-
   return output.join('') ||
     '<p class="small">No configuration-state sections.</p>';
 }
-
 function renderCoverage(
   coverage
 ) {
   if (!coverage) {
     return '<p class="small">No XML coverage data.</p>';
   }
-
   return `
     <div class="grid">
       <div class="stat">
         <span>Elements</span>
         <strong>${coverage.totalElements}</strong>
       </div>
-
       <div class="stat">
         <span>Leaf elements</span>
         <strong>${coverage.leafElements}</strong>
       </div>
-
       <div class="stat">
         <span>Attributes</span>
         <strong>${coverage.attributeCount}</strong>
       </div>
-
       <div class="stat">
         <span>Comments</span>
         <strong>${coverage.commentCount}</strong>
       </div>
-
       <div class="stat">
         <span>Unclassified roots</span>
         <strong>
@@ -4911,7 +4280,6 @@ function renderCoverage(
         </strong>
       </div>
     </div>
-
     <p class="small">
       Recognized root sections:
       ${coverage.recognizedMajorSections
@@ -4920,7 +4288,6 @@ function renderCoverage(
         )
         .join(' ')}
     </p>
-
     ${
       coverage.unrecognizedMajorSections.length
         ? `
@@ -4945,14 +4312,12 @@ function renderCoverage(
     }
   `;
 }
-
 function renderXmlInventory(
   inventory
 ) {
   if (!inventory.length) {
     return '<p class="small">No XML inventory.</p>';
   }
-
   return `
     <div class="table-wrap">
       <table>
@@ -4974,19 +4339,16 @@ function renderXmlInventory(
                   <td>${escapeHtml(
                     item.kind
                   )}</td>
-
                   <td class="mono">
                     ${escapeHtml(
                       item.path
                     )}
                   </td>
-
                   <td>
                     ${escapeHtml(
                       item.name
                     )}
                   </td>
-
                   <td class="mono">
                     ${escapeHtml(
                       redactDisplayValue(
@@ -4995,7 +4357,6 @@ function renderXmlInventory(
                       )
                     )}
                   </td>
-
                   <td class="mono">
                     ${escapeHtml(
                       JSON.stringify(
@@ -5015,14 +4376,12 @@ function renderXmlInventory(
     </div>
   `;
 }
-
 function renderRecordTable(
   records
 ) {
   if (!records?.length) {
     return '<p class="small">None.</p>';
   }
-
   return `
     <div class="table-wrap">
       <table>
@@ -5043,17 +4402,14 @@ function renderRecordTable(
                   <td>${escapeHtml(
                     record.name || ''
                   )}</td>
-
                   <td>${escapeHtml(
                     record.type || ''
                   )}</td>
-
                   <td class="mono">
                     ${escapeHtml(
                       record.path || ''
                     )}
                   </td>
-
                   <td class="mono">
                     ${escapeHtml(
                       summarizeRecord(
@@ -5070,30 +4426,16 @@ function renderRecordTable(
     </div>
   `;
 }
-
-function renderSimpleRecords(
-  records
-) {
-  return renderRecordTable(
-    records
-  );
-}
-
-function renderProfileCollections(
-  collections
-) {
+function renderProfileCollections(collections) {
   if (!collections) {
     return '<p class="small">None.</p>';
   }
-
   if (Array.isArray(collections)) {
     return renderRecordTable(
       collections
     );
   }
-
   const chunks = [];
-
   for (const [
     key,
     values
@@ -5106,24 +4448,20 @@ function renderProfileCollections(
     ) {
       continue;
     }
-
     chunks.push(`
       <h5>${escapeHtml(key)}</h5>
       ${renderRecordTable(values)}
     `);
   }
-
   return chunks.join('') ||
     '<p class="small">None.</p>';
 }
-
 function renderProperties(
   object
 ) {
   if (!object) {
     return '<p class="small">None.</p>';
   }
-
   return `
     <pre
       class="mono"
@@ -5137,7 +4475,6 @@ function renderProperties(
     )}</pre>
   `;
 }
-
 function summarizeObject(
   object
 ) {
@@ -5151,7 +4488,6 @@ function summarizeObject(
       '—'
     );
   }
-
   if (
     Array.isArray(
       object.members
@@ -5162,7 +4498,6 @@ function summarizeObject(
       '—'
     );
   }
-
   if (
     Array.isArray(
       object.protocols
@@ -5177,36 +4512,29 @@ function summarizeObject(
       )
       .join(' | ');
   }
-
   if (
     object.filter
   ) {
     return `dynamic filter: ${object.filter}`;
   }
-
   if (
     object.color
   ) {
     return `color=${object.color}`;
   }
-
   return summarizeRecord(
     object
   );
 }
-
 function summarizeRecord(
   record
 ) {
   const properties =
     record.properties;
-
   if (!properties) {
     return '—';
   }
-
   const parts = [];
-
   for (const key of [
     'ip-netmask',
     'fqdn',
@@ -5228,14 +4556,12 @@ function summarizeRecord(
         properties,
         key
       );
-
     if (values.length) {
       parts.push(
         `${key}=${values.join('|')}`
       );
     }
   }
-
   return (
     parts.join('; ') ||
     JSON.stringify(
@@ -5248,14 +4574,12 @@ function summarizeRecord(
     )
   );
 }
-
 function renderList(
   values
 ) {
   if (!values?.length) {
     return '<span class="small">—</span>';
   }
-
   return values
     .map(
       value =>
@@ -5263,11 +4587,6 @@ function renderList(
     )
     .join(' ');
 }
-
-/* -------------------------------------------------------------------------- */
-/* SAFE DISPLAY / EXPORT                                                      */
-/* -------------------------------------------------------------------------- */
-
 function isSensitiveName(
   name
 ) {
@@ -5276,7 +4595,6 @@ function isSensitiveName(
       String(name || '')
     );
 }
-
 function redactDisplayValue(
   value,
   name
@@ -5286,18 +4604,15 @@ function redactDisplayValue(
   ) {
     return '[redacted]';
   }
-
   return String(
     value ?? ''
   );
 }
-
 function redactAttributes(
   attributes,
   parentName = ''
 ) {
   const output = {};
-
   for (const [
     key,
     value
@@ -5310,10 +4625,8 @@ function redactAttributes(
         ? '[redacted]'
         : value;
   }
-
   return output;
 }
-
 function redactSensitiveData(
   value,
   key = ''
@@ -5323,7 +4636,6 @@ function redactSensitiveData(
   ) {
     return '[redacted]';
   }
-
   if (Array.isArray(value)) {
     return value.map(
       item =>
@@ -5333,7 +4645,6 @@ function redactSensitiveData(
         )
     );
   }
-
   if (
     !value ||
     typeof value !==
@@ -5341,9 +4652,7 @@ function redactSensitiveData(
   ) {
     return value;
   }
-
   const output = {};
-
   for (const [
     childKey,
     childValue
@@ -5356,38 +4665,30 @@ function redactSensitiveData(
         childKey
       );
   }
-
   return output;
 }
-
 function parseSetConfig(text) {
   const rules = [];
   const objects = [];
   const interfaces = [];
   const zones = [];
   const metadata = {};
-
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.trim();
     if (!line || line.startsWith('#')) continue;
-
     const tokens = tokenizeSet(line);
     if (!tokens.length || tokens[0].toLowerCase() !== 'set') continue;
-
     const lower = line.toLowerCase();
-
     if (lower.includes('rulebase security rules')) {
       const rule = parseSetRule(tokens);
       if (rule) rules.push(rule);
       continue;
     }
-
     if (lower.includes('deviceconfig') && lower.includes('hostname')) {
       const i = tokens.findIndex(x => x.toLowerCase() === 'hostname');
       if (i >= 0 && tokens[i + 1]) metadata.hostname = tokens[i + 1];
       continue;
     }
-
     if (lower.includes('address ')) {
       const idx = tokens.findIndex(x => x.toLowerCase() === 'address');
       if (idx >= 0 && tokens[idx + 1]) {
@@ -5399,7 +4700,6 @@ function parseSetConfig(text) {
       }
       continue;
     }
-
     if (lower.includes('address-group ')) {
       const idx = tokens.findIndex(x => x.toLowerCase() === 'address-group');
       if (idx >= 0 && tokens[idx + 1]) {
@@ -5411,7 +4711,6 @@ function parseSetConfig(text) {
       }
       continue;
     }
-
     if (lower.includes('network interface ')) {
       const idx = tokens.findIndex(x => x.toLowerCase() === 'interface');
       if (idx >= 0 && tokens[idx + 1]) {
@@ -5422,7 +4721,6 @@ function parseSetConfig(text) {
         });
       }
     }
-
     if (lower.includes('network virtual-router') &&
         lower.includes('interface')) {
       const idx = tokens.findIndex(x => x.toLowerCase() === 'interface');
@@ -5435,7 +4733,6 @@ function parseSetConfig(text) {
       }
     }
   }
-
   return {
     rules: mergeSetRules(rules),
     objects,
@@ -5444,16 +4741,13 @@ function parseSetConfig(text) {
     metadata
   };
 }
-
 function parseSetRule(tokens) {
   const ruleIndex = tokens.findIndex(
     x => x.toLowerCase() === 'rules'
   );
   if (ruleIndex < 0 || !tokens[ruleIndex + 1]) return null;
-
   const name = tokens[ruleIndex + 1];
   const rest = tokens.slice(ruleIndex + 2);
-
   const rule = {
     name,
     source: 'set',
@@ -5471,7 +4765,6 @@ function parseSetRule(tokens) {
     logEnd: false,
     description: ''
   };
-
   const fields = {
     from: 'from',
     to: 'to',
@@ -5482,11 +4775,9 @@ function parseSetRule(tokens) {
     category: 'categories',
     'source-user': 'users'
   };
-
   for (let i = 0; i < rest.length; i++) {
     const key = rest[i];
     const prop = fields[key];
-
     if (prop) {
       const vals = [];
       i++;
@@ -5501,7 +4792,6 @@ function parseSetRule(tokens) {
       rule[prop].push(...vals);
       continue;
     }
-
     if (key === 'action' && rest[i + 1]) {
       rule.action = rest[++i];
     } else if (key === 'disabled' && rest[i + 1]) {
@@ -5514,20 +4804,16 @@ function parseSetRule(tokens) {
       rule.description = rest[++i];
     }
   }
-
   return rule;
 }
-
 function mergeSetRules(rules) {
   const map = new Map();
-
   for (const rule of rules) {
     const existing = map.get(rule.name);
     if (!existing) {
       map.set(rule.name, rule);
       continue;
     }
-
     for (const key of [
       'from',
       'to',
@@ -5540,28 +4826,22 @@ function mergeSetRules(rules) {
     ]) {
       existing[key] = unique([...existing[key], ...rule[key]]);
     }
-
     if (rule.action !== 'unknown') existing.action = rule.action;
     existing.disabled ||= rule.disabled;
     existing.logStart ||= rule.logStart;
     existing.logEnd ||= rule.logEnd;
     if (rule.description) existing.description = rule.description;
   }
-
   return [...map.values()];
 }
-
 function parseRuleCsv(text) {
   const rows = parseCsv(text);
   if (!rows.length) return [];
-
   const headers = rows[0].map(normalizeHeader);
   const rules = [];
-
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
     if (!row.some(Boolean)) continue;
-
     const get = (...names) => {
       for (const name of names) {
         const idx = headers.indexOf(normalizeHeader(name));
@@ -5569,7 +4849,6 @@ function parseRuleCsv(text) {
       }
       return '';
     };
-
     rules.push({
       name: get('name', 'rule', 'rule name') || `Rule ${i}`,
       source: 'CSV',
@@ -5588,45 +4867,34 @@ function parseRuleCsv(text) {
       description: get('description')
     });
   }
-
   return rules;
 }
-
 function parseTextShow(text) {
   const rules = [];
   const objects = [];
   const interfaces = [];
   const zones = [];
   const metadata = {};
-
   const lines = text.split(/\r?\n/);
   let currentRule = null;
-
   for (const raw of lines) {
     const line = raw.trim();
     if (!line) continue;
-
     const hostname = line.match(/hostname\s*[:=]\s*(.+)$/i);
     if (hostname) metadata.hostname = hostname[1].trim();
-
     const ruleHeader = line.match(
       /(?:rule(?:base)?\s+security\s+rules?|security\s+rule)\s*[:=]?\s*(.+)$/i
     );
-
     if (ruleHeader) {
       if (currentRule) rules.push(currentRule);
       currentRule = emptyRule(ruleHeader[1].trim(), 'text');
       continue;
     }
-
     if (!currentRule) continue;
-
     const pair = line.match(/^([A-Za-z][A-Za-z _-]*)\s*[:=]\s*(.*)$/);
     if (!pair) continue;
-
     const key = normalizeHeader(pair[1]);
     const value = pair[2].trim();
-
     if (key === 'from') currentRule.from = splitField(value);
     else if (key === 'to') currentRule.to = splitField(value);
     else if (key === 'source') currentRule.sourceAddresses = splitField(value);
@@ -5639,20 +4907,14 @@ function parseTextShow(text) {
     else if (key === 'description') currentRule.description = value;
     else if (key === 'disabled') currentRule.disabled = /yes|true/i.test(value);
   }
-
   if (currentRule) rules.push(currentRule);
-
   return { rules, objects, interfaces, zones, metadata };
 }
-
 function analyzeRules(rules) {
   const findings = [];
-  const shadowCandidates = [];
-
   for (let i = 0; i < rules.length; i++) {
     const r = rules[i];
     const name = r.name;
-
     if (r.disabled) {
       findings.push({
         severity: 'info',
@@ -5661,7 +4923,6 @@ function analyzeRules(rules) {
         text: 'Rule is disabled.'
       });
     }
-
     if (isAny(r.sourceAddresses) &&
         isAny(r.destinationAddresses) &&
         isAny(r.applications) &&
@@ -5673,7 +4934,6 @@ function analyzeRules(rules) {
         text: 'Source, destination, application and service are all effectively any. This rule can match a very large portion of traffic.'
       });
     }
-
     if (isAny(r.sourceAddresses)) {
       findings.push({
         severity: 'info',
@@ -5682,7 +4942,6 @@ function analyzeRules(rules) {
         text: 'Source address is any.'
       });
     }
-
     if (isAny(r.destinationAddresses)) {
       findings.push({
         severity: 'info',
@@ -5691,7 +4950,6 @@ function analyzeRules(rules) {
         text: 'Destination address is any.'
       });
     }
-
     if (isAny(r.applications)) {
       findings.push({
         severity: 'info',
@@ -5700,7 +4958,6 @@ function analyzeRules(rules) {
         text: 'Application is any. Port/service matching may therefore carry more of the policy burden.'
       });
     }
-
     if (isAny(r.services)) {
       findings.push({
         severity: 'info',
@@ -5709,7 +4966,6 @@ function analyzeRules(rules) {
         text: 'Service is any.'
       });
     }
-
     if (/^(allow|permit)$/i.test(r.action) &&
         isAny(r.sourceAddresses) &&
         isAny(r.destinationAddresses) &&
@@ -5721,7 +4977,6 @@ function analyzeRules(rules) {
         text: 'Allow rule has any source, destination and service. Review whether the scope is intentional.'
       });
     }
-
     if (/^(deny|drop|reject)$/i.test(r.action) &&
         isAny(r.sourceAddresses) &&
         isAny(r.destinationAddresses) &&
@@ -5734,7 +4989,6 @@ function analyzeRules(rules) {
         text: 'This looks like a catch-all deny rule, commonly used as a final policy boundary.'
       });
     }
-
     if (r.logStart && r.logEnd) {
       findings.push({
         severity: 'info',
@@ -5743,7 +4997,6 @@ function analyzeRules(rules) {
         text: 'Both session start and session end logging are enabled.'
       });
     }
-
     if (r.from.length && r.to.length &&
         r.from.some(x => x.toLowerCase() === 'any') &&
         r.to.some(x => x.toLowerCase() === 'any')) {
@@ -5754,21 +5007,15 @@ function analyzeRules(rules) {
         text: 'Both source and destination zones are any.'
       });
     }
-
-    shadowCandidates.push(r);
   }
-
   for (let i = 0; i < rules.length; i++) {
     for (let j = i + 1; j < rules.length; j++) {
       const a = rules[i];
       const b = rules[j];
-
       if (a.disabled || b.disabled) continue;
       if (!sameMatchScope(a, b)) continue;
-
       const aa = String(a.action).toLowerCase();
       const ba = String(b.action).toLowerCase();
-
       if (aa !== ba) {
         findings.push({
           severity: 'warn',
@@ -5786,7 +5033,6 @@ function analyzeRules(rules) {
       }
     }
   }
-
   if (rules.length) {
     const last = rules[rules.length - 1];
     if (/^(allow|permit)$/i.test(last.action) &&
@@ -5800,10 +5046,8 @@ function analyzeRules(rules) {
       });
     }
   }
-
   return findings;
 }
-
 function buildStats(rules, findings) {
   return {
     totalRules: rules.length,
@@ -5816,7 +5060,6 @@ function buildStats(rules, findings) {
     info: findings.filter(f => f.severity === 'info').length
   };
 }
-
 function emptyRule(name, source) {
   return {
     name,
@@ -5836,44 +5079,6 @@ function emptyRule(name, source) {
     description: ''
   };
 }
-
-function childValues(node, name) {
-  const parent = Array.from(node.children).find(
-    x => x.tagName.toLowerCase() === name.toLowerCase()
-  );
-  if (!parent) return [];
-
-  return Array.from(parent.children)
-    .map(x => (x.textContent || '').trim())
-    .filter(Boolean);
-}
-
-function childText(node, selector) {
-  const found = node.querySelector(`:scope > ${selector}`);
-  return found ? found.textContent.trim() : '';
-}
-
-function attrOrChild(node, name) {
-  return node.getAttribute(name) || childText(node, name);
-}
-
-function firstXmlText(doc, selectors) {
-  for (const selector of selectors) {
-    const n = doc.querySelector(selector);
-    if (n?.textContent?.trim()) return n.textContent.trim();
-  }
-  return '';
-}
-
-function directValue(node) {
-  const parts = [];
-  for (const child of node.children) {
-    const text = child.textContent?.trim();
-    if (text) parts.push(`${child.tagName}=${text}`);
-  }
-  return parts.join('; ');
-}
-
 function tokenizeSet(line) {
   const out = [];
   const re = /"((?:\\.|[^"])*)"|'((?:\\.|[^'])*)'|(\S+)/g;
@@ -5884,16 +5089,13 @@ function tokenizeSet(line) {
   }
   return out;
 }
-
 function parseCsv(text) {
   const rows = [];
   let row = [];
   let cell = '';
   let quoted = false;
-
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
-
     if (c === '"') {
       if (quoted && text[i + 1] === '"') {
         cell += '"';
@@ -5914,15 +5116,12 @@ function parseCsv(text) {
       cell += c;
     }
   }
-
   if (cell || row.length) {
     row.push(cell);
     rows.push(row);
   }
-
   return rows;
 }
-
 function normalizeHeader(value) {
   return String(value || '')
     .trim()
@@ -5930,7 +5129,6 @@ function normalizeHeader(value) {
     .replace(/[_-]+/g, ' ')
     .replace(/\s+/g, ' ');
 }
-
 function splitField(value) {
   if (!value) return [];
   return String(value)
@@ -5938,17 +5136,10 @@ function splitField(value) {
     .map(x => x.trim())
     .filter(Boolean);
 }
-
-function list(values) {
-  const v = values?.length ? values : ['any'];
-  return v.map(x => `<code>${escapeHtml(x)}</code>`).join(' ');
-}
-
 function isAny(values) {
   return !values?.length ||
     values.some(v => ['any', 'all', '*'].includes(String(v).trim().toLowerCase()));
 }
-
 function setEqual(a, b) {
   const x = new Set((a || []).map(v => String(v).toLowerCase()));
   const y = new Set((b || []).map(v => String(v).toLowerCase()));
@@ -5956,11 +5147,9 @@ function setEqual(a, b) {
   for (const v of x) if (!y.has(v)) return false;
   return true;
 }
-
 async function readLocalFile(file) {
   const buffer = await file.arrayBuffer();
   const bytes = new Uint8Array(buffer);
-
   try {
     return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   } catch {
