@@ -32,7 +32,7 @@ import { renderCronConst } from "./tools/cron_const.js";
 import { renderCiscoFirewall } from "./tools/ciscoacl.js";
 import { renderDllAnalyzer } from "./tools/dlls.js";
 import { renderChmod } from "./tools/chmod.js";
-import { renderPaloAlto } from "./tools/paloalto.js";
+import { renderPaloAlto } from "./tools/paloaltoRewrite.js";
 import { renderDism } from './tools/dism.js';
 import { renderJsonViewer } from './tools/jsonviewer.js';
 import { renderCitrixAdc } from './tools/citrixadc.js';
