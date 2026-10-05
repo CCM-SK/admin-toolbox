@@ -2453,8 +2453,7 @@ function analyzeXmlConfiguration(parsed) {
         rule: section,
         code: 'UNRECOGNIZED_MAJOR_SECTION',
         text:
-          `Root XML section ${section} has no dedicated semantic parser. ` +
-          `Its contents remain available in the complete XML inventory.`
+          `Root XML section ${section} has no dedicated semantic parser. Its contents remain available in the complete XML inventory.`
       });
     }
   }
@@ -2505,9 +2504,7 @@ function analyzeSemanticRuleOverlap(rules) {
           rule: later.name,
           code: 'POTENTIAL_SEMANTIC_SHADOW',
           text:
-            `Later rule "${later.name}" is contained by the earlier scope ` +
-            `of "${earlier.name}", which denies traffic. Review whether ` +
-            `the later allow can ever be reached.`
+            `Later rule "${later.name}" is contained by the earlier scope of "${earlier.name}", which denies traffic. Review whether the later allow can ever be reached.`
         });
       } else if (
         earlierAction !== laterAction
@@ -2517,9 +2514,7 @@ function analyzeSemanticRuleOverlap(rules) {
           rule: later.name,
           code: 'OVERLAPPING_CONFLICT',
           text:
-            `Rule "${later.name}" is contained by the earlier scope ` +
-            `of "${earlier.name}", but the actions differ ` +
-            `(${earlier.action} vs ${later.action}).`
+            `Rule "${later.name}" is contained by the earlier scope of "${earlier.name}", but the actions differ (${earlier.action} vs ${later.action}).`
         });
       } else {
         findings.push({
@@ -2527,8 +2522,7 @@ function analyzeSemanticRuleOverlap(rules) {
           rule: later.name,
           code: 'OVERLAPPING_SCOPE',
           text:
-            `Rule "${later.name}" is contained by the earlier scope ` +
-            `of "${earlier.name}". Review whether the overlap is intentional.`
+            `Rule "${later.name}" is contained by the earlier scope of "${earlier.name}". Review whether the overlap is intentional.`
         });
       }
     }
@@ -3575,14 +3569,13 @@ function renderAnalysis(a) {
       ? `
         <div class="status warning">
           <strong>${escapeHtml(String(s.warnings))} review item(s) found</strong><br>
-          Local heuristics and validation identified configuration constructs
-          that deserve review. This is not a PAN-OS commit simulator.
+          Local heuristics and validation identified configuration constructs that deserve review. This is not a PAN-OS commit simulator.
         </div>
       `
       : `
         <div class="status success">
           <strong>No heuristic warning was detected.</strong><br>
-          This does not prove that the configuration is secure or operationally correct.
+          This does not(!) prove that the configuration is secure or operationally correct.
         </div>
       `;
   const statCards = [
@@ -3701,16 +3694,17 @@ function renderAnalysis(a) {
     ${renderCoverage(
       a.coverage
     )}
-    <h3>Complete XML inventory</h3>
-    <p class="small">
-      This table is the loss-resistant fallback. Every XML element,
-      attribute, comment and processing instruction is retained here,
-      including content that has no dedicated semantic parser yet.
-      Sensitive fields are redacted in the visible view.
-    </p>
-    ${renderXmlInventory(
-      a.inventory || []
-    )}
+    <details>
+      <summary>
+        <strong>Complete XML inventory</strong>
+      </summary>
+      <p class="small">
+        This table is the loss-resistant fallback. Every XML element, attribute, comment and processing instruction is retained here, including content that has no dedicated semantic parser yet. Sensitive fields are redacted in the visible view.
+      </p>
+      ${renderXmlInventory(
+        a.inventory || []
+      )}
+    </details>
   `;
 }
 function renderFindings(
