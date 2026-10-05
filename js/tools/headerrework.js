@@ -4100,6 +4100,18 @@ function rangeWithin(start, length, total) {
   );
 }
 
+function decodeUtf16LE(bytes) {
+  return new TextDecoder('utf-16le').decode(bytes);
+}
+
+function decodeWindows1252(bytes) {
+  try {
+    return new TextDecoder('windows-1252').decode(bytes);
+  } catch {
+    return new TextDecoder('iso-8859-1').decode(bytes);
+  }
+}
+
 export const headerAnalyzerInternals = {
   parseHeaders,
   parseAuthResults,
