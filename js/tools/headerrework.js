@@ -2000,48 +2000,62 @@ function renderReceivedTable(a) {
 }
 
 function renderTimeline(a) {
-  const valid = [...a.receivedHops]
-    .filter(h => h.timestamp.valid)
-    .sort((x, y) => x.timestamp.date - y.timestamp.date);
+  const path = getTransportPath(a.receivedHops);
+  const valid = path.filter(h => h.timestamp.valid);
 
-  if (!valid.length) {
+  if (!path.length) {
     return `
       <div class="status warning">
-        No parseable Received timestamps were found, so a transport timeline cannot be constructed.
+        No Received headers were found, so a transport path cannot be constructed.
       </div>
     `;
   }
 
-  const messageDate = a.timestamp.messageDate;
+  const cards = path.map((hop, index) => {
+    const previous = path[index - 1];
 
-  const cards = valid.map((hop, index) => {
-    const previous = valid[index - 1];
-    const gap = previous
-      ? hop.timestamp.date - previous.timestamp.date
-      : null;
+    let intervalText = 'Oldest observed hop';
+
+    if (previous?.timestamp.valid && hop.timestamp.valid) {
+      const delta =
+        hop.timestamp.date.getTime() -
+        previous.timestamp.date.getTime();
+
+      intervalText = `+${formatDuration(delta)} from previous hop`;
+    }
 
     return `
       <div class="stat">
         <span>
-          Hop ${hop.appearanceIndex} ·
-          ${escapeHtml(hop.by.host || hop.by.ip || 'unknown receiver')}
+          Hop ${hop.hopIndex}
+          <span class="small">· header #${hop.appearanceIndex}</span>
         </span>
 
-        <strong>${escapeHtml(hop.timestamp.date.toISOString())}</strong>
+        <strong>
+          ${escapeHtml(
+            hop.by.host ||
+            hop.by.ip ||
+            'unknown receiver'
+          )}
+        </strong>
+
+        ${
+          hop.timestamp.valid
+            ? `<div class="small">
+                ${escapeHtml(hop.timestamp.date.toISOString())}
+              </div>`
+            : ''
+        }
 
         <div class="small">
-          ${escapeHtml(
-            gap == null
-              ? 'Oldest observed timestamp'
-              : `+${formatDuration(gap)} from previous chronological hop`
-          )}
+          ${escapeHtml(intervalText)}
         </div>
 
         ${
           hop.from.host || hop.from.ip
             ? `<div class="small mono">
-                from ${escapeHtml(hop.from.host || '')}
-                ${hop.from.ip ? `[${escapeHtml(hop.from.ip)}]` : ''}
+                from ${escapeHtml(hop.from.host || '—')}
+                ${hop.from.ip ? ` [${escapeHtml(hop.from.ip)}]` : ''}
               </div>`
             : ''
         }
@@ -2049,31 +2063,55 @@ function renderTimeline(a) {
     `;
   }).join('');
 
-  const comparisons = [];
+  const timestampNotes = [];
 
-  if (messageDate) {
-    const oldest = valid[0].timestamp.date;
-    const newest = valid[valid.length - 1].timestamp.date;
+  if (valid.length >= 2) {
+    const intervals = [];
 
-    comparisons.push(
-      `Date header → oldest Received: ${formatSignedDuration(oldest - messageDate)}`
-    );
-    comparisons.push(
-      `Date header → newest Received: ${formatSignedDuration(newest - messageDate)}`
-    );
-  }
+    for (let i = 1; i < valid.length; i++) {
+      const older = valid[i - 1];
+      const newer = valid[i];
+      intervals.push({
+        fromHop: older.hopIndex,
+        toHop: newer.hopIndex,
+        ms:
+          newer.timestamp.date.getTime() -
+          older.timestamp.date.getTime()
+      });
+    }
 
-  if (a.timestamp.transitMs != null) {
-    comparisons.push(
-      `Observed Received span: ${formatDuration(a.timestamp.transitMs)}`
-    );
+    const negative = intervals.filter(x => x.ms < 0);
+
+    if (negative.length) {
+      timestampNotes.push(
+        `${negative.length} timestamp interval(s) run backwards`
+      );
+    }
+
+    const largest = [...intervals]
+      .filter(x => x.ms >= 0)
+      .sort((a, b) => b.ms - a.ms)[0];
+
+    if (largest) {
+      timestampNotes.push(
+        `largest observed gap: ${formatDuration(largest.ms)}`
+      );
+    }
   }
 
   return `
-    <div class="grid">${cards}</div>
+    <div class="small" style="margin-bottom:8px">
+      Transport path is shown oldest → newest.
+      Header # refers to the original position of the Received field.
+    </div>
+
+    <div class="grid">
+      ${cards}
+    </div>
+
     ${
-      comparisons.length
-        ? `<p class="small">${comparisons.map(escapeHtml).join(' · ')}</p>`
+      timestampNotes.length
+        ? `<p class="small">${escapeHtml(timestampNotes.join(' · '))}</p>`
         : ''
     }
   `;
