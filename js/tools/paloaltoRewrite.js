@@ -5872,21 +5872,6 @@ function analyzeRules(rules) {
   return findings;
 }
 
-function sameMatchScope(a, b) {
-  const keys = [
-    'from',
-    'to',
-    'sourceAddresses',
-    'destinationAddresses',
-    'applications',
-    'services',
-    'categories',
-    'users'
-  ];
-
-  return keys.every(k => setEqual(a[k], b[k]));
-}
-
 function buildStats(rules, findings) {
   return {
     totalRules: rules.length,
