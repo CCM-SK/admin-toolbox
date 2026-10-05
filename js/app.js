@@ -39,6 +39,7 @@ import { renderCitrixAdc } from './tools/citrixadc.js';
 import { renderCookies } from './tools/cookies.js';
 import { renderRoute } from './tools/route.js';
 import { renderSddl } from './tools/sddl.js';
+import { renderTimeline } from './tools/timeline.js';
 
 const views = {
   dashboard: renderDashboard,
@@ -80,7 +81,8 @@ const views = {
   citrixadc: renderCitrixAdc,
   cookies: renderCookies,
   route: renderRoute,
-  sddl: renderSddl
+  sddl: renderSddl,
+  timeline: renderTimeline
 };
 
 const app = $('#app');
