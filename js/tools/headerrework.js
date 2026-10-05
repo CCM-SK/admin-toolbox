@@ -1999,6 +1999,15 @@ function renderReceivedTable(a) {
   `;
 }
 
+function getTransportPath(receivedHops) {
+  return [...(receivedHops || [])]
+    .reverse()
+    .map((hop, index) => ({
+      ...hop,
+      hopIndex: index + 1
+    }));
+}
+
 function renderTimeline(a) {
   const path = getTransportPath(a.receivedHops);
   const valid = path.filter(h => h.timestamp.valid);
