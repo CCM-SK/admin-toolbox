@@ -12,6 +12,7 @@ import { renderIdentity } from './tools/identity.js';
 import { renderRegex } from './tools/regex.js';
 import { renderDrivers } from "./tools/drivers.js";
 import { renderHeader } from "./tools/header.js";
+import { renderHeaderRework } from "./tools/headerrework.js";
 import { renderEventViewer } from "./tools/eventviewer.js";
 import { renderSShare } from "./tools/sshare.js";
 import { renderArchiveM } from "./tools/archivem.js";
@@ -54,6 +55,7 @@ const views = {
   audit: renderAudit,
   drivers: renderDrivers,
   header: renderHeader,
+  headerrework: renderHeaderRework,
   eventviewer: renderEventViewer,
   sshare: renderSShare,
   archivem: renderArchiveM,
