@@ -1440,10 +1440,6 @@ function parseVsysProfiles(node, scope, device) {
   return result;
 }
 
-/* -------------------------------------------------------------------------- */
-/* POLICY RECORDS                                                             */
-/* -------------------------------------------------------------------------- */
-
 function parseSecurityRuleXml(node, context = {}) {
   const rule = recordEntry(
     node,
@@ -1597,10 +1593,6 @@ function parsePolicyRuleXml(node, type, context = {}) {
   };
 }
 
-/* -------------------------------------------------------------------------- */
-/* TEMPLATE / STATE                                                            */
-/* -------------------------------------------------------------------------- */
-
 function parseXmlTemplates(ctx) {
   const devices =
     firstPath(ctx.root, ['devices']);
@@ -1696,10 +1688,6 @@ function parseXmlState(ctx) {
   ctx.coveredRoots.add('audit');
 }
 
-/* -------------------------------------------------------------------------- */
-/* REFERENCES / VALIDATION                                                    */
-/* -------------------------------------------------------------------------- */
-
 function detectXmlDuplicateEntries(ctx) {
   const findings = [];
   const buckets = new Map();
@@ -1766,8 +1754,6 @@ function detectXmlReferences(ctx) {
     new Set(
       serviceObjects.map(x => x.name)
     );
-
-  /* Address groups / service groups. */
   for (const object of ctx.objects) {
     if (object.type === 'address-group') {
       for (const ref of object.members || []) {
@@ -2070,8 +2056,6 @@ function detectXmlReferences(ctx) {
 
 function validateXmlConfiguration(ctx) {
   const findings = [];
-
-  /* Address values. */
   for (const object of ctx.objects) {
     if (object.type === 'address') {
       if (
@@ -2140,7 +2124,6 @@ function validateXmlConfiguration(ctx) {
     }
   }
 
-  /* Interfaces. */
   for (const device of Object.values(
     ctx.configuration.devices || {}
   )) {
@@ -2186,7 +2169,6 @@ function validateXmlConfiguration(ctx) {
       }
     }
 
-    /* Zones. */
     for (const zone of device.network.zones || []) {
       const duplicateMembers =
         duplicateValues(
@@ -2214,8 +2196,6 @@ function validateXmlConfiguration(ctx) {
         });
       }
     }
-
-    /* Virtual routers / BGP / static routes. */
     for (const vr of device.network.virtualRouters || []) {
       const duplicateInterfaces =
         duplicateValues(
@@ -2413,8 +2393,6 @@ function validateXmlConfiguration(ctx) {
         });
       }
     }
-
-    /* NAT / QoS / application override / decryption. */
     for (const vsys of device.vsys || []) {
       for (const rule of vsys.natRules || []) {
         const hasStatic =
@@ -2582,8 +2560,6 @@ function validateXmlConfiguration(ctx) {
           }
         }
       }
-
-      /* Certificates / schedules. */
       for (const cert of vsys.certificates || []) {
         if (
           cert.notAfter &&
@@ -2638,8 +2614,6 @@ function validateXmlConfiguration(ctx) {
       }
     }
   }
-
-  /* Management password complexity. */
   const pc =
     ctx.configuration.management.passwordComplexity;
 
@@ -2661,7 +2635,6 @@ function validateXmlConfiguration(ctx) {
     });
   }
 
-  /* Generic date / timestamp checks. */
   for (const item of ctx.inventory) {
     if (
       item.kind !== 'element' ||
@@ -2710,7 +2683,6 @@ function validateXmlConfiguration(ctx) {
     }
   }
 
-  /* Audit state. */
   for (const audit of ctx.configuration.state.audit || []) {
     const timestamp =
       audit.attributes?.timestamp;
@@ -2751,7 +2723,6 @@ function validateXmlConfiguration(ctx) {
     }
   }
 
-  /* Plugin booleans. */
   for (const device of Object.values(
     ctx.configuration.devices || {}
   )) {
@@ -2781,10 +2752,6 @@ function validateXmlConfiguration(ctx) {
 
   return findings;
 }
-
-/* -------------------------------------------------------------------------- */
-/* SECURITY RULE ANALYSIS                                                     */
-/* -------------------------------------------------------------------------- */
 
 function analyzeXmlConfiguration(parsed) {
   const findings = [
@@ -3054,11 +3021,6 @@ function normalizeMatchField(values) {
       new Set(normalized)
   };
 }
-
-/* -------------------------------------------------------------------------- */
-/* COVERAGE / INVENTORY                                                       */
-/* -------------------------------------------------------------------------- */
-
 function buildXmlCoverage(ctx) {
   const rootNames =
     elementChildren(ctx.root)
@@ -3228,10 +3190,6 @@ function flattenXml(node) {
 
   return result;
 }
-
-/* -------------------------------------------------------------------------- */
-/* XML TREE HELPERS                                                           */
-/* -------------------------------------------------------------------------- */
 
 function walkXmlNodes(
   node,
@@ -3502,10 +3460,6 @@ function recordEntry(
   };
 }
 
-/* -------------------------------------------------------------------------- */
-/* GENERIC PROPERTY HELPERS                                                   */
-/* -------------------------------------------------------------------------- */
-
 function findLeafValues(
   object,
   leafName
@@ -3649,10 +3603,6 @@ function hasNamedRecord(
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/* SERVICE PARSING                                                            */
-/* -------------------------------------------------------------------------- */
-
 function parseServiceProtocols(
   node
 ) {
@@ -3663,7 +3613,6 @@ function parseServiceProtocols(
     );
 
   if (!protocol) return [];
-
   return elementChildren(
     protocol
   ).map(
@@ -3706,13 +3655,8 @@ function descendantsNamed(
       }
     }
   );
-
   return result;
 }
-
-/* -------------------------------------------------------------------------- */
-/* VALUE VALIDATION                                                            */
-/* -------------------------------------------------------------------------- */
 
 function parseBoolean(
   value,
@@ -4021,10 +3965,6 @@ function ipToInt(value) {
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/* SMALL UTILITIES                                                            */
-/* -------------------------------------------------------------------------- */
-
 function duplicateValues(
   values
 ) {
@@ -4089,10 +4029,6 @@ function dedupeFindings(
     }
   );
 }
-
-/* -------------------------------------------------------------------------- */
-/* STATS                                                                      */
-/* -------------------------------------------------------------------------- */
 
 function buildXmlStats(
   parsed,
@@ -4173,10 +4109,6 @@ function buildXmlStats(
       parsed.coverage.commentCount
   };
 }
-
-/* -------------------------------------------------------------------------- */
-/* RENDERING                                                                  */
-/* -------------------------------------------------------------------------- */
 
 function renderAnalysis(a) {
   const s =
@@ -6015,10 +5947,6 @@ function list(values) {
 function isAny(values) {
   return !values?.length ||
     values.some(v => ['any', 'all', '*'].includes(String(v).trim().toLowerCase()));
-}
-
-function unique(values) {
-  return [...new Set(values)];
 }
 
 function setEqual(a, b) {
