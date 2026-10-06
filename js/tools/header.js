@@ -1,12 +1,10 @@
 import { $, escapeHtml, downloadText, enableToolDragging } from '../utils.js'; 
- 
 export const metadata = { 
   id: 'mail-header', 
   title: 'Mail-Header analyzer', 
   description: 'Analyze message headers locally', 
   path: '/#header' 
 }; 
- 
 export function renderHeader(app) { 
   app.innerHTML = ` 
     <div class="tool-window" id="mailHeaderWindow"> 
@@ -34,7 +32,6 @@ export function renderHeader(app) {
     <section class="card" id="mailHeaderResult" hidden></section> 
     </div> 
   `; 
- 
 /*  
 export function renderHeader(app) { 
   app.innerHTML = ` 
@@ -58,10 +55,8 @@ export function renderHeader(app) {
     <section class="card" id="mailHeaderResult" hidden></section> 
   `; 
 */ 
-
   const fileInput = $('#mailHeaderFile');
   const dropZone = $('#mailHeaderWindow');
-
   $('#mailHeaderPick').onclick = () => fileInput.click(); 
   fileInput.onchange = async e => { 
     const f = e.target.files?.[0]; 
@@ -69,20 +64,15 @@ export function renderHeader(app) {
     await loadMailFile(f);
     fileInput.value = '';
   };
-
   dropZone.addEventListener('dragover', e => {
     e.preventDefault();
   });
-
   dropZone.addEventListener('drop', async e => {
     e.preventDefault();
-
     const f = e.dataTransfer?.files?.[0];
     if (!f) return;
-
     await loadMailFile(f);
   });
-
   async function loadMailFile(f) {
     try { 
       const info = $('#mailHeaderFileInfo'); 
@@ -104,7 +94,6 @@ export function renderHeader(app) {
       result.innerHTML = `<div class="status danger">${escapeHtml(err.message || 'The message file could not be read.')}</div>`; 
     } 
   }
- 
   $('#mailHeaderClear').onclick = () => { 
     $('#mailHeaders').value = ''; 
     $('#mailHeaderResult').hidden = true; 
@@ -116,9 +105,7 @@ export function renderHeader(app) {
   $('#mailHeaders').addEventListener('keydown', e => { 
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analyze(); 
   }); 
- 
   enableToolDragging( $('#mailHeaderWindow'), $('#mailHeaderDragHandle'), () => document.body.classList.contains('sidebar-detached')); 
- 
   function analyze() { 
     const raw = $('#mailHeaders').value; 
     const result = $('#mailHeaderResult'); 
@@ -139,7 +126,6 @@ export function renderHeader(app) {
     } 
   } 
 } 
- 
 function parseHeaders(raw) { 
   const headerPart = raw.replace(/^\uFEFF/, '').split(/\r?\n\r?\n/, 1)[0]; 
   const physical = headerPart.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n'); 
@@ -165,7 +151,6 @@ function parseHeaders(raw) {
   if (!out.length) throw new Error('No RFC-style message headers were found.'); 
   return out; 
 } 
- 
 function values(headers, name) { 
   return headers.filter(h => h.name === name).map(h => h.value); 
 } 
@@ -180,7 +165,6 @@ function hasToken(value, token) {
   return new RegExp(`(?:^|[;\\s])${escapeRegExp(token)}(?:[=;\\s]|$)`, 'i').test(value); 
 } 
 function escapeRegExp(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); } 
- 
 function parseAuthResults(headers) { 
   const ars = values(headers, 'authentication-results'); 
   const out = { records: [], spf: [], dkim: [], dmarc: [], arc: [], compauth: [] }; 
@@ -210,7 +194,6 @@ function parseAuthResults(headers) {
   } 
   return out; 
 } 
- 
 function parseReceivedSpf(headers) { 
   return values(headers, 'received-spf').map(raw => { 
     const firstWord = raw.trim().split(/[\s(]/)[0].toLowerCase(); 
@@ -219,7 +202,6 @@ function parseReceivedSpf(headers) {
     return { result: firstWord, props, raw }; 
   }); 
 } 
- 
 function parseAuthSignature(headers, name) { 
   return values(headers, name).map(raw => { 
     const fields = {}; 
@@ -229,7 +211,6 @@ function parseAuthSignature(headers, name) {
     return { fields, raw }; 
   }); 
 } 
- 
 function parseAddressHeader(value) { 
   const match = value.match(/^(.*?)\s*<([^<>\s]+)>\s*$/); 
   const address = (match ? match[2] : value).trim(); 
@@ -237,7 +218,6 @@ function parseAddressHeader(value) {
   const at = address.lastIndexOf('@'); 
   return { name, address, domain: at > -1 ? address.slice(at + 1).toLowerCase() : '' }; 
 } 
- 
 function parseDomainFromAuth(items) { 
   const domains = []; 
   for (const item of items) { 
@@ -246,7 +226,6 @@ function parseDomainFromAuth(items) {
   } 
   return domains; 
 } 
- 
 function resultState(value, options = {}) { 
   const v = String(value || '').toLowerCase(); 
   if (v === 'pass' || v === 'valid' || v === 'bestguesspass') return 'good'; 
@@ -254,7 +233,6 @@ function resultState(value, options = {}) {
   if (v === 'softfail' || v === 'neutral' || v === 'temperror' || v === 'permerror') return 'warn'; 
   return options.empty ? 'neutral' : 'unknown'; 
 } 
- 
 function analyzeHeaders(headers) { 
   const auth = parseAuthResults(headers); 
   const receivedSpf = parseReceivedSpf(headers); 
@@ -268,17 +246,14 @@ function analyzeHeaders(headers) {
   const date = first(headers, 'date'); 
   const received = values(headers, 'received'); 
   const replyMismatch = !!(replyTo.domain && from.domain && replyTo.domain !== from.domain); 
- 
   const spfItem = auth.spf.find(x => x.result) || (receivedSpf[0] && { result: receivedSpf[0].result, params: receivedSpf[0].raw }); 
   const dkimItem = auth.dkim.find(x => x.result); 
   const dmarcItem = auth.dmarc.find(x => x.result); 
   const arcItem = auth.arc.find(x => x.result); 
   const compauthItem = auth.compauth.find(x => x.result); 
- 
   const dmarcDomain = dmarcItem ? parseDomainFromAuth([dmarcItem])[0] : ''; 
   const dkimDomains = parseDomainFromAuth(auth.dkim); 
   const spfDomains = parseDomainFromAuth(auth.spf); 
- 
   const checks = [ 
     makeAuthCheck('SPF', spfItem?.result, spfItem ? 'Authentication-Results / Received-SPF' : 'No SPF result found', spfDomains[0] || ''), 
     makeAuthCheck('DKIM', dkimItem?.result, dkimItem ? 'Authentication-Results' : (dkimSigs.length ? 'DKIM-Signature present, but no DKIM= result was found' : 'No DKIM result or signature found'), dkimDomains[0] || dkimSigs[0]?.fields?.d || ''), 
@@ -286,10 +261,8 @@ function analyzeHeaders(headers) {
     makeAuthCheck('ARC', arcItem?.result, arcItem ? 'Authentication-Results' : (arcSigs.length ? 'ARC-Seal present, but no ARC= result was found' : 'ARC is optional and was not reported'), '') 
   ]; 
   if (compauthItem) checks.push(makeAuthCheck('CompAuth', compauthItem.result, 'Authentication-Results', '')); 
- 
   const alignment = deriveAlignment(from.domain, dmarcDomain, dkimDomains, spfDomains, dmarcItem?.result); 
   checks.push(alignment); 
- 
   const anomalies = []; 
   if (!from.address) anomalies.push({ level: 'bad', text: 'No From header was found.' }); 
   if (!date) anomalies.push({ level: 'warn', text: 'No Date header was found.' }); 
@@ -297,7 +270,6 @@ function analyzeHeaders(headers) {
   if (replyMismatch) anomalies.push({ level: 'warn', text: `Reply-To domain (${replyTo.domain}) differs from From domain (${from.domain}). This is not automatically malicious, but it deserves attention.` }); 
   if (received.length === 0) anomalies.push({ level: 'warn', text: 'No Received headers were found. A normal Internet-delivered message usually has at least one.' }); 
   if (headers.filter(h => h.name === 'return-path').length > 1) anomalies.push({ level: 'warn', text: 'Multiple Return-Path headers were present.' }); 
- 
   const summary = summarize(checks, anomalies); 
   return { 
     checks, 
@@ -325,7 +297,6 @@ function analyzeHeaders(headers) {
     } 
   }; 
 } 
- 
 function makeAuthCheck(label, value, source, detail) { 
   const state = resultState(value, { empty: true }); 
   const normalized = value ? String(value).toLowerCase() : ''; 
@@ -335,7 +306,6 @@ function makeAuthCheck(label, value, source, detail) {
   else explanation = `${source} · reported ${normalized}`; 
   return { label, state, value: normalized || 'not found', explanation }; 
 } 
- 
 function deriveAlignment(fromDomain, dmarcDomain, dkimDomains, spfDomains, dmarcResult) { 
   if (!fromDomain || !dmarcResult) return { label: 'DMARC alignment', state: 'neutral', value: 'not established', explanation: 'Requires a DMARC result plus domain information to interpret alignment.' }; 
   const fromD = fromDomain.toLowerCase(); 
@@ -348,13 +318,11 @@ function deriveAlignment(fromDomain, dmarcDomain, dkimDomains, spfDomains, dmarc
   if (dmarcResult.toLowerCase() === 'pass') return { label: 'DMARC alignment', state: 'good', value: 'pass reported', explanation: 'DMARC passed at the sending receiver. Header data available here did not independently establish which aligned identifier supplied the pass.' }; 
   return { label: 'DMARC alignment', state: resultState(dmarcResult), value: dmarcResult.toLowerCase(), explanation: `From=${fromD}${dmarcD ? `; DMARC domain=${dmarcD}` : ''}` }; 
 } 
- 
 function relaxedDomainMatch(a, b) { 
   const x = String(a || '').toLowerCase().replace(/\.$/, ''); 
   const y = String(b || '').toLowerCase().replace(/\.$/, ''); 
   return !!x && !!y && (x === y || x.endsWith('.' + y) || y.endsWith('.' + x)); 
 } 
- 
 function summarize(checks, anomalies) { 
   const authChecks = checks.slice(0, 4); 
   const good = authChecks.filter(x => x.state === 'good').length; 
@@ -382,18 +350,15 @@ function summarize(checks, anomalies) {
   } 
   return { state, title, text, good, bad, warn }; 
 } 
- 
 function stateLabel(state) { 
   return state === 'good' ? 'GOOD' : state === 'bad' ? 'FAIL' : state === 'warn' ? 'CHECK' : 'N/A'; 
 } 
 function statusClass(state) { 
   return state === 'good' ? 'success' : state === 'bad' ? 'danger' : state === 'warn' ? 'warning' : ''; 
 } 
- 
 function statusIcon(state) { 
   return state === 'good' ? '&#10003;' : state === 'bad' ? '&#10007;' : state === 'warn' ? '&#9888;' : '&#8212;'; 
 } 
- 
 function renderResult(a, raw) { 
   const s = a.summary; 
   const summaryHtml = `<div class="status ${statusClass(s.state)}"><strong><span aria-hidden="true" style="font-size:1.15em;margin-right:6px">${statusIcon(s.state)}</span>${escapeHtml(s.title)}</strong><br><span>${escapeHtml(s.text)}</span></div>`; 
@@ -403,7 +368,6 @@ function renderResult(a, raw) {
       <strong><span aria-hidden="true" style="margin-right:6px">${statusIcon(c.state)}</span>${escapeHtml(c.value.toUpperCase())}</strong> 
       <div class="small">${escapeHtml(c.explanation)}</div> 
     </div>`).join(''); 
- 
   const identity = ` 
     <div class="grid"> 
       ${stat('From', a.from.address || 'Not found')} 
@@ -413,7 +377,6 @@ function renderResult(a, raw) {
       ${stat('Date', a.date || 'Not found')} 
       ${stat('Message-ID', a.messageId || 'Not found')} 
     </div>`; 
- 
   const authRows = [ 
     ...a.auth.records.flatMap((r, i) => [ 
       ...r.spf.map(x => ['SPF', x.result, x.params, `Authentication-Results #${i + 1}`]), 
@@ -424,30 +387,24 @@ function renderResult(a, raw) {
     ]), 
     ...a.receivedSpf.map(x => ['Received-SPF', x.result, x.raw, 'Received-SPF header']) 
   ]; 
- 
   const receivedRows = a.received.map((v, i) => `<tr><td>${i + 1}</td><td class="mono">${escapeHtml(v)}</td></tr>`).join(''); 
   const allHeaderRows = a.headers.map((h, i) => `<tr><td>${i + 1}</td><td>${escapeHtml(h.originalName)}</td><td class="mono">${escapeHtml(h.value)}</td></tr>`).join(''); 
   const authTable = authRows.length ? ` 
     <div class="table-wrap"><table><thead><tr><th>Mechanism</th><th>Result</th><th>Details</th><th>Source</th></tr></thead><tbody> 
       ${authRows.map(r => `<tr><td>${escapeHtml(r[0])}</td><td><strong>${escapeHtml(r[1])}</strong></td><td class="mono">${escapeHtml(r[2])}</td><td>${escapeHtml(r[3])}</td></tr>`).join('')} 
     </tbody></table></div>` : `<div class="status warning">No SPF/DKIM/DMARC/ARC authentication result records were found.</div>`; 
- 
   const anomalyHtml = a.anomalies.length 
     ? `<ul>${a.anomalies.map(x => `<li><strong>${escapeHtml(x.level.toUpperCase())}</strong> - ${escapeHtml(x.text)}</li>`).join('')}</ul>` 
     : `<div class="status success">No basic header anomalies were detected by this local heuristic pass.</div>`; 
- 
   const providerNotes = [ 
     ...a.dkimSigs.map((x, i) => `DKIM-Signature #${i + 1}: ${Object.entries(x.fields).map(([k, v]) => `${k}=${v}`).join('; ')}`), 
     ...a.arcSigs.map((x, i) => `ARC-Seal #${i + 1}: ${Object.entries(x.fields).map(([k, v]) => `${k}=${v}`).join('; ')}`) 
   ]; 
- 
   const exportPayload = sanitizeExport(a, raw); 
   const packed = encodeURIComponent(JSON.stringify(exportPayload)); 
- 
   return `${summaryHtml} 
     <h3>Authentication at a glance</h3> 
     <div class="grid">${cards}</div> 
- 
     <div class="result-actions"> 
       <button class="btn" id="mailExportJson">Export analysis JSON</button> 
       <button class="btn" id="mailExportText">Export summary TXT</button> 
@@ -470,11 +427,9 @@ function renderResult(a, raw) {
     </details> 
   `; 
 } 
- 
 function stat(label, value) { 
   return `<div class="stat"><span>${escapeHtml(label)}</span><strong style="word-break:break-word">${escapeHtml(value)}</strong></div>`; 
 } 
- 
 function sanitizeExport(a, raw) { 
   return { 
     note: 'Local header analysis only; no DNS, reputation, URL, or remote validation was performed.', 
@@ -496,7 +451,6 @@ function sanitizeExport(a, raw) {
     headers: a.headers 
   }; 
 } 
- 
 function bindExports(a, raw) { 
   $('#mailExportJson').onclick = () => downloadText('email-header-analysis.json', JSON.stringify(sanitizeExport(a, raw), null, 2), 'application/json;charset=utf-8'); 
   $('#mailExportText').onclick = () => { 
@@ -522,7 +476,6 @@ function bindExports(a, raw) {
     downloadText('email-header-analysis.txt', lines.join('\n'), 'text/plain;charset=utf-8'); 
   }; 
 } 
- 
 async function readLocalTextFile(file) { 
   const buffer = await file.arrayBuffer(); 
   const bytes = new Uint8Array(buffer); 
@@ -535,19 +488,16 @@ async function readLocalTextFile(file) {
     return new TextDecoder('windows-1252').decode(bytes); 
   } 
 } 
- 
 function extractEmlHeaders(raw) { 
   const text = String(raw || '').replace(/^\uFEFF/, ''); 
   const m = text.search(/\r?\n\r?\n/); 
   return m >= 0 ? text.slice(0, m) : text; 
 } 
- 
 async function parseMsgFile(file) { 
   const buffer = await file.arrayBuffer(); 
   const cfb = parseCompoundFile(buffer); 
   const props = extractMsgStringProperties(cfb.streams); 
   const headers = props['007d'] || ''; 
- 
   const properties = { 
     subject: props['0037'] || '', 
     senderName: props['0c1a'] || '', 
@@ -558,7 +508,6 @@ async function parseMsgFile(file) {
     replyTo: props['0050'] || '', 
     messageId: props['1035'] || '' 
   }; 
- 
   if (headers) { 
     return { 
       headers: extractEmlHeaders(headers), 
@@ -566,14 +515,12 @@ async function parseMsgFile(file) {
       note: `Loaded ${file.name} locally. PR_TRANSPORT_MESSAGE_HEADERS was extracted from the Outlook MSG container.` 
     }; 
   } 
- 
   return { 
     headers: buildSyntheticHeaders(properties), 
     properties, 
     note: `Loaded ${file.name} locally. The MSG did not expose Internet transport headers, so only common MAPI identity fields could be shown. SPF/DKIM/DMARC results cannot be inferred from those fields.` 
   }; 
 } 
- 
 function buildSyntheticHeaders(p) { 
   const lines = []; 
   if (p.subject) lines.push(`Subject: ${p.subject}`); 
@@ -585,7 +532,6 @@ function buildSyntheticHeaders(p) {
   if (p.messageId) lines.push(`Message-ID: ${p.messageId}`); 
   return lines.join('\n'); 
 } 
- 
 function parseCompoundFile(buffer) { 
   const view = new DataView(buffer); 
   const bytes = new Uint8Array(buffer); 
@@ -593,7 +539,6 @@ function parseCompoundFile(buffer) {
   for (let i = 0; i < sig.length; i++) { 
     if (bytes[i] !== sig[i]) throw new Error('The selected file is not a valid Outlook .msg / Compound File.'); 
   } 
- 
   const sectorShift = view.getUint16(30, true); 
   const miniSectorShift = view.getUint16(32, true); 
   const sectorSize = 1 << sectorShift; 
@@ -604,7 +549,6 @@ function parseCompoundFile(buffer) {
   const numMiniFatSectors = view.getUint32(64, true); 
   const firstDifatSector = view.getInt32(68, true); 
   const numDifatSectors = view.getUint32(72, true); 
- 
   const fatSectors = []; 
   for (let i = 0; i < 109; i++) { 
     const sid = view.getInt32(76 + i * 4, true); 
@@ -619,13 +563,11 @@ function parseCompoundFile(buffer) {
     } 
     difat = view.getInt32(base + sectorSize - 4, true); 
   } 
- 
   const fat = []; 
   for (const sid of fatSectors) { 
     const base = 512 + sid * sectorSize; 
     for (let i = 0; i < sectorSize / 4; i++) fat.push(view.getInt32(base + i * 4, true)); 
   } 
- 
   const chain = start => { 
     const out = []; 
     const seen = new Set(); 
@@ -635,7 +577,6 @@ function parseCompoundFile(buffer) {
     } 
     return out; 
   }; 
- 
   const readRegular = (start, size) => { 
     if (!size || start < 0) return new Uint8Array(); 
     const ids = chain(start); 
@@ -650,11 +591,9 @@ function parseCompoundFile(buffer) {
     } 
     return out; 
   }; 
- 
   const dirIds = chain(firstDirSector); 
   const dir = concatBytes(dirIds.map(s => bytes.slice(512 + s * sectorSize, 512 + (s + 1) * sectorSize))); 
   const entries = []; 
- 
   for (let off = 0; off + 128 <= dir.length; off += 128) { 
     const nameLen = viewAt(dir, off + 64, 2, 'u16'); 
     if (nameLen < 2) { entries.push(null); continue; } 
@@ -669,11 +608,9 @@ function parseCompoundFile(buffer) {
     const size = sizeHigh ? (sizeHigh * 0x100000000 + sizeLow) : sizeLow; 
     entries.push({ name, type, left, right, child, start, size }); 
   } 
- 
   const root = entries.findIndex(e => e && e.type === 5); 
   const rootEntry = root >= 0 ? entries[root] : null; 
   const rootMiniStream = rootEntry && rootEntry.start >= 0 ? readRegular(rootEntry.start, rootEntry.size) : new Uint8Array(); 
- 
   const miniFat = []; 
   if (firstMiniFatSector >= 0 && numMiniFatSectors) { 
     for (const sid of chain(firstMiniFatSector).slice(0, numMiniFatSectors)) { 
@@ -681,7 +618,6 @@ function parseCompoundFile(buffer) {
       for (let i = 0; i < sectorSize / 4; i++) miniFat.push(view.getInt32(base + i * 4, true)); 
     } 
   } 
- 
   const readMini = (start, size) => { 
     if (!size || start < 0 || !miniFat.length) return new Uint8Array(); 
     const chunks = []; 
@@ -697,7 +633,6 @@ function parseCompoundFile(buffer) {
     } 
     return concatBytes(chunks).slice(0, size); 
   }; 
- 
   const streams = new Map(); 
   const visit = (id, path) => { 
     if (id < 0 || !entries[id]) return; 
@@ -712,10 +647,8 @@ function parseCompoundFile(buffer) {
     visit(e.right, path); 
   }; 
   if (root >= 0) visit(entries[root].child, ''); 
- 
   return { streams }; 
 } 
- 
 function extractMsgStringProperties(streams) { 
   const strings = {}; 
   for (const [path, data] of streams) { 
@@ -728,21 +661,17 @@ function extractMsgStringProperties(streams) {
   } 
   return strings; 
 } 
- 
 function viewAt(bytes, offset, size, kind) { 
   const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength); 
   return kind === 'u16' ? v.getUint16(offset, true) : kind === 'u32' ? v.getUint32(offset, true) : v.getInt32(offset, true); 
 } 
- 
 function decodeUtf16LE(bytes) { 
   return new TextDecoder('utf-16le').decode(bytes); 
 } 
- 
 function decodeWindows1252(bytes) { 
   try { return new TextDecoder('windows-1252').decode(bytes); } 
   catch { return new TextDecoder('iso-8859-1').decode(bytes); } 
 } 
- 
 function concatBytes(chunks) { 
   const total = chunks.reduce((n, c) => n + c.length, 0); 
   const out = new Uint8Array(total); 

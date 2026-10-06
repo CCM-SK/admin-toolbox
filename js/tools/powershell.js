@@ -1,5 +1,4 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
-
 const RULES = [
   {
     id: 'invoke-expression',
@@ -58,7 +57,6 @@ const RULES = [
     why: 'Consider named parameters where they improve clarity and reduce ambiguity.',
   },
 ];
-
 const ALIASES = new Map(
   Object.entries({
     '%': 'ForEach-Object',
@@ -66,35 +64,26 @@ const ALIASES = new Map(
     where: 'Where-Object',
     select: 'Select-Object',
     sort: 'Sort-Object',
-
     gci: 'Get-ChildItem',
     ls: 'Get-ChildItem',
     dir: 'Get-ChildItem',
-
     gc: 'Get-Content',
     cat: 'Get-Content',
     type: 'Get-Content',
-
     cp: 'Copy-Item',
     copy: 'Copy-Item',
-
     mv: 'Move-Item',
     move: 'Move-Item',
-
     rm: 'Remove-Item',
     del: 'Remove-Item',
-
     ni: 'New-Item',
     md: 'New-Item',
     mkdir: 'New-Item',
-
     rmdir: 'Remove-Item',
-
     ft: 'Format-Table',
     fl: 'Format-List',
   }),
 );
-
 export function renderPowershell(app) {
   app.innerHTML = `
     <section class="card">
@@ -103,74 +92,60 @@ export function renderPowershell(app) {
         Static analysis only. Nothing is executed, imported, or sent anywhere.
         Checks common security, reliability, and readability issues.
       </p>
-
       <label for="psCode">PowerShell</label>
-
       <textarea
         id="psCode"
         class="mono"
         style="min-height:340px"
         placeholder="Paste PowerShell here"
       ></textarea>
-
       <div class="row" style="margin-top:10px">
         <button class="btn primary" id="psAnalyze">Analyze</button>
         <button class="btn" id="psClear">Clear</button>
         <button class="btn" id="psExport">Export report</button>
       </div>
     </section>
-
     <section class="card" id="psResults" hidden>
       <div id="psSummary"></div>
       <div id="psFindings"></div>
       <div id="psAliases"></div>
     </section>
   `;
-
   const input = $('#psCode');
   const results = $('#psResults');
-
   let report = null;
-
   $('#psAnalyze').onclick = () => {
     report = analyze(input.value);
     render(report);
   };
-
   $('#psClear').onclick = () => {
     input.value = '';
     results.hidden = true;
     report = null;
     input.focus();
   };
-
   $('#psExport').onclick = () => {
     if (!report) {
       report = analyze(input.value);
     }
-
     downloadText(
       'powershell-analysis.json',
       JSON.stringify(report, null, 2),
       'application/json;charset=utf-8',
     );
   };
-
   input.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       $('#psAnalyze').click();
     }
   });
-
   function analyze(code) {
     const lines = code.split(/\r?\n/);
     const findings = [];
-
     for (let i = 0; i < lines.length; i++) {
       for (const rule of RULES) {
         rule.re.lastIndex = 0;
-
         if (rule.re.test(lines[i])) {
           findings.push({
             line: i + 1,
@@ -183,17 +158,12 @@ export function renderPowershell(app) {
         }
       }
     }
-
     const aliases = [];
-
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-
       const re =
         /(^|[\s|;{(])(%|\?|where|select|sort|gci|ls|dir|gc|cat|type|cp|copy|mv|move|rm|del|ni|md|mkdir|rmdir|ft|fl)(?=\s|$|[|;)}])/gi;
-
       let m;
-
       while ((m = re.exec(line))) {
         aliases.push({
           line: i + 1,
@@ -205,7 +175,6 @@ export function renderPowershell(app) {
         });
       }
     }
-
     const metrics = {
       lines: lines.length,
       nonEmpty: lines.filter((x) => x.trim()).length,
@@ -215,7 +184,6 @@ export function renderPowershell(app) {
       style: findings.filter((x) => x.severity === 'style').length,
       aliases: aliases.length,
     };
-
     return {
       application: 'Admin Toolbox - PowerShell analyzer',
       generatedAt: new Date().toISOString(),
@@ -224,10 +192,8 @@ export function renderPowershell(app) {
       aliases,
     };
   }
-
   function render(r) {
     results.hidden = false;
-
     $('#psSummary').innerHTML = `
       <div class="grid">
         ${stat('Lines', r.metrics.lines)}
@@ -238,7 +204,6 @@ export function renderPowershell(app) {
         ${stat('Aliases', r.metrics.aliases)}
       </div>
     `;
-
     $('#psFindings').innerHTML =
       '<h3>Findings</h3>' +
       (r.findings.length
@@ -255,7 +220,6 @@ export function renderPowershell(app) {
                   <strong>
                     Line ${f.line}: ${escapeHtml(f.title)}
                   </strong>
-
                   <div>${escapeHtml(f.why)}</div>
                   <code>${escapeHtml(f.code)}</code>
                 </div>
@@ -263,7 +227,6 @@ export function renderPowershell(app) {
             )
             .join('')
         : '<p class="status ok">No configured findings.</p>');
-
     const aliasRows = r.aliases
       .map(
         (a) => `
@@ -275,7 +238,6 @@ export function renderPowershell(app) {
         `,
       )
       .join('');
-
     $('#psAliases').innerHTML =
       '<h3>Alias report</h3>' +
       (aliasRows
@@ -297,7 +259,6 @@ export function renderPowershell(app) {
         `
         : '<p class="small">No common aliases detected.</p>');
   }
-
   function stat(label, value) {
     return `
       <div class="stat">

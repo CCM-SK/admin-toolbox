@@ -1,5 +1,4 @@
 import { $, escapeHtml, downloadText, dropBinder, enableToolDragging } from '../utils.js';
-
 export const metadata = {
   id: 'citrixadc',
   title: 'Citrix ADC Config Analyzer',
@@ -386,7 +385,6 @@ const POS_LABELS = {
   destination: 'Destination'
 };
 // end of weird constants
-
 function tokenize(line) {
   const out = [];
   const n = line.length;
@@ -482,12 +480,10 @@ const VALID_MONITOR_TYPES = new Set([
   'SMTP', 'SIP-UDP', 'DIAMETER', 'SASL', 'SNMP', 'RTSP', 'TCP-DEFAULT',
   'HTTP-DEFAULT', 'HTTPS-DEFAULT', 'LDAP-ECV', 'LDNS-PING', 'LDNS-TCP', 'LDNS-DNS'
 ]);
-
 function isValidIPv4(value) {
   const parts = String(value ?? '').split('.');
   return parts.length === 4 && parts.every(p => /^\d{1,3}$/.test(p) && Number(p) >= 0 && Number(p) <= 255);
 }
-
 function isValidIPv6(value) {
   const s = String(value ?? '').trim();
   if (!s || !s.includes(':')) return false;
@@ -518,33 +514,26 @@ function isValidIPv6(value) {
   if (right === null) return false;
   return left + right < 8;
 }
-
 function isValidIP(value) {
   return isValidIPv4(value) || isValidIPv6(value);
 }
-
 function looksLikeIP(value) {
   const s = String(value ?? '');
   return /^\d+(?:\.\d+){1,3}$/.test(s) || s.includes(':');
 }
-
 function validPositiveInt(value) {
   return /^\d+$/.test(String(value ?? '')) && Number(value) >= 1 && Number(value) <= 65535;
 }
-
 function validPriority(value) {
   return /^\d+$/.test(String(value ?? '')) && Number(value) >= 1 && Number(value) <= 65535;
 }
-
 function posByName(cmd, name) {
   const idx = cmd.def.pos.indexOf(name);
   return idx >= 0 ? cmd.positional[idx + 1]?.v : undefined;
 }
-
 function validateCommand(cmd) {
   const errors = [];
   const fail = (code, title, detail) => errors.push({ code, title, detail });
-
   // Only enforce arity where TYPE_DEFS describes positional fields.
   if (cmd.verb === 'add' && !cmd.def.singleton && !cmd.def.toggle && !cmd.def.global && cmd.def.pos.length) {
     const expected = 1 + cmd.def.pos.length; // object name + described fields
@@ -556,7 +545,6 @@ function validateCommand(cmd) {
         `Command contains ${cmd.positional.length - expected} extra positional argument(s).`);
     }
   }
-
   const protocol = posByName(cmd, 'protocol');
   if (protocol && ['service', 'servicegroup', 'lb vserver', 'cs vserver', 'vpn vserver', 'authentication vserver', 'aaa vserver', 'gslb service'].includes(cmd.def.key)) {
     if (!VALID_SERVICE_PROTOCOLS.has(String(protocol).toUpperCase())) {
@@ -564,26 +552,22 @@ function validateCommand(cmd) {
         `"${protocol}" is not a recognised protocol for ${cmd.def.label.toLowerCase()}.`);
     }
   }
-
   const monitorType = posByName(cmd, 'type');
   if (cmd.def.key === 'lb monitor' && monitorType && !VALID_MONITOR_TYPES.has(String(monitorType).toUpperCase())) {
     fail('INVALID_ENUM', 'Invalid monitor type',
       `"${monitorType}" is not a recognised Citrix ADC monitor type.`);
   }
-
   const serverAddress = cmd.def.key === 'server' ? posByName(cmd, 'address') : null;
   if (serverAddress && looksLikeIP(serverAddress) && !isValidIP(serverAddress)) {
     fail('INVALID_ADDRESS', 'Invalid IP address',
       `"${serverAddress}" is not a valid IPv4 or IPv6 address.`);
   }
-
   if (cmd.def.key === 'ns ip') {
     const ip = cmd.positional[0]?.v;
     const mask = cmd.positional[1]?.v;
     if (ip && !isValidIP(ip)) fail('INVALID_ADDRESS', 'Invalid IP address', `"${ip}" is not a valid IPv4 or IPv6 address.`);
     if (mask && maskToPrefix(mask) === null) fail('INVALID_MASK', 'Invalid IPv4 netmask', `"${mask}" is not a valid contiguous IPv4 netmask.`);
   }
-
   if (cmd.def.key === 'route') {
     const network = cmd.positional[0]?.v;
     const mask = cmd.positional[1]?.v;
@@ -592,17 +576,14 @@ function validateCommand(cmd) {
     if (mask && maskToPrefix(mask) === null) fail('INVALID_MASK', 'Invalid IPv4 netmask', `"${mask}" is not a valid contiguous IPv4 netmask.`);
     if (gateway && !isValidIPv4(gateway)) fail('INVALID_ADDRESS', 'Invalid route gateway', `"${gateway}" is not a valid IPv4 address.`);
   }
-
   if (cmd.def.key === 'gslb site') {
     const siteIp = posByName(cmd, 'siteIp');
     if (siteIp && !isValidIP(siteIp)) fail('INVALID_ADDRESS', 'Invalid GSLB site IP', `"${siteIp}" is not a valid IPv4 or IPv6 address.`);
   }
-
   if (cmd.def.key === 'ns ip6') {
     const ip = cmd.positional[0]?.v;
     if (ip && !isValidIPv6(ip)) fail('INVALID_IPV6', 'Invalid IPv6 address', `"${ip}" is not a valid IPv6 address.`);
   }
-
   for (const name of ['port']) {
     if (['service', 'gslb service'].includes(cmd.def.key)) {
       const value = posByName(cmd, name);
@@ -611,7 +592,6 @@ function validateCommand(cmd) {
       }
     }
   }
-
   for (const flag of cmd.flags) {
     if (['port', 'serverport', 'destinationport', 'publicport'].includes(flag.key) && flag.values[0]) {
       const value = flag.values[0].v;
@@ -636,7 +616,6 @@ function validateCommand(cmd) {
       fail('INVALID_PRIORITY', 'Invalid priority', `Priority ${flag.values[0].v} is outside the valid range 1-65535.`);
     }
   }
-
   return errors;
 }
 if (isKnownOperationalCommand(line)) {
@@ -2103,7 +2082,6 @@ function toJson(model, findings, R) {
     unparsed: model.unparsed
   };
 }
-
 function buildCache(model, R) {
   const vservers = vserversVM(model, R);
   const catalogue = [...model.entities.values()]
@@ -2143,7 +2121,6 @@ function renderOther(cache) {
     [...groups].map(([label, items]) => `<h4>${h(label)} (${items.length})</h4>${renderCatalogueTable(items)}`).join('');
 }
 // End of weird functions
-
 export function renderCitrixAdc(app) {
   app.innerHTML = `
     <div class="tool-window" id="cxWindow">

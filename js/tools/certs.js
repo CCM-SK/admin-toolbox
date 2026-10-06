@@ -1,5 +1,4 @@
 import { $, escapeHtml } from '../utils.js';
-
 export function renderCerts(app) {
   app.innerHTML = `
     <section class="card">
@@ -18,9 +17,7 @@ export function renderCerts(app) {
     </section>
     <section class="card" id="certResult"></section>
   `;
-
   $('#pick').onclick = () => $('#cf').click();
-
   $('#cf').onchange = async e => {
     const f = e.target.files[0];
     if (!f) return;
@@ -28,7 +25,6 @@ export function renderCerts(app) {
     const bytes = new Uint8Array(buf);
     $('#pem').value = new TextDecoder().decode(bytes).trim();
   };
-
   $('#parse').onclick = () => {
     try {
       $('#certResult').innerHTML = parsePem($('#pem').value);
@@ -37,7 +33,6 @@ export function renderCerts(app) {
     }
   };
 }
-
 // Extracts the DER payload from a PEM block, walks it as ASN.1, and
 // summarizes any printable strings found inside (heuristically flagging
 // DNS-like values). This is a viewer(!!!), not a validator.
@@ -46,15 +41,12 @@ function parsePem(s) {
   if (!match) {
     throw new Error('PEM block not recognized. This inspector currently requires PEM input.');
   }
-
   const type = match[1];
   const base64 = match[2].replace(/\s+/g, '');
   const der = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-
   const strings = new ASN1(der).strings();
   const dnsLike = strings.filter(x => /^[A-Za-z0-9*._-]+\.[A-Za-z]{2,}$/.test(x));
   const dateLike = strings.filter(x => /^\d{12,14}Z$/.test(x));
-
   const rows = strings
     .slice(0, 200)
     .map(x => `
@@ -64,7 +56,6 @@ function parsePem(s) {
       </tr>
     `)
     .join('');
-
   return `
     <div class="grid">
       <div class="stat"><span>PEM type</span><strong>${escapeHtml(type)}</strong></div>
@@ -85,19 +76,15 @@ function parsePem(s) {
     </p>
   `;
 }
-
 class ASN1 {
   constructor(bytes) {
     this.bytes = bytes;
     this.pos = 0;
   }
-
   read() {
     if (this.pos + 2 > this.bytes.length) return null;
-
     const tag = this.bytes[this.pos++];
     const lengthByte = this.bytes[this.pos++];
-
     let length;
     if (lengthByte < 128) {
       length = lengthByte;
@@ -111,13 +98,11 @@ class ASN1 {
         length = (length << 8) | this.bytes[this.pos++];
       }
     }
-
     const contentStart = this.pos;
     const contentEnd = contentStart + length;
     if (contentEnd > this.bytes.length) {
       throw new Error('Malformed DER');
     }
-
     const isConstructed = tag & 32;
     const children = [];
     if (isConstructed) {
@@ -127,18 +112,14 @@ class ASN1 {
     } else {
       this.pos = contentEnd;
     }
-
     return { tag, cs: contentStart, ce: contentEnd, children };
   }
-
   strings() {
     const STRING_TAGS = [12, 18, 19, 20, 22, 23, 24, 30];
     const root = this.read();
     const out = [];
-
     const walk = node => {
       if (!node) return;
-
       const tagNumber = node.tag & 31;
       if (STRING_TAGS.includes(tagNumber)) {
         const bytes = this.bytes.slice(node.cs, node.ce);
@@ -150,10 +131,8 @@ class ASN1 {
             : new TextDecoder().decode(bytes);
         if (str) out.push(str);
       }
-
       for (const child of node.children || []) walk(child);
     };
-
     walk(root);
     return out;
   }

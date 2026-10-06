@@ -6,31 +6,23 @@ function escapeHtml(value) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 }
-
 function pretty(value) {
     return JSON.stringify(value, null, 2);
 }
-
 function base64urlToBytes(value) {
     const clean = String(value || '').replace(/\s+/g, '');
-
     if (!clean) {
         return new Uint8Array();
     }
-
     if (!/^[A-Za-z0-9_-]+={0,2}$/.test(clean)) {
         throw new Error('Invalid Base64URL data.');
     }
-
     let b64 = clean.replace(/-/g, '+').replace(/_/g, '/');
-
     while (b64.length % 4) {
         b64 += '=';
     }
-
     try {
         const binary = atob(b64);
-
         return Uint8Array.from(
             binary,
             c => c.charCodeAt(0)
@@ -39,19 +31,16 @@ function base64urlToBytes(value) {
         throw new Error('Invalid Base64URL data.');
     }
 }
-
 function base64urlDecodeText(value) {
     return new TextDecoder('utf-8', { fatal: true })
         .decode(base64urlToBytes(value));
 }
-
 function base64urlToHex(value) {
     return Array.from(
         base64urlToBytes(value),
         b => b.toString(16).padStart(2, '0')
     ).join('');
 }
-
 function readableTime(seconds) {
     if (
         typeof seconds !== 'number' ||
@@ -59,16 +48,12 @@ function readableTime(seconds) {
     ) {
         return '-';
     }
-
     const d = new Date(seconds * 1000);
-
     if (Number.isNaN(d.getTime())) {
         return 'Invalid time';
     }
-
     return `${d.toLocaleString()} (${d.toISOString()})`;
 }
-
 function timeBadge(seconds, mode) {
     if (
         typeof seconds !== 'number' ||
@@ -80,9 +65,7 @@ function timeBadge(seconds, mode) {
             detail: 'Not present or not numeric'
         };
     }
-
     const now = Date.now() / 1000;
-
     if (mode === 'exp') {
         return seconds < now
             ? {
@@ -96,7 +79,6 @@ function timeBadge(seconds, mode) {
                 detail: readableTime(seconds)
             };
     }
-
     if (mode === 'nbf') {
         return seconds > now
             ? {
@@ -110,39 +92,31 @@ function timeBadge(seconds, mode) {
                 detail: readableTime(seconds)
             };
     }
-
     return {
         label: 'PRESENT',
         cls: 'badge ok',
         detail: readableTime(seconds)
     };
 }
-
 function claimText(value) {
     if (value === undefined || value === null) {
         return '-';
     }
-
     if (Array.isArray(value)) {
         return value.join(', ');
     }
-
     if (typeof value === 'object') {
         return pretty(value);
     }
-
     return String(value);
 }
-
 function detect(value) {
     const text = value.trim();
-
     if (!text) {
         throw new Error(
             'Paste a JWT, JWS, JWK, or JWK Set.'
         );
     }
-
     if (text.startsWith('{') || text.startsWith('[')) {
         try {
             return {
@@ -155,53 +129,42 @@ function detect(value) {
             );
         }
     }
-
     const parts = text.split('.');
-
     if (parts.length === 3) {
         return {
             type: 'jws',
             value: text
         };
     }
-
     if (parts.length === 5) {
         return {
             type: 'jwe',
             value: text
         };
     }
-
     throw new Error(
         'Unrecognized input. Expected 3-part JWT/JWS, 5-part JWE, JWK JSON, or JWK Set JSON.'
     );
 }
-
 function signatureDescription(alg) {
     const map = {
         HS256: 'HMAC + SHA-256',
         HS384: 'HMAC + SHA-384',
         HS512: 'HMAC + SHA-512',
-
         RS256: 'RSA PKCS#1 v1.5 + SHA-256',
         RS384: 'RSA PKCS#1 v1.5 + SHA-384',
         RS512: 'RSA PKCS#1 v1.5 + SHA-512',
-
         PS256: 'RSA-PSS + SHA-256',
         PS384: 'RSA-PSS + SHA-384',
         PS512: 'RSA-PSS + SHA-512',
-
         ES256: 'ECDSA P-256 + SHA-256',
         ES384: 'ECDSA P-384 + SHA-384',
         ES512: 'ECDSA P-521 + SHA-512',
-
         EdDSA: 'EdDSA'
     };
-
     return map[alg] ||
         'Algorithm name only; no verification performed';
 }
-
 function renderStart(app) {
     app.innerHTML = `
       <section class="card">
@@ -212,26 +175,21 @@ function renderStart(app) {
               Inspect token headers, claims, timestamps, signatures and JWK fields locally
             </p>
           </div>
-
           <span class="badge warn"></span>
         </div>
-
         <div class="notice warning">
           <strong>Important:</strong>
           decoding is not verification. This tool does not prove authenticity,
           validate issuer trust, verify signatures, retrieve keys, check revocation
           and does not contact any remote service.
         </div>
-
         <label for="jwt-input">
           JWT / JWS / JWK / JWK Set
         </label>
-
         <textarea
           id="jwt-input"
           rows="11"
           placeholder="Paste a compact JWT/JWS or JWK JSON here…"></textarea>
-
         <div
           class="row"
           style="margin-top:.75rem"
@@ -243,7 +201,6 @@ function renderStart(app) {
           >
             Decode
           </button>
-
           <button
             class="btn secondary"
             type="button"
@@ -251,7 +208,6 @@ function renderStart(app) {
           >
             Clear
           </button>
-
           <button
             class="btn secondary"
             type="button"
@@ -260,14 +216,12 @@ function renderStart(app) {
             Paste
           </button>
         </div>
-
         <div
           id="jwt-message"
           class="notice hidden"
           role="status"
         ></div>
       </section>
-
       <!-- Results are rendered here.
            Keeping this container outside the input card
            means the input GUI remains visible after decoding. -->
@@ -277,11 +231,9 @@ function renderStart(app) {
       ></div>
     `;
 }
-
 function renderJwk(app, obj) {
     const set = obj && Array.isArray(obj.keys);
     const keys = set ? obj.keys : [obj];
-
     if (
         !keys.length ||
         keys.some(
@@ -296,7 +248,6 @@ function renderJwk(app, obj) {
             'JSON input is not a valid JWK or JWK Set.'
         );
     }
-
     const binaryFields = [
         'n',
         'e',
@@ -310,15 +261,12 @@ function renderJwk(app, obj) {
         'y',
         'k'
     ];
-
     const results = app.querySelector('#jwt-results');
-
     if (!results) {
         throw new Error(
             'JWT results container was not found.'
         );
     }
-
     results.innerHTML = `
       <section class="card">
         <div class="row between">
@@ -328,38 +276,31 @@ function renderJwk(app, obj) {
               ${set ? 'JWK Set' : 'JWK'} inspection
             </p>
           </div>
-
           <span class="badge warn"></span>
         </div>
-
         <div class="grid two">
           <div class="stat">
             <span>Input</span>
             <strong>${set ? 'JWK Set' : 'JWK'}</strong>
           </div>
-
           <div class="stat">
             <span>Key count</span>
             <strong>${keys.length}</strong>
           </div>
         </div>
-
         <div class="notice warning">
           A decoded JWK is just supplied key data.
           This view does not establish trust or prove that
           a key belongs to an issuer.
         </div>
-
         ${keys.map((key, i) => `
           <div class="card">
             <div class="row between">
               <h3>Key ${i + 1}</h3>
-
               <span class="badge ok">
                 ${escapeHtml(key.kty)}
               </span>
             </div>
-
             <div class="grid two">
               <div class="stat">
                 <span>kty</span>
@@ -367,28 +308,24 @@ function renderJwk(app, obj) {
                   ${escapeHtml(key.kty)}
                 </strong>
               </div>
-
               <div class="stat">
                 <span>kid</span>
                 <strong>
                   ${escapeHtml(key.kid || '-')}
                 </strong>
               </div>
-
               <div class="stat">
                 <span>alg</span>
                 <strong>
                   ${escapeHtml(key.alg || '-')}
                 </strong>
               </div>
-
               <div class="stat">
                 <span>use</span>
                 <strong>
                   ${escapeHtml(key.use || '-')}
                 </strong>
               </div>
-
               <div class="stat">
                 <span>key_ops</span>
                 <strong>
@@ -399,7 +336,6 @@ function renderJwk(app, obj) {
                   )}
                 </strong>
               </div>
-
               <div class="stat">
                 <span>crv</span>
                 <strong>
@@ -407,15 +343,11 @@ function renderJwk(app, obj) {
                 </strong>
               </div>
             </div>
-
             <h4>JWK JSON</h4>
-
             <pre class="mono">${escapeHtml(
                 pretty(key)
             )}</pre>
-
             <h4>Base64URL key fields</h4>
-
             <pre class="mono">${
                 binaryFields
                     .filter(
@@ -426,7 +358,6 @@ function renderJwk(app, obj) {
                         try {
                             const bytes =
                                 base64urlToBytes(key[field]);
-
                             return (
                                 `${field}: ${key[field]}\n` +
                                 `  decoded bytes: ${bytes.length}\n` +
@@ -447,19 +378,15 @@ function renderJwk(app, obj) {
       </section>
     `;
 }
-
 function renderJws(app, token) {
     const parts = token.split('.');
-
     const [
         encodedHeader,
         encodedPayload,
         encodedSignature
     ] = parts;
-
     let header;
     let claims;
-
     try {
         header = JSON.parse(
             base64urlDecodeText(encodedHeader)
@@ -469,7 +396,6 @@ function renderJws(app, token) {
             'JWS header is not valid Base64URL-encoded JSON.'
         );
     }
-
     try {
         claims = JSON.parse(
             base64urlDecodeText(encodedPayload)
@@ -479,7 +405,6 @@ function renderJws(app, token) {
             'JWT claims are not valid Base64URL-encoded JSON.'
         );
     }
-
     if (
         !header ||
         typeof header !== 'object' ||
@@ -489,7 +414,6 @@ function renderJws(app, token) {
             'JWS header must be a JSON object.'
         );
     }
-
     if (
         !claims ||
         typeof claims !== 'object' ||
@@ -499,25 +423,20 @@ function renderJws(app, token) {
             'JWT claims must be a JSON object.'
         );
     }
-
     const exp = timeBadge(
         claims.exp,
         'exp'
     );
-
     const nbf = timeBadge(
         claims.nbf,
         'nbf'
     );
-
     const now = Math.floor(
         Date.now() / 1000
     );
-
     let expiryClass = 'ok';
     let expiryMessage =
         'No expiry problem detected';
-
     if (
         typeof claims.exp === 'number' &&
         claims.exp < now
@@ -533,42 +452,33 @@ function renderJws(app, token) {
         expiryMessage =
             'Token is not yet valid according to nbf';
     }
-
     let sigBytes = new Uint8Array();
-
     try {
         sigBytes = base64urlToBytes(
             encodedSignature
         );
     } catch { }
-
     const results = app.querySelector('#jwt-results');
-
     if (!results) {
         throw new Error(
             'JWT results container was not found.'
         );
     }
-
     results.innerHTML = `
       <section class="card">
         <div class="row between">
           <div>
             <h2>JWT / JWS Decoder</h2>
-
             <p class="muted">
               Decoded compact JWS/JWT inspection.
             </p>
           </div>
-
           <span class="badge warn"></span>
         </div>
-
         <div class="notice ${expiryClass}">
           <strong>
             ${escapeHtml(expiryMessage)}
           </strong>
-
           <div
             class="muted"
             style="margin-top:.35rem"
@@ -578,7 +488,6 @@ function renderJws(app, token) {
             It is not an authenticity check.
           </div>
         </div>
-
         <div class="grid three">
           <div class="stat">
             <span>Algorithm</span>
@@ -586,14 +495,12 @@ function renderJws(app, token) {
               ${escapeHtml(header.alg || '-')}
             </strong>
           </div>
-
           <div class="stat">
             <span>Type</span>
             <strong>
               ${escapeHtml(header.typ || '-')}
             </strong>
           </div>
-
           <div class="stat">
             <span>Key ID</span>
             <strong>
@@ -601,9 +508,7 @@ function renderJws(app, token) {
             </strong>
           </div>
         </div>
-
         <h3>Claims summary</h3>
-
         <div class="grid two">
           <div class="stat">
             <span>Issuer (iss)</span>
@@ -613,7 +518,6 @@ function renderJws(app, token) {
               )}
             </strong>
           </div>
-
           <div class="stat">
             <span>Audience (aud)</span>
             <strong>
@@ -622,7 +526,6 @@ function renderJws(app, token) {
               )}
             </strong>
           </div>
-
           <div class="stat">
             <span>Subject (sub)</span>
             <strong>
@@ -631,7 +534,6 @@ function renderJws(app, token) {
               )}
             </strong>
           </div>
-
           <div class="stat">
             <span>JWT ID (jti)</span>
             <strong>
@@ -641,19 +543,15 @@ function renderJws(app, token) {
             </strong>
           </div>
         </div>
-
         <h3>Time claims</h3>
-
         <div class="grid three">
           <div class="stat">
             <span>Issued at (iat)</span>
-
             <strong>
               ${escapeHtml(
                   readableTime(claims.iat)
               )}
             </strong>
-
             <div class="muted">
               ${
                   typeof claims.iat === 'number'
@@ -662,14 +560,11 @@ function renderJws(app, token) {
               }
             </div>
           </div>
-
           <div class="stat">
             <span>Expires (exp)</span>
-
             <strong>
               ${escapeHtml(exp.detail)}
             </strong>
-
             ${
                 typeof claims.exp === 'number'
                     ? `
@@ -678,7 +573,6 @@ function renderJws(app, token) {
                           ${escapeHtml(exp.label)}
                         </span>
                       </div>
-
                       <div class="muted">
                         Unix: ${claims.exp}
                       </div>
@@ -686,14 +580,11 @@ function renderJws(app, token) {
                     : ''
             }
           </div>
-
           <div class="stat">
             <span>Not before (nbf)</span>
-
             <strong>
               ${escapeHtml(nbf.detail)}
             </strong>
-
             ${
                 typeof claims.nbf === 'number'
                     ? `
@@ -702,7 +593,6 @@ function renderJws(app, token) {
                           ${escapeHtml(nbf.label)}
                         </span>
                       </div>
-
                       <div class="muted">
                         Unix: ${claims.nbf}
                       </div>
@@ -711,28 +601,20 @@ function renderJws(app, token) {
             }
           </div>
         </div>
-
         <h3>Header</h3>
-
         <pre class="mono">${escapeHtml(
             pretty(header)
         )}</pre>
-
         <h3>Claims</h3>
-
         <pre class="mono">${escapeHtml(
             pretty(claims)
         )}</pre>
-
         <h3>Base64URL-decoded contents</h3>
-
         <div class="card">
           <h4>Header segment</h4>
-
           <pre class="mono">${escapeHtml(
               base64urlDecodeText(encodedHeader)
           )}</pre>
-
           <div class="muted">
             Encoded:
             ${escapeHtml(encodedHeader)}
@@ -741,14 +623,11 @@ function renderJws(app, token) {
             decoded bytes
           </div>
         </div>
-
         <div class="card">
           <h4>Payload / claims segment</h4>
-
           <pre class="mono">${escapeHtml(
               base64urlDecodeText(encodedPayload)
           )}</pre>
-
           <div class="muted">
             Encoded:
             ${escapeHtml(encodedPayload)}
@@ -757,30 +636,23 @@ function renderJws(app, token) {
             decoded bytes
           </div>
         </div>
-
         <h3>Signature metadata</h3>
-
         <div class="card">
           <div class="grid three">
             <div class="stat">
               <span>Algorithm</span>
-
               <strong>
                 ${escapeHtml(header.alg || '-')}
               </strong>
             </div>
-
             <div class="stat">
               <span>Signature bytes</span>
-
               <strong>
                 ${sigBytes.length}
               </strong>
             </div>
-
             <div class="stat">
               <span>Meaning</span>
-
               <strong>
                 ${escapeHtml(
                     signatureDescription(
@@ -790,7 +662,6 @@ function renderJws(app, token) {
               </strong>
             </div>
           </div>
-
           <div
             class="muted"
             style="margin-top:.75rem"
@@ -798,53 +669,41 @@ function renderJws(app, token) {
             The signature is only Base64URL-decoded.
             It has not been cryptographically verified.
           </div>
-
           <pre class="mono">${escapeHtml(
               encodedSignature
           )}</pre>
         </div>
-
         <h3>Compact token</h3>
-
         <pre class="mono">${escapeHtml(
             token
         )}</pre>
       </section>
     `;
 }
-
 export function renderJwt(app) {
     renderStart(app);
-
     const input =
         app.querySelector('#jwt-input');
-
     const message =
         app.querySelector('#jwt-message');
-
     function showError(text) {
         message.textContent = text || '';
-
         message.className =
             text
                 ? 'notice danger'
                 : 'notice hidden';
     }
-
     function clearResults() {
         const results =
             app.querySelector('#jwt-results');
-
         if (results) {
             results.innerHTML = '';
         }
     }
-
     function decode() {
         try {
             const detected =
                 detect(input.value);
-
             if (detected.type === 'json') {
                 renderJwk(
                     app,
@@ -862,7 +721,6 @@ export function renderJwt(app) {
                     'Five-part JWE detected. This decoder does not decrypt JWE; encrypted content remains encrypted.'
                 );
             }
-
             showError('');
         } catch (err) {
             showError(
@@ -871,14 +729,12 @@ export function renderJwt(app) {
             );
         }
     }
-
     app.querySelector(
         '#jwt-decode'
     ).addEventListener(
         'click',
         decode
     );
-
     app.querySelector(
         '#jwt-clear'
     ).addEventListener(
@@ -890,7 +746,6 @@ export function renderJwt(app) {
             input.focus();
         }
     );
-
     app.querySelector(
         '#jwt-paste'
     ).addEventListener(
@@ -899,7 +754,6 @@ export function renderJwt(app) {
             try {
                 input.value =
                     await navigator.clipboard.readText();
-
                 decode();
             } catch {
                 showError(

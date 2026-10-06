@@ -1,5 +1,4 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
-
 const suspiciousTlds = new Set([
   'zip',
   'mov',
@@ -16,24 +15,20 @@ const suspiciousTlds = new Set([
   'ga',
   'cf'
 ]);
-
 async function copyText(text) {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
     return;
   }
-
   const textarea = document.createElement('textarea');
   textarea.value = text;
   textarea.style.position = 'fixed';
   textarea.style.opacity = '0';
-
   document.body.appendChild(textarea);
   textarea.select();
   document.execCommand('copy');
   textarea.remove();
 }
-
 function badge(kind, text) {
   const cls =
     kind === 'good'
@@ -43,38 +38,28 @@ function badge(kind, text) {
         : kind === 'warn'
           ? 'warn'
           : 'neutral';
-
   return `<span class="status ${cls}">${escapeHtml(text)}</span>`;
 }
-
 function hostInfo(hostname) {
   const lower = hostname.toLowerCase().replace(/\.$/, '');
-
   const isIpv4 = /^(?:\d{1,3}\.){3}\d{1,3}$/.test(lower);
-
   const isIpv6 =
     lower.includes(':') &&
     /^[0-9a-f:]+$/i.test(lower);
-
   const labels = lower ? lower.split('.') : [];
-
   const punycode = labels.some(x => x.startsWith('xn--'));
-
   const tld =
     !isIpv4 &&
     !isIpv6 &&
     labels.length > 1
       ? labels.at(-1)
       : '';
-
   const manySubdomains = labels.length >= 5;
   const longHost = lower.length > 80;
-
   const privateIp =
     isIpv4 &&
     (() => {
       const p = lower.split('.').map(Number);
-
       return (
         p[0] === 10 ||
         p[0] === 127 ||
@@ -82,7 +67,6 @@ function hostInfo(hostname) {
         (p[0] === 172 && p[1] >= 16 && p[1] <= 31)
       );
     })();
-
   return {
     lower,
     labels,
@@ -95,11 +79,9 @@ function hostInfo(hostname) {
     privateIp
   };
 }
-
 function analyze(raw) {
   const findings = [];
   let url;
-
   try {
     url = new URL(raw.trim());
   } catch {
@@ -109,23 +91,19 @@ function analyze(raw) {
         'This is not a valid URL that the browser URL parser can understand.'
     };
   }
-
   const h = hostInfo(url.hostname);
   const rawLower = raw.toLowerCase();
   const host = h.lower;
-
   const queryParams = [...url.searchParams.keys()];
   const decodedPath = decodeURIComponentSafe(url.pathname);
   const decodedSearch = decodeURIComponentSafe(url.search);
   const entireDecoded = decodeURIComponentSafe(raw);
-
   const add = (severity, title, detail) =>
     findings.push({
       severity,
       title,
       detail
     });
-
   if (url.protocol !== 'https:') {
     add(
       url.protocol === 'http:' ? 'high' : 'medium',
@@ -139,7 +117,6 @@ function analyze(raw) {
       'The URL uses HTTPS. This protects the connection in transit, but does not prove that the website itself is trustworthy.'
     );
   }
-
   if (url.username || url.password) {
     add(
       'high',
@@ -147,7 +124,6 @@ function analyze(raw) {
       'The URL contains user-info before the hostname. Attackers can abuse this to make a malicious host look like a trusted name.'
     );
   }
-
   if (h.punycode) {
     add(
       'high',
@@ -155,7 +131,6 @@ function analyze(raw) {
       'The hostname contains xn-- labels. These can be legitimate, but they are also commonly involved in look-alike / homograph attacks.'
     );
   }
-
   if (h.isIpv4 || h.isIpv6) {
     add(
       'medium',
@@ -163,7 +138,6 @@ function analyze(raw) {
       `The destination is an IP address (${url.hostname}) rather than a normal domain name. This can be legitimate, but is common in direct malware/phishing links.`
     );
   }
-
   if (h.privateIp) {
     add(
       'warn',
@@ -171,7 +145,6 @@ function analyze(raw) {
       'The hostname is a private/local IPv4 address. This is generally meaningful only on an internal network and is not a normal public website destination.'
     );
   }
-
   if (h.manySubdomains) {
     add(
       'medium',
@@ -179,7 +152,6 @@ function analyze(raw) {
       `The hostname has ${h.labels.length} labels. Deep nesting is not inherently malicious, but attackers often use long subdomains to hide the actual registrable domain.`
     );
   }
-
   if (h.longHost) {
     add(
       'medium',
@@ -187,7 +159,6 @@ function analyze(raw) {
       'The hostname is unusually long and may be trying to obscure the meaningful domain or pack tracking/attack data into the host name.'
     );
   }
-
   if (h.tld && suspiciousTlds.has(h.tld)) {
     add(
       'medium',
@@ -195,9 +166,7 @@ function analyze(raw) {
       `The top-level domain .${h.tld} is frequently seen in low-cost or abused domains. TLD alone is never proof of maliciousness.`
     );
   }
-
   const hostTokens = host.split(/[.\-_]/).filter(Boolean);
-
   const brandWords = [
     'microsoft',
     'office365',
@@ -221,14 +190,12 @@ function analyze(raw) {
     'onedrive',
     'sharepoint'
   ];
-
   const brandHits = brandWords.filter(
     b =>
       hostTokens.includes(b) ||
       host.includes(`${b}-`) ||
       host.includes(`-${b}`)
   );
-
   if (
     brandHits.length &&
     ![
@@ -262,7 +229,6 @@ function analyze(raw) {
       `The hostname contains a brand-like token (${brandHits.join(', ')}), but the parser cannot establish that the domain is owned by that brand.`
     );
   }
-
   if (/%[0-9a-f]{2}/i.test(url.hostname)) {
     add(
       'high',
@@ -270,12 +236,10 @@ function analyze(raw) {
       'Percent encoding in hostnames is unusual and can be used to disguise URL content.'
     );
   }
-
   const suspiciousPath =
     /(login|signin|verify|verification|secure|account|update|password|reset|invoice|payment|wallet|crypto|unlock|mfa|2fa)/i.test(
       decodedPath
     );
-
   if (suspiciousPath) {
     add(
       'medium',
@@ -283,12 +247,10 @@ function analyze(raw) {
       'The path contains terms commonly used in credential theft, payment scams, account takeover, or fake verification pages.'
     );
   }
-
   const executable =
     /\.(exe|scr|msi|bat|cmd|ps1|vbs|js|jar|hta|dll|iso|img|lnk)(?:$|[?#])/i.test(
       decodedPath
     );
-
   if (executable) {
     add(
       'high',
@@ -296,7 +258,6 @@ function analyze(raw) {
       'The path ends in a file type commonly used to deliver executable or script content.'
     );
   }
-
   if (/https?:\/\//i.test(decodedPath)) {
     add(
       'high',
@@ -304,10 +265,8 @@ function analyze(raw) {
       'The path itself contains another URL. This pattern is commonly used by redirectors, open redirects, and phishing links.'
     );
   }
-
   const encCount =
     (raw.match(/%[0-9a-f]{2}/gi) || []).length;
-
   if (encCount >= 5) {
     add(
       'medium',
@@ -315,7 +274,6 @@ function analyze(raw) {
       `The URL contains ${encCount} percent-encoded bytes. Encoding is normal in URLs, but unusually dense encoding can obscure the destination or payload.`
     );
   }
-
   if (/\b(?:javascript|data|vbscript):/i.test(raw)) {
     add(
       'high',
@@ -323,15 +281,12 @@ function analyze(raw) {
       'A script-oriented URL scheme is present. These should be treated as unsafe unless there is a very specific reason for them.'
     );
   }
-
   const params = queryParams.map(k => k.toLowerCase());
-
   const redirectKeys = params.filter(k =>
     /^(url|uri|u|redirect|redirect_uri|return|returnurl|next|dest|destination|continue|target|link|goto|callback)$/i.test(
       k
     )
   );
-
   if (redirectKeys.length) {
     add(
       'medium',
@@ -339,7 +294,6 @@ function analyze(raw) {
       `The query contains redirect-like parameter(s): ${redirectKeys.join(', ')}. This can be legitimate, but is commonly abused to hide the final destination.`
     );
   }
-
   if (
     /(password|passwd|pwd|token|auth|session|secret|apikey|api_key|access_token|code)=/i.test(
       url.search
@@ -351,7 +305,6 @@ function analyze(raw) {
       'The query string appears to contain credentials, tokens, authorization codes, or secrets. Avoid sharing this URL because it may expose sensitive information.'
     );
   }
-
   if (queryParams.length > 15) {
     add(
       'medium',
@@ -359,7 +312,6 @@ function analyze(raw) {
       `The URL contains ${queryParams.length} query parameters. Large parameter sets can be normal for tracking, but can also be used to obscure the real purpose of a link.`
     );
   }
-
   if (/utm_|gclid|fbclid|mc_cid|mc_eid/i.test(url.search)) {
     add(
       'info',
@@ -367,7 +319,6 @@ function analyze(raw) {
       'The URL contains common advertising/campaign tracking parameters. Tracking is not malicious by itself.'
     );
   }
-
   if (
     decodedPath !== url.pathname ||
     decodedSearch !== url.search
@@ -378,7 +329,6 @@ function analyze(raw) {
       'Some characters were percent-decoded for analysis. Compare the displayed URL carefully with the encoded representation.'
     );
   }
-
   if (entireDecoded !== raw) {
     add(
       'info',
@@ -386,7 +336,6 @@ function analyze(raw) {
       'The URL contains encoded characters that become different characters after decoding. This can be used for obfuscation.'
     );
   }
-
   if (url.port && !['80', '443'].includes(url.port)) {
     add(
       'medium',
@@ -394,7 +343,6 @@ function analyze(raw) {
       `The URL explicitly uses port ${url.port}. This can be legitimate for internal applications, but deserves attention on unsolicited links.`
     );
   }
-
   if (url.hash) {
     add(
       'info',
@@ -402,26 +350,20 @@ function analyze(raw) {
       'The fragment (#...) is normally processed by the browser after the HTTP request and is often used for client-side navigation or tracking. It is not sent to the server in a standard HTTP request.'
     );
   }
-
   const high = findings.filter(
     x => x.severity === 'high'
   ).length;
-
   const medium = findings.filter(
     x => x.severity === 'medium'
   ).length;
-
   const warnings = findings.filter(
     x => x.severity === 'warn'
   ).length;
-
   const good = findings.filter(
     x => x.severity === 'good'
   ).length;
-
   let verdict = 'CHECK';
   let verdictClass = 'warn';
-
   if (high > 0) {
     verdict = 'SUSPICIOUS';
     verdictClass = 'bad';
@@ -432,7 +374,6 @@ function analyze(raw) {
     verdict = 'NO OBVIOUS URL RED FLAGS';
     verdictClass = 'good';
   }
-
   return {
     valid: true,
     raw,
@@ -452,7 +393,6 @@ function analyze(raw) {
     verdictClass
   };
 }
-
 function decodeURIComponentSafe(value) {
   try {
     return decodeURIComponent(value);
@@ -460,7 +400,6 @@ function decodeURIComponentSafe(value) {
     return value;
   }
 }
-
 function row(label, value, note = '') {
   return `
     <tr>
@@ -470,7 +409,6 @@ function row(label, value, note = '') {
     </tr>
   `;
 }
-
 function renderResult(result) {
   if (!result.valid) {
     return `
@@ -480,7 +418,6 @@ function renderResult(result) {
       </div>
     `;
   }
-
   const findings = result.findings
     .map(f => {
       const icon =
@@ -492,7 +429,6 @@ function renderResult(result) {
                 f.severity === 'warn'
               ? '&#9888;'
               : '&#8505;';
-
       const label =
         f.severity === 'good'
           ? 'GOOD'
@@ -502,7 +438,6 @@ function renderResult(result) {
                 f.severity === 'warn'
               ? 'CHECK'
               : 'INFO';
-
       return `
         <div class="finding ${f.severity}">
           <span class="finding-icon">${icon}</span>
@@ -516,10 +451,8 @@ function renderResult(result) {
       `;
     })
     .join('');
-
   const u = result.url;
   const h = result.host;
-
   const parts = [
     [
       'Scheme',
@@ -562,11 +495,9 @@ function renderResult(result) {
       'The #fragment is normally handled by the browser and is not sent in the HTTP request.'
     ]
   ];
-
   const rows = parts
     .map(x => row(x[0], x[1], x[2]))
     .join('');
-
   const hostRows = [
     row('Normalized host', h.lower),
     row('Labels', h.labels.join(' | ')),
@@ -591,7 +522,6 @@ function renderResult(result) {
       h.manySubdomains ? 'Yes' : 'No'
     )
   ].join('');
-
   const params = result.queryParams.length
     ? result.queryParams
         .map(
@@ -600,7 +530,6 @@ function renderResult(result) {
         )
         .join(' ')
     : '<span class="muted">No query parameters</span>';
-
   return `
     <section class="card">
       <div class="verdict ${result.verdictClass}">
@@ -613,7 +542,6 @@ function renderResult(result) {
                 : '&#9888;'
           }
         </span>
-
         <div>
           <strong>${escapeHtml(result.verdict)}</strong>
           <div>
@@ -622,17 +550,13 @@ function renderResult(result) {
           </div>
         </div>
       </div>
-
       <h3>Quick security view</h3>
-
       <div class="findings">
         ${findings || '<p>No specific indicators were triggered.</p>'}
       </div>
     </section>
-
     <section class="card">
       <h3>URL parts</h3>
-
       <table class="data-table">
         <thead>
           <tr>
@@ -641,22 +565,18 @@ function renderResult(result) {
             <th>What it means</th>
           </tr>
         </thead>
-
         <tbody>
           ${rows}
         </tbody>
       </table>
     </section>
-
     <section class="card">
       <h3>Hostname analysis</h3>
-
       <table class="data-table">
         <tbody>
           ${hostRows}
         </tbody>
       </table>
-
       <p>
         <strong>Important:</strong>
         a subdomain such as
@@ -669,83 +589,65 @@ function renderResult(result) {
         <span class="mono">evil.test</span>.
       </p>
     </section>
-
     <section class="card">
       <h3>Query parameters</h3>
       <div>${params}</div>
     </section>
   `;
 }
-
 export function renderUrlAnalyzer(app) {
   app.innerHTML = `
     <section class="card">
       <h2>URL Authenticity / Simple Forensics</h2>
-
       <p>
         <p class="small">
         Paste a URL to inspect it without visiting it. Everything is parsed and analyzed locally in this browser.
         </p>
       </p>
-
       <label for="urlInput">URL</label>
-
       <textarea
         id="urlInput"
         rows="4"
         placeholder="https://example.com/path?next=https%3A%2F%2Fexample.org"
       ></textarea>
-
       <div class="toolbar">
         <button class="btn primary" id="analyzeUrl">
           Analyze URL
         </button>
-
         <button class="btn" id="clearUrl">
           Clear
         </button>
-
         <button class="btn" id="copyUrlReport">
           Copy report
         </button>
-
         <button class="btn" id="downloadUrlReport">
           Download report
         </button>
       </div>
-
       <p class="muted">
         <p class="small">
         No DNS lookups, HTTP requests, reputation checks, redirect following, or external APIs are used.
         </p>
       </p>
     </section>
-
     <div id="urlResults"></div>
   `;
-
   let lastResult = null;
-
   const input = $('#urlInput');
   const results = $('#urlResults');
-
   const run = () => {
     lastResult = analyze(input.value);
     results.innerHTML = renderResult(lastResult);
   };
-
   $('#analyzeUrl').onclick = run;
-
   $('#clearUrl').onclick = () => {
     input.value = '';
     results.innerHTML = '';
     lastResult = null;
     input.focus();
   };
-
   $('#copyUrlReport').onclick = async () => {
     if (!lastResult) return;
-
     await copyText(
       JSON.stringify(
         safeExport(lastResult),
@@ -754,10 +656,8 @@ export function renderUrlAnalyzer(app) {
       )
     );
   };
-
   $('#downloadUrlReport').onclick = () => {
     if (!lastResult) return;
-
     downloadText(
       'url-analysis.json',
       JSON.stringify(
@@ -768,7 +668,6 @@ export function renderUrlAnalyzer(app) {
       'application/json'
     );
   };
-
   input.addEventListener('keydown', e => {
     if (
       (e.ctrlKey || e.metaKey) &&
@@ -778,13 +677,11 @@ export function renderUrlAnalyzer(app) {
     }
   });
 }
-
 function safeExport(result) {
   return {
     raw: result.raw,
     verdict: result.verdict,
     counts: result.counts,
-
     url: {
       href: result.url.href,
       protocol: result.url.protocol,
@@ -797,7 +694,6 @@ function safeExport(result) {
       hash: result.url.hash,
       queryParameters: result.queryParams
     },
-
     findings: result.findings
   };
 }

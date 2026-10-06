@@ -1,13 +1,11 @@
 const esc = v => String(v ?? '')
   .replace(/&/g,'&amp;').replace(/</g,'&lt;')
   .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-
 const ipToNum = ip => {
   const p = String(ip).split('.');
   if (p.length !== 4 || p.some(x => !/^\d+$/.test(x) || +x > 255)) return null;
   return p.reduce((n, x) => ((n * 256) + +x) >>> 0, 0) >>> 0;
 };
-
 function cidrContains(cidr, ip) {
   const [addr, prefixText] = String(cidr).split('/');
   const a = ipToNum(addr), b = ipToNum(ip), prefix = Number(prefixText);
@@ -15,15 +13,12 @@ function cidrContains(cidr, ip) {
   const mask = prefix === 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) >>> 0;
   return ((a & mask) >>> 0) === ((b & mask) >>> 0);
 }
-
 function normalizeName(s) {
   return String(s).trim().toLowerCase();
 }
-
 function tokenise(line) {
   return line.trim().split(/\s+/);
 }
-
 function parseNetworkObject(tokens) {
   const idx = tokens.indexOf('network-object');
   if (idx < 0) return null;
@@ -46,13 +41,11 @@ function parseNetworkObject(tokens) {
   }
   return { kind:'raw', value:rest.join(' '), text:rest.join(' ') };
 }
-
 function parseServiceObject(tokens) {
   const idx = tokens.indexOf('service-object');
   if (idx < 0) return null;
   const rest = tokens.slice(idx + 1);
   if (!rest.length) return null;
-
   if (/^(tcp|udp|tcp-udp)$/i.test(rest[0])) {
     if (rest[1]) return { kind:'proto', value:rest.join(' '), text:rest.join(' ') };
   }
@@ -61,19 +54,16 @@ function parseServiceObject(tokens) {
   }
   return { kind:'raw', value:rest.join(' '), text:rest.join(' ') };
 }
-
 function parseObjectGroup(lines, i) {
   const header = lines[i].trim();
   const m = header.match(/^object-group\s+(network|service|protocol)\s+(\S+)/i);
   if (!m) return null;
-
   const group = {
     type: m[1].toLowerCase(),
     name: m[2],
     members: [],
     line: i + 1
   };
-
   for (let j = i + 1; j < lines.length; j++) {
     const t = lines[j].trim();
     if (!t) continue;
@@ -82,7 +72,6 @@ function parseObjectGroup(lines, i) {
       group.members.push({ kind:'group', value:RegExp.$1, text:`group-object ${RegExp.$1}` });
       continue;
     }
-
     if (group.type === 'network') {
       const n = parseNetworkObject(tokenise(t));
       if (n) group.members.push(n);
@@ -95,33 +84,26 @@ function parseObjectGroup(lines, i) {
   }
   return group;
 }
-
 function parseAcl(line, lineNo) {
   const t = line.trim();
   const m = t.match(/^access-list\s+(\S+)\s+(?:extended\s+)?(permit|deny)\s+(.+)$/i);
   if (!m) return null;
-
   const acl = m[1];
   const action = m[2].toLowerCase();
   const rest = m[3].trim();
   const tokens = tokenise(rest);
   let i = 0;
-
   const rule = {
     acl, action, line: lineNo, raw: t,
     protocol: null, source: null, sourcePort: null,
     destination: null, destinationPort: null,
     options: [], remark: null
   };
-
   const next = () => tokens[i++] || null;
-
   rule.protocol = next();
-
   function parseEndpoint() {
     const first = next();
     if (!first) return null;
-
     const lower = first.toLowerCase();
     if (lower === 'any') return { type:'any', value:'any' };
     if (lower === 'host') {
@@ -141,29 +123,23 @@ function parseAcl(line, lineNo) {
     }
     return { type:'literal', value:first };
   }
-
   rule.source = parseEndpoint();
-
   if (['tcp','udp','tcp-udp'].includes(String(rule.protocol).toLowerCase())) {
     const p = tokens[i]?.toLowerCase();
     if (p && ['eq','neq','lt','gt','range'].includes(p)) {
       rule.sourcePort = { op: next(), value: p === 'range' ? `${next()} ${next()}` : next() };
     }
   }
-
   rule.destination = parseEndpoint();
-
   if (['tcp','udp','tcp-udp'].includes(String(rule.protocol).toLowerCase())) {
     const p = tokens[i]?.toLowerCase();
     if (p && ['eq','neq','lt','gt','range'].includes(p)) {
       rule.destinationPort = { op: next(), value: p === 'range' ? `${next()} ${next()}` : next() };
     }
   }
-
   rule.options = tokens.slice(i);
   return rule;
 }
-
 function parseConfig(text) {
   const raw = String(text ?? '').replace(/\r\n?/g, '\n');
   const lines = raw.split('\n');
@@ -171,44 +147,36 @@ function parseConfig(text) {
   const rules = [];
   const remarks = [];
   const globals = [];
-
   for (let i=0;i<lines.length;i++) {
     const t = lines[i].trim();
     if (!t || t.startsWith('!')) continue;
-
     const og = parseObjectGroup(lines, i);
     if (og) {
       objectGroups[normalizeName(og.name)] = og;
       continue;
     }
-
     let m = t.match(/^access-list\s+(\S+)\s+remark\s+(.+)$/i);
     if (m) {
       remarks.push({ acl:m[1], text:m[2], line:i+1 });
       continue;
     }
-
     const acl = parseAcl(t, i+1);
     if (acl) {
       rules.push(acl);
       continue;
     }
-
     if (/^(?:access-group|access-group\s)/i.test(t) ||
         /^(?:same-security-traffic|sysopt|object\b|name\b|nat\b|route\b)/i.test(t)) {
       globals.push({ line:i+1, text:t });
     }
   }
-
   return { raw, lines, objectGroups, rules, remarks, globals };
 }
-
 function expandMembers(name, groups, seen = new Set()) {
   const key = normalizeName(name);
   if (seen.has(key)) return [{ type:'cycle', value:name }];
   const g = groups[key];
   if (!g) return [{ type:'unresolved-group', value:name }];
-
   seen.add(key);
   const out = [];
   for (const member of g.members) {
@@ -218,7 +186,6 @@ function expandMembers(name, groups, seen = new Set()) {
   }
   return out;
 }
-
 function endpointText(ep, groups) {
   if (!ep) return '-';
   if (ep.type === 'object-group') {
@@ -237,14 +204,12 @@ function endpointText(ep, groups) {
   }
   return ep.value;
 }
-
 const serviceMeaning = s => {
   if (!s) return 'any service/port';
   if (s.op === 'eq') return `port ${s.value}`;
   if (s.op === 'range') return `ports ${s.value}`;
   return `${s.op} ${s.value}`;
 };
-
 function ruleMeaning(r, groups) {
   const proto = r.protocol?.toLowerCase();
   const protoText = proto === 'ip' ? 'IP traffic' : `${r.protocol || 'unknown protocol'} traffic`;
@@ -256,11 +221,9 @@ function ruleMeaning(r, groups) {
   if (r.options.length) text += ` [${r.options.join(' ')}]`;
   return text;
 };
-
 function endpointBroad(ep) {
   return ep?.type === 'any' || !ep;
 }
-
 function endpointsOverlap(a, b) {
   if (endpointBroad(a) || endpointBroad(b)) return true;
   if (a.type === 'object-group' || b.type === 'object-group') return true;
@@ -274,7 +237,6 @@ function endpointsOverlap(a, b) {
   if (a.type === 'host-or-ip' && b.type === 'host-or-ip') return a.value === b.value;
   return true;
 }
-
 function servicesOverlap(a, b) {
   if (!a || !b) return true;
   if (a.op !== b.op) return true;
@@ -282,11 +244,9 @@ function servicesOverlap(a, b) {
   if (a.op === 'range') return true;
   return true;
 }
-
 function analyze(data) {
   const findings = [];
   const aclMap = {};
-
   for (const r of data.rules) {
     (aclMap[r.acl] ||= []).push(r);
     const broad = endpointBroad(r.source) && endpointBroad(r.destination);
@@ -297,7 +257,6 @@ function analyze(data) {
         detail:'This rule permits traffic from any source to any destination for the specified protocol/service. Review whether this scope is intentional.'
       });
     }
-
     if (r.protocol?.toLowerCase() === 'ip' && broad && r.action === 'permit') {
       findings.push({
         level:'high', line:r.line, acl:r.acl,
@@ -305,7 +264,6 @@ function analyze(data) {
         detail:'Effectively permits all IP traffic represented by the protocol match.'
       });
     }
-
     if (r.source?.type === 'any' && r.destination?.type === 'any' &&
         ['tcp','udp','tcp-udp'].includes(r.protocol?.toLowerCase()) &&
         !r.destinationPort && r.action === 'permit') {
@@ -315,7 +273,6 @@ function analyze(data) {
         detail:'The rule permits the protocol between any source and destination without a destination service restriction.'
       });
     }
-
     for (const opt of r.options) {
       if (/log/i.test(opt)) break;
       if (/established/i.test(opt)) {
@@ -328,7 +285,6 @@ function analyze(data) {
       }
     }
   }
-
   for (const [acl, rules] of Object.entries(aclMap)) {
     for (let i=0;i<rules.length;i++) {
       const later = rules[i];
@@ -347,7 +303,6 @@ function analyze(data) {
           break;
         }
       }
-
       for (let j=0;j<i;j++) {
         const earlier = rules[j];
         if (earlier.action !== later.action &&
@@ -367,7 +322,6 @@ function analyze(data) {
       }
     }
   }
-
   for (const [name, group] of Object.entries(data.objectGroups)) {
     if (!group.members.length) {
       findings.push({
@@ -386,16 +340,13 @@ function analyze(data) {
       }
     }
   }
-
   return findings;
 }
-
 function levelBadge(level) {
   if (level === 'high') return '<span class="badge bad">HIGH</span>';
   if (level === 'warning') return '<span class="badge warn">REVIEW</span>';
   return '<span class="badge ok">INFO</span>';
 }
-
 function renderRule(r, groups) {
   return `
     <div class="card compact">
@@ -421,7 +372,6 @@ function renderRule(r, groups) {
       </details>
     </div>`;
 }
-
 export function renderCiscoFirewall(app) {
   app.innerHTML = `
     <section class="card">
@@ -432,7 +382,6 @@ export function renderCiscoFirewall(app) {
         </div>
         <span class="badge ok"></span>
       </div>
-
       <div class="card">
         <label for="cisco-fw-input">Cisco configuration / ACL output</label>
         <textarea id="cisco-fw-input" rows="20"
@@ -443,44 +392,36 @@ export function renderCiscoFirewall(app) {
           <button class="btn secondary" type="button" id="cisco-fw-clear">Clear</button>
         </div>
       </div>
-
       <div id="cisco-fw-message" class="notice hidden" role="status"></div>
       <div id="cisco-fw-results">
         <div class="card"><h2>Quick view</h2><div class="muted">Paste configuration and click Analyze.</div></div>
       </div>
     </section>`;
-
   const $ = s => app.querySelector(s);
   const input = $('#cisco-fw-input');
   const results = $('#cisco-fw-results');
   const message = $('#cisco-fw-message');
-
   const example = `object-group network WEB_SERVERS
  network-object host 10.20.10.10
  network-object host 10.20.10.11
-
 object-group service HTTPS tcp-udp
  port-object eq https
  port-object eq 443
-
 access-list OUTSIDE_IN extended permit tcp any object-group WEB_SERVERS eq 443 log
 access-list OUTSIDE_IN extended deny ip any any
 access-list DMZ_IN extended permit ip object-group WEB_SERVERS 10.30.0.0 255.255.255.0
 access-list DMZ_IN extended deny tcp any host 10.30.20.10 eq 22
 access-list DMZ_IN extended permit tcp any host 10.30.20.10 eq 443
 `;
-
   function showMessage(text, kind='error') {
     message.textContent = text || '';
     message.className = text ? `notice ${kind}` : 'notice hidden';
   }
-
   function render(data) {
     const findings = analyze(data);
     const high = findings.filter(x=>x.level==='high').length;
     const review = findings.filter(x=>x.level==='warning').length;
     const aclNames = [...new Set(data.rules.map(r=>r.acl))];
-
     results.innerHTML = `
       <div class="card">
         <h2>Quick view</h2>
@@ -494,7 +435,6 @@ access-list DMZ_IN extended permit tcp any host 10.30.20.10 eq 443
           Analysis is based only on the pasted text. It does not know interface direction, NAT behavior, routing, inspection policy, VPN policy, identity rules, or platform-version-specific semantics unless those are included in the pasted configuration.
         </div>
       </div>
-
       ${findings.length ? `
         <div class="card">
           <h2>Findings</h2>
@@ -510,7 +450,6 @@ access-list DMZ_IN extended permit tcp any host 10.30.20.10 eq 443
         <div class="notice success">
           No obvious problems were found by the local heuristics.
         </div>`}
-
       <div class="card">
         <h2>Effective rule meaning</h2>
         ${aclNames.map(acl => `
@@ -518,7 +457,6 @@ access-list DMZ_IN extended permit tcp any host 10.30.20.10 eq 443
           ${data.rules.filter(r=>r.acl===acl).map(r=>renderRule(r, data.objectGroups)).join('') || '<div class="muted">No parsed rules.</div>'}
         `).join('')}
       </div>
-
       <div class="card">
         <h2>Object-groups</h2>
         ${Object.values(data.objectGroups).length
@@ -529,27 +467,23 @@ access-list DMZ_IN extended permit tcp any host 10.30.20.10 eq 443
             </div>`).join('')
           : '<div class="muted">No object-groups parsed.</div>'}
       </div>
-
       <div class="card">
         <h2>Remarks</h2>
         ${data.remarks.length
           ? `<ul>${data.remarks.map(r=>`<li><b>${esc(r.acl)}</b> line ${r.line}: ${esc(r.text)}</li>`).join('')}</ul>`
           : '<div class="muted">No ACL remarks parsed.</div>'}
       </div>
-
       <div class="card">
         <h2>Unparsed / other configuration lines</h2>
         ${data.globals.length
           ? `<ul>${data.globals.map(x=>`<li class="mono">line ${x.line}: ${esc(x.text)}</li>`).join('')}</ul>`
           : '<div class="muted">None recognized.</div>'}
       </div>
-
       <div class="card">
         <h2>Raw configuration</h2>
         <details><summary>Show original pasted text</summary><pre class="mono">${esc(data.raw)}</pre></details>
       </div>`;
   }
-
   $('#cisco-fw-analyze').addEventListener('click', () => {
     if (!input.value.trim()) return showMessage('Paste Cisco firewall configuration first.');
     try {
@@ -559,13 +493,11 @@ access-list DMZ_IN extended permit tcp any host 10.30.20.10 eq 443
       showMessage(e?.message || 'Could not analyze the configuration.');
     }
   });
-
   $('#cisco-fw-example').addEventListener('click', () => {
     input.value = example;
     render(parseConfig(input.value));
     showMessage('Example configuration loaded and analyzed.', 'success');
   });
-
   $('#cisco-fw-clear').addEventListener('click', () => {
     input.value = '';
     results.innerHTML = '<div class="card"><h2>Quick view</h2><div class="muted">Paste configuration and click Analyze.</div></div>';

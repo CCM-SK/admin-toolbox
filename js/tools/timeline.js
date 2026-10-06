@@ -14,22 +14,14 @@ async function copyText(text) {
   textarea.remove();
 }
 const MAX_RENDERED_ROWS = 500;
-const FALLBACK_ZONES = [
-  'UTC', 'Europe/London', 'Europe/Berlin', 'Europe/Paris', 'Europe/Madrid', 'Europe/Rome',
-  'Europe/Moscow', 'Europe/Istanbul', 'Africa/Cairo', 'Africa/Johannesburg',
-  'Asia/Jerusalem', 'Asia/Dubai', 'Asia/Karachi', 'Asia/Kolkata', 'Asia/Dhaka',
-  'Asia/Bangkok', 'Asia/Shanghai', 'Asia/Hong_Kong', 'Asia/Singapore', 'Asia/Tokyo',
-  'Asia/Seoul', 'Australia/Perth', 'Australia/Sydney', 'Pacific/Auckland',
-  'America/Sao_Paulo', 'America/New_York', 'America/Chicago', 'America/Denver',
-  'America/Los_Angeles', 'America/Anchorage', 'Pacific/Honolulu'
-];
+const FALLBACK_ZONES = ['UTC', 'Europe/London', 'Europe/Berlin', 'Europe/Paris', 'Europe/Madrid', 'Europe/Rome',  'Europe/Moscow', 'Europe/Istanbul', 'Africa/Cairo', 'Africa/Johannesburg',  'Asia/Jerusalem', 'Asia/Dubai', 'Asia/Karachi', 'Asia/Kolkata', 'Asia/Dhaka',  'Asia/Bangkok', 'Asia/Shanghai', 'Asia/Hong_Kong', 'Asia/Singapore', 'Asia/Tokyo',  'Asia/Seoul', 'Australia/Perth', 'Australia/Sydney', 'Pacific/Auckland',  'America/Sao_Paulo', 'America/New_York', 'America/Chicago', 'America/Denver',  'America/Los_Angeles', 'America/Anchorage', 'Pacific/Honolulu'];
 function getIanaZones() {
   try {
     if (typeof Intl.supportedValuesOf === 'function') {
-      const zones = Intl.supportedValuesOf('timeZone');
+        const zones = Intl.supportedValuesOf('timeZone');
       if (zones && zones.length) return ['UTC', ...zones.filter(z => z !== 'UTC')];
     }
-  } catch { /* fall through to static list */ }
+  } catch { }
   return FALLBACK_ZONES;
 }
 function isValidZone(tz) {
@@ -464,10 +456,7 @@ function renderFileList(files, zones) {
         </table>
       </div>
       <p class="small">
-        Formats with a declared or spec-implied timezone (Windows Event Log XML, IIS/W3C logs) are
-        included automatically. Everything else needs an explicit timezone before its events are
-        merged into the timeline \u2014 type an IANA zone name (e.g. <span class="mono">Europe/Vienna</span>)
-        or <span class="mono">UTC</span>.
+        Formats with a declared or spec-implied timezone (Windows Event Log XML, IIS/W3C logs) are included automatically. Everything else needs an explicit timezone before its events are merged into the timeline \u2014 type an IANA zone name (e.g. <span class="mono">Europe/Vienna</span>) or <span class="mono">UTC</span>.
       </p>
     </section>
   `;

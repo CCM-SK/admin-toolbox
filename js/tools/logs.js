@@ -1,12 +1,10 @@
 import { $, escapeHtml, downloadText, dropBinder } from '../utils.js';
-
 export const metadata = {
   id: 'logs',
   title: 'Log / CSV inspector',
   description: 'Load CSV or plain text logs, search them, count values, and export filtered data',
   path: '/#logs'
 };
-
 export function renderLogs(app) {
   app.innerHTML = `
     <section class="card">
@@ -20,7 +18,6 @@ export function renderLogs(app) {
         <input id="logFile" type="file" hidden>
       </div>
     </section>
-
     <section class="card" id="logWork" hidden>
       <div class="grid-2">
         <div>
@@ -40,26 +37,20 @@ export function renderLogs(app) {
       <div class="table-wrap" id="logTable"></div>
     </section>
   `;
-
   const drop = $('#logDrop');
   const file = $('#logFile');
   const work = $('#logWork');
-
   let mode = 'text';   // 'text' | 'csv'
   let headers = [];
   let rows = [];
-
   $('#logPick').onclick = () => file.click();
   file.onchange = () => file.files[0] && load(file.files[0]);
   dropBinder(drop, files => files[0] && load(files[0]));
-
   async function load(f) {
     const text = await f.text();
     const trimmed = text.trim();
     work.hidden = false;
-
     const looksLikeJson = f.name.toLowerCase().endsWith('.json') || trimmed.startsWith('[');
-
     if (looksLikeJson) {
       try {
         const data = JSON.parse(trimmed);
@@ -86,25 +77,20 @@ export function renderLogs(app) {
       headers = ['line'];
       rows = text.split(/\r?\n/).filter(Boolean).map(line => [line]);
     }
-
     const columnSelect = $('#logColumn');
     columnSelect.innerHTML =
       '<option value="">- select -</option>' +
       headers.map((h, i) => `<option value="${i}">${escapeHtml(h)}</option>`).join('');
-
     render();
   }
-
   function parseDelimited(text, delim) {
     const rows = [];
     let row = [];
     let cell = '';
     let inQuotes = false;
-
     for (let i = 0; i < text.length; i++) {
       const c = text[i];
       const next = text[i + 1];
-
       if (inQuotes) {
         if (c === '"' && next === '"') {
           cell += '"';
@@ -128,20 +114,16 @@ export function renderLogs(app) {
         cell += c;
       }
     }
-
     if (cell !== '' || row.length) {
       row.push(cell);
       rows.push(row);
     }
-
     const width = Math.max(0, ...rows.map(r => r.length));
     return rows.filter(r => r.length === width);
   }
-
   function filtered() {
     const query = $('#logSearch').value.trim();
     if (!query) return rows;
-
     let matches = r => r.join(' ').toLowerCase().includes(query.toLowerCase());
     if (query.startsWith('/') && query.lastIndexOf('/') > 0) {
       const lastSlash = query.lastIndexOf('/');
@@ -151,20 +133,16 @@ export function renderLogs(app) {
       } catch {
       }
     }
-
     return rows.filter(matches);
   }
-
   function render() {
     const visibleRows = filtered();
     const columnIndex = $('#logColumn').value;
-
     let statsHtml = `
       <div class="grid">
         <div class="stat"><span>Rows</span><strong>${visibleRows.length}</strong></div>
         <div class="stat"><span>Columns</span><strong>${headers.length}</strong></div>
     `;
-
     if (columnIndex !== '') {
       const counts = new Map();
       for (const r of visibleRows) {
@@ -182,13 +160,11 @@ export function renderLogs(app) {
     }
     statsHtml += '</div>';
     $('#logStats').innerHTML = statsHtml;
-
     const headerHtml = headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
     const bodyHtml = visibleRows
       .slice(0, 1000)
       .map(r => `<tr>${r.map(c => `<td>${escapeHtml(String(c ?? ''))}</td>`).join('')}</tr>`)
       .join('');
-
     $('#logTable').innerHTML = `
       <table>
         <thead><tr>${headerHtml}</tr></thead>
@@ -197,10 +173,8 @@ export function renderLogs(app) {
       <p class="small">Showing up to 1,000 visible rows.</p>
     `;
   }
-
   $('#logSearch').oninput = render;
   $('#logColumn').onchange = render;
-
   $('#logCsv').onclick = () => {
     const escapeCell = x => '"' + String(x ?? '').replaceAll('"', '""') + '"';
     const visibleRows = filtered();
@@ -210,7 +184,6 @@ export function renderLogs(app) {
     ].join('\n');
     downloadText('filtered.csv', csv, 'text/csv;charset=utf-8');
   };
-
   $('#logJson').onclick = () => {
     const visibleRows = filtered();
     const json = JSON.stringify(

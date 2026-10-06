@@ -3,7 +3,6 @@ const esc = v => String(v ?? '')
   .replace(/&/g,'&amp;').replace(/</g,'&lt;')
   .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
   .replace(/'/g,'&#39;');
-
 class Reader {
   constructor(buffer){ this.buffer=buffer; this.view=new DataView(buffer); this.bytes=new Uint8Array(buffer); this.size=buffer.byteLength; }
   u8(o){return this.view.getUint8(o);}
@@ -13,18 +12,14 @@ class Reader {
   ascii(o,n){let s='';for(let i=o;i<Math.min(this.size,o+n);i++){const b=this.u8(i);if(b===0)break;s+=String.fromCharCode(b);}return s;}
   slice(o,n){return this.bytes.slice(o,o+n);}
 }
-
 const MACHINES = {0x014c:'x86 (I386)',0x8664:'x64 (AMD64)',0xaa64:'ARM64',0x01c4:'ARM Thumb-2',0x01c0:'ARM',0x0200:'IA64'};
 const SUBSYSTEMS = {2:'Windows GUI',3:'Windows CUI',9:'Windows CE GUI',10:'EFI application',16:'Xbox'};
 const SEC_X=0x20000000, SEC_R=0x40000000, SEC_W=0x80000000;
 const DYNAMIC_BASE=0x40, NX_COMPAT=0x100, NO_SEH=0x400, GUARD_CF=0x4000;
-
 const align=(n,a)=>Math.ceil(n/a)*a;
 const hex=b=>Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');
 function ipowSafe(x){return Math.min(x,Number.MAX_SAFE_INTEGER);}
-
 async function digest(name, bytes){return new Uint8Array(await crypto.subtle.digest(name, bytes));}
-
 function md5(bytes){
   const data=new Uint8Array(bytes), len=BigInt(data.length)*8n, padded=((data.length+9+63)>>6)<<6;
   const buf=new Uint8Array(padded);buf.set(data);buf[data.length]=0x80;
@@ -50,7 +45,6 @@ function md5(bytes){
   const out=new Uint8Array(16),od=new DataView(out.buffer);
   [a0,b0,c0,d0].forEach((v,i)=>od.setUint32(i*4,v,true));return hex(out);
 }
-
 function rvaToOffset(pe,rva){
   for(const s of pe.sections){
     const start=s.virtualAddress, end=start+Math.max(s.virtualSize,s.sizeOfRawData);
@@ -62,7 +56,6 @@ function cstr(r,o,max=8192){
   if(o==null||o<0||o>=r.size)return '';
   let s='';for(let i=o;i<Math.min(r.size,o+max);i++){const b=r.u8(i);if(b===0)break;s+=String.fromCharCode(b);}return s;
 }
-
 function parsePE(r){
   const p={valid:false,warnings:[],sections:[],dataDirectories:[],imports:[],exports:[],relocations:[],resources:[],tls:null,cli:null,dotnet:null};
   if(r.size<64||r.u16(0)!==0x5a4d){p.warnings.push('Missing DOS MZ header.');return p;}
@@ -86,9 +79,7 @@ function parsePE(r){
   parseImports(r,p);parseExports(r,p);parseRelocs(r,p);parseTLS(r,p);parseResources(r,p);parseCLI(r,p);
   return p;
 }
-
 function dir(pe,i){const d=pe.dataDirectories[i];if(!d||!d.rva||!d.size)return null;return {...d,offset:rvaToOffset(pe,d.rva)};}
-
 function parseImports(r,p){
   const d=dir(p,1);if(!d||d.offset==null)return;
   const step=p.is64?8:4;
@@ -105,27 +96,23 @@ function parseImports(r,p){
     p.imports.push({dll,functions});
   }
 }
-
 function parseExports(r,p){
   const d=dir(p,0);if(!d||d.offset==null||d.offset+40>r.size)return;
   const o=d.offset,base=r.u32(o+16),nf=r.u32(o+20),nn=r.u32(o+24),fr=r.u32(o+28),nr=r.u32(o+32),orr=r.u32(o+36);
   const fo=rvaToOffset(p,fr),no=rvaToOffset(p,nr),oo=rvaToOffset(p,orr);if(fo==null||no==null||oo==null)return;
   for(let i=0;i<nn&&i<20000;i++){const nameOff=rvaToOffset(p,r.u32(no+i*4)),ord=r.u16(oo+i*2);if(nameOff==null||ord>=nf)continue;p.exports.push({name:cstr(r,nameOff),ordinal:base+ord,rva:r.u32(fo+ord*4)})}
 }
-
 function parseRelocs(r,p){
   const d=dir(p,5);if(!d||d.offset==null)return;
   let pos=d.offset,end=Math.min(r.size,d.offset+d.size);
   while(pos+8<=end){const page=r.u32(pos),size=r.u32(pos+4);if(size<8||pos+size>end)break;const count=(size-8)/2,entries=[];for(let i=0;i<count;i++){const x=r.u16(pos+8+i*2);entries.push({type:x>>>12,offset:x&0xfff})}p.relocations.push({pageRva:page,count,entries:entries.slice(0,100)});pos+=size}
 }
-
 function parseTLS(r,p){
   const d=dir(p,9);if(!d||d.offset==null)return;
   const o=d.offset;p.tls={offset:o};
   if(p.is64&&o+40<=r.size){p.tls.start=r.u64(o).toString();p.tls.end=r.u64(o+8).toString();p.tls.index=r.u64(o+16).toString();p.tls.callbacks=r.u64(o+24).toString()}
   else if(!p.is64&&o+24<=r.size){p.tls.start=r.u32(o);p.tls.end=r.u32(o+4);p.tls.index=r.u32(o+8);p.tls.callbacks=r.u32(o+12)}
 }
-
 function parseResources(r,p){
   const d=dir(p,2);if(!d||d.offset==null)return;
   const root=d.offset,seen=new Set();
@@ -140,7 +127,6 @@ function parseResources(r,p){
   }
   walk(root,[],0);
 }
-
 function parseCLI(r,p){
   const d=dir(p,14);if(!d||d.offset==null||d.offset+16>r.size)return;
   p.cli={cb:r.u32(d.offset),major:r.u16(d.offset+4),minor:r.u16(d.offset+6),metadataRva:r.u32(d.offset+8),metadataSize:r.u32(d.offset+12),flags:r.u32(d.offset+16)};
@@ -156,7 +142,6 @@ function parseCLI(r,p){
   }
   parseDotnetRows(r,p,o,map);
 }
-
 function parseDotnetRows(r,p,base,map){
   const t=map['#~']||map['#-'];if(!t)return;const o=t.offset;if(o+24>r.size)return;
   const heap=r.u8(o+6),lo=r.u32(o+8),hi=r.u32(o+12);let pos=o+24;const valid=[];
@@ -178,7 +163,6 @@ function parseDotnetRows(r,p,base,map){
   const offsets={};
   for(const i of valid){offsets[i]=pos;if(!(i in sizes))return;pos+=sizes[i]*(rows[i]||0);if(pos>r.size)return}
   const gs=p.dotnet.getString||(()=>'');
-
   if(offsets[2]!=null){
     const off=offsets[2],sz=sizes[2],count=rows[2]||0;
     for(let i=0;i<count;i++){const x=off+i*sz,name=strIx===2?r.u16(x+4):r.u32(x+4),ns=strIx===2?r.u16(x+4+strIx):r.u32(x+4+strIx);const n=gs(name),s=gs(ns);if(n)p.dotnet.types.push(s?`${s}.${n}`:n);if(s)p.dotnet.namespaces.push(s)}
@@ -195,7 +179,6 @@ function parseDotnetRows(r,p,base,map){
   p.dotnet.types=[...new Set(p.dotnet.types)].slice(0,10000).sort();
   p.dotnet.methods=[...new Set(p.dotnet.methods)].slice(0,10000).sort();
 }
-
 function extractStrings(r){
   const ascii=[],unicode=[];
   let s='',start=0;
@@ -206,7 +189,6 @@ function extractStrings(r){
   if(s.length>=5)unicode.push({value:s,offset:start});
   return {ascii,unicode};
 }
-
 function heuristicFindings(pe,strings){
   const f=[];
   if(!pe.valid)return f;
@@ -227,7 +209,6 @@ function heuristicFindings(pe,strings){
   if(pe.imports.some(x=>/winhttp|wininet|urlmon/i.test(x.dll)))f.push({level:'warning',title:'Network-capable Windows DLL imported',detail:'One or more imported DLLs provide Windows networking functionality.'});
   return f;
 }
-
 function parseYaraRules(text){
   const rules=[],re=/rule\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\:[^{]+)?\s*\{([\s\S]*?)\}/gi;let m;
   while((m=re.exec(text||''))){
@@ -240,7 +221,6 @@ function parseYaraRules(text){
   }
   return rules;
 }
-
 function matchYara(rule,reader){
   const matched=[];
   for(const s of rule.strings){
@@ -262,15 +242,12 @@ function matchYara(rule,reader){
   else {const ids=rule.strings.filter(s=>c.includes(s.id)).map(s=>s.id);ok=ids.length?ids.every(x=>matched.includes(x)):matched.length>0}
   return {matched:ok,matchedStrings:[...new Set(matched)]};
 }
-
 async function doHashes(bytes){
   const [a,b]=await Promise.all([digest('SHA-256',bytes),digest('SHA-1',bytes)]);
   return {sha256:hex(a),sha1:hex(b),md5:md5(bytes)};
 }
-
 const sectionFlags=c=>`${c&SEC_X?'X':''}${c&SEC_R?'R':''}${c&SEC_W?'W':''}`||'-';
 const formatUnix=t=>t?`${new Date(t*1000).toISOString()} (UTC)`:'-';
-
 function renderData(file,pe,h,strings,findings,yara){
   const type=pe.dotnet?'.NET assembly':'Native / PE image';
   return `
@@ -287,14 +264,11 @@ function renderData(file,pe,h,strings,findings,yara){
       <div class="stat"><span>MD5</span><strong class="mono">${esc(h.md5)}</strong></div>
     </div>
   </div>
-
   <div class="card">
     <h2>Static indicators</h2>
     ${findings.length?findings.map(f=>`<div class="notice ${f.level==='high'?'bad':f.level==='warning'?'warn':'success'}"><b>${esc(f.title)}</b><br>${esc(f.detail)}</div>`).join(''):'<div class="notice success">No obvious issues were identified by the built-in heuristics.</div>'}
   </div>
-
   ${yara.length?`<div class="card"><h2>YARA results</h2>${yara.map(x=>`<div class="notice ${x.matched?'bad':'success'}"><b>${esc(x.name)}</b> - ${x.matched?'MATCH':'no match'}${x.matchedStrings.length?`<br>Matched: ${esc(x.matchedStrings.join(', '))}`:''}</div>`).join('')}</div>`:''}
-
   <div class="card"><h2>PE headers</h2><table><tbody>
     <tr><th>Machine</th><td>${esc(pe.machineName)}</td></tr>
     <tr><th>Magic</th><td>0x${pe.magic.toString(16)}</td></tr>
@@ -305,19 +279,15 @@ function renderData(file,pe,h,strings,findings,yara){
     <tr><th>Image size</th><td>${pe.sizeOfImage.toLocaleString()}</td></tr>
     <tr><th>DLL characteristics</th><td class="mono">0x${pe.dllCharacteristics.toString(16)}</td></tr>
   </tbody></table></div>
-
   <div class="card"><h2>Sections</h2><table><thead><tr><th>Name</th><th>RVA</th><th>Virtual</th><th>Raw</th><th>R/W/X</th></tr></thead><tbody>
     ${pe.sections.map(s=>`<tr><td class="mono">${esc(s.name)}</td><td class="mono">0x${s.virtualAddress.toString(16)}</td><td>${s.virtualSize.toLocaleString()}</td><td>${s.sizeOfRawData.toLocaleString()}</td><td>${sectionFlags(s.characteristics)}</td></tr>`).join('')}
   </tbody></table></div>
-
   <div class="card"><h2>Imports / dependencies</h2>
     ${pe.imports.length?pe.imports.map(i=>`<details class="card compact"><summary><b>${esc(i.dll)}</b> - ${i.functions.length} symbols</summary><div class="mono">${i.functions.slice(0,2000).map(x=>esc(x.name||`Ordinal #${x.ordinal}`)).join('<br>')}</div></details>`).join(''):'<div class="muted">No import directory parsed.</div>'}
   </div>
-
   <div class="card"><h2>Exports</h2>
     ${pe.exports.length?`<table><thead><tr><th>Name</th><th>Ordinal</th><th>RVA</th></tr></thead><tbody>${pe.exports.slice(0,10000).map(x=>`<tr><td class="mono">${esc(x.name)}</td><td>${x.ordinal}</td><td class="mono">0x${x.rva.toString(16)}</td></tr>`).join('')}</tbody></table>`:'<div class="muted">No named exports parsed.</div>'}
   </div>
-
   <div class="card"><h2>Resources / TLS / relocations</h2>
     <div class="grid three">
       <div class="stat"><span>Resources</span><strong>${pe.resources.length}</strong></div>
@@ -327,7 +297,6 @@ function renderData(file,pe,h,strings,findings,yara){
     ${pe.resources.length?`<ul>${pe.resources.slice(0,1000).map(x=>`<li class="mono">${esc(x.path)} - ${x.size.toLocaleString()} bytes</li>`).join('')}</ul>`:''}
     ${pe.tls?`<pre class="mono">${esc(JSON.stringify(pe.tls,null,2))}</pre>`:''}
   </div>
-
   ${pe.dotnet?`<div class="card"><h2>.NET metadata</h2>
     <div class="grid four">
       <div class="stat"><span>Metadata version</span><strong>${esc(pe.dotnet.version)}</strong></div>
@@ -340,7 +309,6 @@ function renderData(file,pe,h,strings,findings,yara){
     <h3>Types</h3><div class="mono">${pe.dotnet.types.slice(0,5000).map(esc).join('<br>')}</div>
     <h3>Methods</h3><div class="mono">${pe.dotnet.methods.slice(0,5000).map(esc).join('<br>')}</div>
   </div>`:''}
-
   <div class="card"><h2>Strings</h2>
     <div class="grid two">
       <div><h3>ASCII (${strings.ascii.length})</h3><pre class="mono" style="max-height:420px;overflow:auto">${esc(strings.ascii.slice(0,10000).map(x=>`0x${x.offset.toString(16)}  ${x.value}`).join('\n'))}</pre></div>
@@ -348,7 +316,6 @@ function renderData(file,pe,h,strings,findings,yara){
     </div>
   </div>`;
 }
-
 export function renderDllAnalyzer(app){
   app.innerHTML=`
   <section class="card">
@@ -356,7 +323,6 @@ export function renderDllAnalyzer(app){
       <div><h2>DLL / PE Analyzer</h2><p class="small">Analyze .NET and native PE files entirely in the browser. The binary is never executed or uploaded.</p></div>
       <span class="badge ok"></span>
     </div>
-
     <div class="card">
       <label for="dll-file">PE file</label>
       <input id="dll-file" type="file" accept=".dll,.exe,.sys,.ocx,.cpl,.scr,.bin">
@@ -365,21 +331,16 @@ export function renderDllAnalyzer(app){
         <button class="btn secondary" type="button" id="dll-clear">Clear</button>
       </div>
     </div>
-
     <div class="card">
       <label for="dll-yara">Optional local YARA rule files</label>
       <input id="dll-yara" type="file" accept=".yar,.yara,.rule,.txt" multiple>
       <div class="muted">Safe subset: quoted ASCII strings, hex byte patterns, and simple conditions such as <span class="mono">any of them</span>, <span class="mono">all of them</span>, <span class="mono">$a and $b</span>, <span class="mono">$a or $b</span>.</div>
     </div>
-
     <div id="dll-message" class="notice hidden" role="status"></div>
     <div id="dll-results"><div class="card"><h2>Quick view</h2><div class="muted">Choose a PE/DLL and click Analyze.</div></div></div>
   </section>`;
-
   const fileEl=$('#dll-file'),yaraEl=$('#dll-yara'),msg=$('#dll-message'),results=$('#dll-results');
-
   const show=(text,kind='error')=>{msg.textContent=text||'';msg.className=text?`notice ${kind}`:'notice hidden'};
-
   $('#dll-analyze').addEventListener('click',async()=>{
     const file=fileEl.files?.[0];if(!file){show('Choose a PE/DLL file first.');return}
     try{
@@ -397,7 +358,6 @@ export function renderDllAnalyzer(app){
       show(`Analysis complete: ${file.name} - ${file.size.toLocaleString()} bytes.`,'success');
     }catch(e){results.innerHTML='<div class="card"><h2>Analysis failed</h2></div>';show(e?.message||'Could not analyze the file.')}
   });
-
   $('#dll-clear').addEventListener('click',()=>{
     fileEl.value='';yaraEl.value='';
     results.innerHTML='<div class="card"><h2>Quick view</h2><div class="muted">Choose a PE/DLL and click Analyze.</div></div>';show('');

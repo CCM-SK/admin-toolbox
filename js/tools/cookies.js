@@ -624,7 +624,6 @@ function safeExport(result) {
   }
   return result;
 }
-
 export function renderCookies(app) {
   app.innerHTML = `
     <div class="tool-window" id="cookieWindow">
@@ -683,11 +682,9 @@ export function renderCookies(app) {
   input.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') run();
   });
-
   enableToolDragging(
     $('#cookieWindow'),
     $('#cookieDragHandle'),
     () => document.body.classList.contains('sidebar-detached')
   );
-
 }

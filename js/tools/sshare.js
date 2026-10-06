@@ -1,11 +1,9 @@
 const te = new TextEncoder();
 const td = new TextDecoder();
-
 const PBKDF2_ITERATIONS = 600000;
 const AES_BITS = 256;
 const RSA_BITS = 4096;
 const APP_ID = 'Admin Toolbox Secure Password Share';
-
 function b64(bytes) {
   let s = '';
   const chunk = 0x8000;
@@ -14,7 +12,6 @@ function b64(bytes) {
   }
   return btoa(s).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
 }
-
 function unb64(text) {
   const normalized = text.replaceAll('-', '+').replaceAll('_', '/').padEnd(Math.ceil(text.length / 4) * 4, '=');
   const raw = atob(normalized);
@@ -22,11 +19,9 @@ function unb64(text) {
   for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
   return bytes;
 }
-
 function hex(bytes) {
   return [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
 }
-
 function copyText(text, button) {
   navigator.clipboard?.writeText(text).then(() => {
     const old = button.textContent;
@@ -41,12 +36,10 @@ function copyText(text, button) {
     ta.remove();
   });
 }
-
 function setMessage(el, text, kind = '') {
   el.textContent = text;
   el.className = `notice ${kind}`.trim();
 }
-
 async function derivePasswordKey(passphrase, salt, iterations = PBKDF2_ITERATIONS) {
   const material = await crypto.subtle.importKey(
     'raw', te.encode(passphrase), 'PBKDF2', false, ['deriveKey']
@@ -59,29 +52,24 @@ async function derivePasswordKey(passphrase, salt, iterations = PBKDF2_ITERATION
     ['encrypt', 'decrypt']
   );
 }
-
 async function sha256(bytes) {
   return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
 }
-
 async function publicKeyFingerprint(publicKey) {
   const spki = new Uint8Array(await crypto.subtle.exportKey('spki', publicKey));
   return hex(await sha256(spki));
 }
-
 function packageSummary(pkg) {
   const alg = pkg?.alg || 'unknown';
   if (alg === 'PBKDF2-SHA256/AES-256-GCM') return `Password-protected package · PBKDF2-SHA-256 · ${pkg.iterations.toLocaleString()} iterations · AES-256-GCM`;
   if (alg === 'RSA-OAEP-SHA256') return `Recipient-key package · RSA-OAEP-4096 · SHA-256`;
   return `Unknown package format`;
 }
-
 function validatePackage(pkg) {
   if (!pkg || typeof pkg !== 'object') throw new Error('Package is not valid JSON.');
   if (pkg.format !== 'admin-toolbox-secure-secret' || pkg.version !== 1) throw new Error('Unsupported package format or version.');
   if (!pkg.alg) throw new Error('Package is missing its encryption algorithm.');
 }
-
 async function encryptWithPassphrase(secret, passphrase, metadata) {
   if (!passphrase) throw new Error('A passphrase is required.');
   if (passphrase.length < 12) throw new Error('Use a passphrase of at least 12 characters.');
@@ -104,7 +92,6 @@ async function encryptWithPassphrase(secret, passphrase, metadata) {
     ciphertext: b64(new Uint8Array(cipher)),
   };
 }
-
 async function decryptWithPassphrase(pkg, passphrase) {
   if (pkg.alg !== 'PBKDF2-SHA256/AES-256-GCM') throw new Error('This package does not use passphrase encryption.');
   const salt = unb64(pkg.salt);
@@ -114,7 +101,6 @@ async function decryptWithPassphrase(pkg, passphrase) {
   const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv, additionalData: aad, tagLength: 128 }, key, unb64(pkg.ciphertext));
   return JSON.parse(td.decode(plain));
 }
-
 async function generateRecipientKeys() {
   return crypto.subtle.generateKey(
     { name: 'RSA-OAEP', modulusLength: RSA_BITS, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
@@ -122,15 +108,12 @@ async function generateRecipientKeys() {
     ['encrypt', 'decrypt']
   );
 }
-
 async function exportPublicJwk(key) {
   return crypto.subtle.exportKey('jwk', key);
 }
-
 async function exportPrivateJwk(key) {
   return crypto.subtle.exportKey('jwk', key);
 }
-
 async function importPublicJwk(jwk) {
   return crypto.subtle.importKey(
     'jwk', jwk,
@@ -139,7 +122,6 @@ async function importPublicJwk(jwk) {
     ['encrypt']
   );
 }
-
 async function importPrivateJwk(jwk) {
   return crypto.subtle.importKey(
     'jwk', jwk,
@@ -148,7 +130,6 @@ async function importPrivateJwk(jwk) {
     ['decrypt']
   );
 }
-
 async function encryptToRecipient(secret, publicKey, metadata) {
   const payload = JSON.stringify({ secret, ...metadata, createdAt: new Date().toISOString() });
   const plaintext = te.encode(payload);
@@ -165,13 +146,11 @@ async function encryptToRecipient(secret, publicKey, metadata) {
     recipientKeyFingerprint: await publicKeyFingerprint(publicKey),
   };
 }
-
 async function decryptWithPrivateKey(pkg, privateKey) {
   if (pkg.alg !== 'RSA-OAEP-SHA256') throw new Error('This package does not use recipient-key encryption.');
   const plain = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, privateKey, unb64(pkg.ciphertext));
   return JSON.parse(td.decode(plain));
 }
-
 function renderPasswordMode(root) {
   root.innerHTML = `
     <section class="card">
@@ -185,7 +164,6 @@ function renderPasswordMode(root) {
       <textarea id="ss-pass-out" class="mono" rows="12" placeholder="Encrypted package will appear here" readonly></textarea>
       <div class="actions"><button class="btn" id="ss-copy" disabled>Copy package</button></div>
     </section>
-
     <section class="card">
       <h2>Decrypt a package</h2>
       <textarea id="ss-pass-in" class="mono" rows="10" placeholder="Paste encrypted package JSON here"></textarea>
@@ -195,7 +173,6 @@ function renderPasswordMode(root) {
       <pre id="ss-dec-out" class="mono"></pre>
     </section>
   `;
-
   let latest = null;
   const msg = root.querySelector('#ss-pass-msg');
   root.querySelector('#ss-encrypt').onclick = async () => {
@@ -224,7 +201,6 @@ function renderPasswordMode(root) {
     }
   };
 }
-
 function renderRecipientMode(root) {
   root.innerHTML = `
     <section class="card">
@@ -236,7 +212,6 @@ function renderRecipientMode(root) {
       <label>Private key JSON <textarea id="ss-priv" class="mono" rows="8" placeholder="Keep this private and back it up securely" readonly></textarea></label>
       <div class="actions"><button class="btn" id="ss-copy-pub" disabled>Copy public key</button><button class="btn" id="ss-copy-priv" disabled>Copy private key</button></div>
     </section>
-
     <section class="card">
       <h2>Encrypt to recipient</h2>
       <label>Recipient public key JSON <textarea id="ss-recipient-pub" class="mono" rows="8"></textarea></label>
@@ -247,7 +222,6 @@ function renderRecipientMode(root) {
       <textarea id="ss-r-out" class="mono" rows="10" readonly></textarea>
       <div class="actions"><button class="btn" id="ss-r-copy" disabled>Copy package</button></div>
     </section>
-
     <section class="card">
       <h2>Decrypt with private key</h2>
       <label>Private key JSON <textarea id="ss-dec-priv" class="mono" rows="8"></textarea></label>
@@ -257,11 +231,9 @@ function renderRecipientMode(root) {
       <pre id="ss-r-dec-out" class="mono"></pre>
     </section>
   `;
-
   let publicJwk = null;
   let privateJwk = null;
   let latest = null;
-
   root.querySelector('#ss-genkeys').onclick = async () => {
     try {
       const pair = await generateRecipientKeys();
@@ -277,7 +249,6 @@ function renderRecipientMode(root) {
   };
   root.querySelector('#ss-copy-pub').onclick = e => copyText(JSON.stringify(publicJwk, null, 2), e.currentTarget);
   root.querySelector('#ss-copy-priv').onclick = e => copyText(JSON.stringify(privateJwk, null, 2), e.currentTarget);
-
   root.querySelector('#ss-r-encrypt').onclick = async () => {
     try {
       const jwk = JSON.parse(root.querySelector('#ss-recipient-pub').value);
@@ -293,7 +264,6 @@ function renderRecipientMode(root) {
     } catch (e) { setMessage(root.querySelector('#ss-r-msg'), e.message, 'error'); }
   };
   root.querySelector('#ss-r-copy').onclick = e => copyText(JSON.stringify(latest, null, 2), e.currentTarget);
-
   root.querySelector('#ss-r-decrypt').onclick = async () => {
     try {
       const jwk = JSON.parse(root.querySelector('#ss-dec-priv').value);
@@ -309,7 +279,6 @@ function renderRecipientMode(root) {
     }
   };
 }
-
 export function renderSShare(app) {
   app.innerHTML = `
     <section class="card">
@@ -337,7 +306,6 @@ export function renderSShare(app) {
       </ul>
     </section>
   `;
-
   const child = app.querySelector('#ss-root');
   app.querySelector('#ss-tab-pass').onclick = () => renderPasswordMode(child);
   app.querySelector('#ss-tab-key').onclick = () => renderRecipientMode(child);

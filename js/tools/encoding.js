@@ -1,15 +1,12 @@
 function utf8Encode(text) {
     return new TextEncoder().encode(text);
 }
-
 function utf8Decode(bytes) {
     return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
 }
-
 function bytesToHex(bytes) {
     return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
 }
-
 function hexToBytes(value) {
     const clean = value.replace(/\s+/g, '');
     if (!clean) return new Uint8Array();
@@ -25,7 +22,6 @@ function hexToBytes(value) {
     }
     return out;
 }
-
 function bytesToBase64(bytes) {
     let out = '';
     const chunk = 0x8000;
@@ -34,7 +30,6 @@ function bytesToBase64(bytes) {
     }
     return btoa(out);
 }
-
 function base64ToBytes(value) {
     const clean = value.replace(/\s+/g, '');
     if (!clean) return new Uint8Array();
@@ -46,16 +41,13 @@ function base64ToBytes(value) {
     const binary = atob(padded);
     return Uint8Array.from(binary, c => c.charCodeAt(0));
 }
-
 function bytesToBase64Url(bytes) {
     return bytesToBase64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
-
 function base64UrlToBytes(value) {
     const clean = value.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
     return base64ToBytes(clean);
 }
-
 function printableAsciiPercent(bytes) {
     if (!bytes.length) return 0;
     let printable = 0;
@@ -64,15 +56,12 @@ function printableAsciiPercent(bytes) {
     }
     return Math.round(printable * 100 / bytes.length);
 }
-
 function asciiPreview(bytes) {
     return Array.from(bytes, b => (b >= 0x20 && b <= 0x7e) ? String.fromCharCode(b) : '·').join('');
 }
-
 function formatBytes(n) {
     return `${n.toLocaleString()} byte${n === 1 ? '' : 's'}`;
 }
-
 function decodeInput(value, type) {
     switch (type) {
         case 'text': return utf8Encode(value);
@@ -83,7 +72,6 @@ function decodeInput(value, type) {
         default: throw new Error(`Unsupported input type: ${type}`);
     }
 }
-
 function encodeOutput(bytes, type) {
     switch (type) {
         case 'text': return utf8Decode(bytes);
@@ -94,7 +82,6 @@ function encodeOutput(bytes, type) {
         default: throw new Error(`Unsupported output type: ${type}`);
     }
 }
-
 function makeSection(id, title) {
     return `
       <div class="card">
@@ -106,7 +93,6 @@ function makeSection(id, title) {
         <div class="muted" id="${id}-stats">0 bytes</div>
       </div>`;
 }
-
 export function renderEncoding(app) {
     app.innerHTML = `
       <section class="card">
@@ -117,7 +103,6 @@ export function renderEncoding(app) {
           </div>
           <span class="badge ok"></span>
         </div>
-
         <div class="grid two">
           <div class="card compact">
             <label for="encoding-input-type">Input</label>
@@ -140,7 +125,6 @@ export function renderEncoding(app) {
             </select>
           </div>
         </div>
-
         <div class="card">
           <div class="row between">
             <label for="encoding-source">Input value</label>
@@ -152,13 +136,11 @@ export function renderEncoding(app) {
             <span class="muted" id="encoding-source-utf8">UTF-8: -</span>
           </div>
         </div>
-
         <div class="row">
           <button class="btn primary" type="button" id="encoding-convert">Convert →</button>
           <button class="btn secondary" type="button" id="encoding-swap">Swap</button>
           <button class="btn secondary" type="button" id="encoding-paste">Paste</button>
         </div>
-
         <div class="card">
           <div class="row between">
             <label for="encoding-result">Result</label>
@@ -167,16 +149,13 @@ export function renderEncoding(app) {
           <textarea id="encoding-result" rows="6" readonly placeholder="Result appears here…"></textarea>
           <div class="muted" id="encoding-result-stats">0 bytes</div>
         </div>
-
         <div id="encoding-message" class="notice hidden" role="status"></div>
-
         <div class="grid two">
           ${makeSection('encoding-base64', 'Base64')}
           ${makeSection('encoding-base64url', 'Base64URL')}
           ${makeSection('encoding-hex', 'Hex')}
           ${makeSection('encoding-url', 'URL encoding')}
         </div>
-
         <div class="card">
           <h3>Byte / character view</h3>
           <div class="grid three">
@@ -188,54 +167,44 @@ export function renderEncoding(app) {
         </div>
       </section>
     `;
-
     const $ = s => app.querySelector(s);
     const source = $('#encoding-source');
     const result = $('#encoding-result');
     const inputType = $('#encoding-input-type');
     const outputType = $('#encoding-output-type');
     const message = $('#encoding-message');
-
     function showMessage(text, kind = 'error') {
         message.textContent = text || '';
         message.className = text ? `notice ${kind}` : 'notice hidden';
     }
-
     function updateByteView(bytes) {
         const text = utf8Decode(bytes);
-
         $('#encoding-chars').textContent = text.length.toLocaleString();
         $('#encoding-bytes').textContent = bytes.length.toLocaleString();
         $('#encoding-ascii').textContent = `${printableAsciiPercent(bytes)}%`;
-
         const sample = bytes.slice(0, 256);
         const hex = bytesToHex(sample).replace(/(..)/g, '$1 ').trim();
         const ascii = asciiPreview(sample);
-
         $('#encoding-preview').textContent =
             `HEX   ${hex}\nASCII ${ascii}` +
             (bytes.length > 256
                 ? `\n\nShowing first 256 bytes of ${bytes.length}.`
                 : '');
     }
-
     function updateSourceStats(bytes, validUtf8 = true) {
         $('#encoding-source-stats').textContent = formatBytes(bytes.length);
         $('#encoding-source-utf8').textContent = `UTF-8: ${validUtf8 ? 'valid' : 'invalid'}`;
     }
-
     function setInspection(id, value, bytes) {
         $(`#${id}`).value = value;
         $(`#${id}-stats`).textContent = formatBytes(bytes.length);
     }
-
     function updateInspection(bytes) {
         setInspection('encoding-base64', bytesToBase64(bytes), bytes);
         setInspection('encoding-base64url', bytesToBase64Url(bytes), bytes);
         setInspection('encoding-hex', bytesToHex(bytes), bytes);
         setInspection('encoding-url', encodeURIComponent(utf8Decode(bytes)), bytes);
     }
-
     function convert() {
         try {
             const bytes = decodeInput(source.value, inputType.value);
@@ -244,7 +213,6 @@ export function renderEncoding(app) {
             updateSourceStats(bytes, true);
             updateByteView(bytes);
             updateInspection(bytes);
-
             let resultBytes;
             try {
                 resultBytes = utf8Encode(out);
@@ -261,14 +229,11 @@ export function renderEncoding(app) {
             showMessage(err?.message || 'Conversion failed.');
         }
     }
-
     source.value = 'Hello, world! ✓';
     inputType.value = 'text';
     outputType.value = 'base64';
     convert();
-
     $('#encoding-convert').addEventListener('click', convert);
-
     $('#encoding-clear').addEventListener('click', () => {
         source.value = '';
         result.value = '';
@@ -276,7 +241,6 @@ export function renderEncoding(app) {
         updateByteView(new Uint8Array());
         showMessage('');
     });
-
     $('#encoding-swap').addEventListener('click', () => {
         const currentInput = inputType.value;
         inputType.value = outputType.value;
@@ -286,7 +250,6 @@ export function renderEncoding(app) {
             convert();
         }
     });
-
     $('#encoding-paste').addEventListener('click', async () => {
         try {
             source.value = await navigator.clipboard.readText();
@@ -295,7 +258,6 @@ export function renderEncoding(app) {
             showMessage('Clipboard access was blocked. Use Ctrl+V instead.');
         }
     });
-
     $('#encoding-copy-result').addEventListener('click', async () => {
         if (!result.value) return;
         try {
@@ -308,7 +270,6 @@ export function renderEncoding(app) {
             showMessage('Result copied to clipboard.', 'success');
         }
     });
-
     for (const button of app.querySelectorAll('[data-copy]')) {
         button.addEventListener('click', async () => {
             const value = $(`#${button.dataset.copy}`).value;

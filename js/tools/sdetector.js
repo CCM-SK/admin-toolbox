@@ -3,13 +3,11 @@ const SD_STYLE = `
     display: grid;
     gap: 14px;
   }
-
   .sd-toolbar label {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     }
-
   .sd-text {
     width: 100%;
     min-height: 300px;
@@ -21,25 +19,21 @@ const SD_STYLE = `
     background: var(--panel, #fff);
     color: inherit;
   }
-
   .sd-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 10px;
   }
-
   .sd-stat {
     padding: 12px;
     border: 1px solid var(--border, #d7dce2);
     border-radius: 10px;
     background: var(--panel, #fff);
   }
-
   .sd-stat b {
     display: block;
     font-size: 1.25rem;
   }
-
   .sd-hit {
     border: 1px solid var(--border, #d7dce2);
     border-left: 4px solid #d14343;
@@ -47,26 +41,21 @@ const SD_STYLE = `
     padding: 12px;
     background: var(--panel, #fff);
   }
-
   .sd-hit.high {
     border-left-color: #b91c1c;
   }
-
   .sd-hit.medium {
     border-left-color: #d97706;
   }
-
   .sd-hit.low {
     border-left-color: #6b7280;
   }
-
   .sd-tags {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
     margin-bottom: 6px;
   }
-
   .sd-tag {
     font-size: .76rem;
     padding: 3px 8px;
@@ -74,23 +63,19 @@ const SD_STYLE = `
     background: #f2f4f7;
     border: 1px solid #d0d5dd;
   }
-
   .sd-code {
     font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
     word-break: break-word;
     white-space: pre-wrap;
   }
-
   .sd-muted {
     color: var(--muted, #667085);
   }
-
   .sd-actions {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
   }
-
   .sd-btn {
     border: 1px solid var(--border, #c8ced6);
     background: var(--panel, #fff);
@@ -98,18 +83,15 @@ const SD_STYLE = `
     border-radius: 8px;
     cursor: pointer;
   }
-
   .sd-good {
     color: #0f7b3e;
     background: #ecfdf3;
   }
-
   .sd-warn {
     color: #8a5a00;
     background: #fff8e1;
   }
 `;
-
 const RULES = [
   {
     id: 'AWS_ACCESS_KEY',
@@ -190,7 +172,6 @@ const RULES = [
     re: /\s(?:-p|--password|--passwd|--pwd)\s+[^\s]+/gi,
   },
 ];
-
 function esc(s) {
   return String(s ?? '').replace(
     /[&<>"']/g,
@@ -203,38 +184,29 @@ function esc(s) {
     }[c]),
   );
 }
-
 function shannon(s) {
   const m = new Map();
-
   for (const ch of s) {
     m.set(ch, (m.get(ch) || 0) + 1);
   }
-
   let h = 0;
-
   for (const n of m.values()) {
     const p = n / s.length;
     h -= p * Math.log2(p);
   }
-
   return h;
 }
-
 function redact(v) {
   if (v.length <= 6) {
     return '••••••';
   }
-
   return `${v.slice(0, 3)}${'•'.repeat(
     Math.min(24, Math.max(4, v.length - 5)),
   )}${v.slice(-2)}`;
 }
-
 function lineContext(text, start, end) {
   const lineStart = text.lastIndexOf('\n', start - 1) + 1;
   const lineEnd = text.indexOf('\n', end);
-
   return {
     line: text.slice(
       lineStart,
@@ -243,46 +215,34 @@ function lineContext(text, start, end) {
     lineNumber: text.slice(0, start).split('\n').length,
   };
 }
-
 function scan(text) {
   const hits = [];
   const seen = new Set();
-
   for (const rule of RULES) {
     rule.re.lastIndex = 0;
-
     let m;
-
     while ((m = rule.re.exec(text))) {
       const raw = m[0];
       let value = raw;
-
       if (rule.id === 'GENERIC_SECRET_ASSIGN') {
         const parts = raw.split(/[:=]/);
-
         value = parts[parts.length - 1]
           .trim()
           .replace(/^['"]|['"]$/g, '');
       }
-
       const entropy = value.length >= 8
         ? shannon(value)
         : 0;
-
       const key = `${rule.id}:${m.index}:${raw}`;
-
       if (seen.has(key)) {
         continue;
       }
-
       seen.add(key);
-
       const ctx = lineContext(
         text,
         m.index,
         m.index + raw.length,
       );
-
       hits.push({
         rule: rule.id,
         name: rule.name,
@@ -297,23 +257,18 @@ function scan(text) {
       });
     }
   }
-
   const lines = text.split(/\n/);
   let offset = 0;
-
   for (const line of lines) {
     const m = line.match(
       /\b([A-Za-z][A-Za-z0-9_.-]{2,40})\s*[:=]\s*([A-Za-z0-9+/_=-]{20,})\s*$/,
     );
-
     if (m) {
       const val = m[2];
-
       if (
         !/^(true|false|null|undefined|localhost)$/i.test(val)
       ) {
         const ent = shannon(val);
-
         if (ent >= 4.0) {
           hits.push({
             rule: 'HIGH_ENTROPY_ASSIGNMENT',
@@ -331,27 +286,21 @@ function scan(text) {
         }
       }
     }
-
     offset += line.length + 1;
   }
-
   hits.sort(
     (a, b) =>
       ({ high: 0, medium: 1, low: 2 }[a.severity] -
         { high: 0, medium: 1, low: 2 }[b.severity]) ||
       a.line - b.line,
   );
-
   return hits;
 }
-
 export function renderSDetector(app) {
   app.innerHTML = '';
-
   const st = document.createElement('style');
   st.textContent = SD_STYLE;
   app.appendChild(st);
-
   app.insertAdjacentHTML(
     'beforeend',
     `
@@ -365,18 +314,15 @@ export function renderSDetector(app) {
             </p>
           </p>
         </div>
-
         <textarea
           class="sd-text"
           id="sdInput"
           spellcheck="false"
           placeholder="Paste config, logs, environment variables, connection strings, HTTP headers, scripts, etc."
         ></textarea>
-
         <div class="sd-toolbar">
           <button class="btn primary" id="sdScan">Scan</button>
           <button class="btn secondary" id="sdClear">Clear</button>
-
             <label class="checkline">
             <input
                 type="checkbox"
@@ -385,35 +331,27 @@ export function renderSDetector(app) {
             Ignore obvious comments
             </label>
         </div>
-
         <div id="sdResults"></div>
       </section>
     `,
   );
-
   const input = app.querySelector('#sdInput');
   const out = app.querySelector('#sdResults');
-
   let last = [];
-
   function run() {
     let text = input.value;
-
     if (app.querySelector('#sdIgnoreComments').checked) {
       text = text
         .split('\n')
         .filter(l => !/^\s*(#|;|\/\/)/.test(l))
         .join('\n');
     }
-
     last = scan(text);
-
     const counts = {
       high: last.filter(x => x.severity === 'high').length,
       medium: last.filter(x => x.severity === 'medium').length,
       low: last.filter(x => x.severity === 'low').length,
     };
-
     out.innerHTML =
       `
         <div class="sd-grid">
@@ -421,17 +359,14 @@ export function renderSDetector(app) {
             <span>Total findings</span>
             <b>${last.length}</b>
           </div>
-
           <div class="sd-stat">
             <span>High</span>
             <b>${counts.high}</b>
           </div>
-
           <div class="sd-stat">
             <span>Medium</span>
             <b>${counts.medium}</b>
           </div>
-
           <div class="sd-stat">
             <span>Low / heuristic</span>
             <b>${counts.low}</b>
@@ -455,15 +390,12 @@ export function renderSDetector(app) {
                       <span class="sd-tag">
                         ${esc(x.severity.toUpperCase())}
                       </span>
-
                       <span class="sd-tag">
                         ${esc(x.name)}
                       </span>
-
                       <span class="sd-tag">
                         line ${x.line}
                       </span>
-
                       ${
                         x.entropy
                           ? `
@@ -474,11 +406,9 @@ export function renderSDetector(app) {
                           : ''
                       }
                     </div>
-
                     <div class="sd-code">
                       ${esc(x.context)}
                     </div>
-
                     ${
                       x.note
                         ? `
@@ -504,7 +434,6 @@ export function renderSDetector(app) {
               </div>
             `
       );
-
     app
       .querySelector('#sdCopy')
       ?.addEventListener(
@@ -522,11 +451,9 @@ export function renderSDetector(app) {
           ),
       );
   }
-
   app
     .querySelector('#sdScan')
     .addEventListener('click', run);
-
   app
     .querySelector('#sdClear')
     .addEventListener('click', () => {

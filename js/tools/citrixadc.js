@@ -1,5 +1,4 @@
 import { $, escapeHtml, downloadText, dropBinder, enableToolDragging } from '../utils.js';
-
 export const metadata = {
   id: 'citrixadc',
   title: 'Citrix ADC Config Analyzer',
@@ -386,7 +385,6 @@ const POS_LABELS = {
   destination: 'Destination'
 };
 // end of weird constants
-
 function tokenize(line) {
   const out = [];
   const n = line.length;
@@ -1840,7 +1838,6 @@ function toJson(model, findings, R) {
     unparsed: model.unparsed
   };
 }
-
 function buildCache(model, R) {
   const vservers = vserversVM(model, R);
   const catalogue = [...model.entities.values()]
@@ -1880,7 +1877,6 @@ function renderOther(cache) {
     [...groups].map(([label, items]) => `<h4>${h(label)} (${items.length})</h4>${renderCatalogueTable(items)}`).join('');
 }
 // End of weird functions
-
 export function renderCitrixAdc(app) {
   app.innerHTML = `
     <div class="tool-window" id="cxWindow">

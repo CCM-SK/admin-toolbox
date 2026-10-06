@@ -1,12 +1,10 @@
 import { $, escapeHtml, downloadText, enableToolDragging } from '../utils.js';
-
 export const metadata = {
   id: 'mail-header',
   title: 'Mail-Header analyzer',
   description: 'Analyze message headers locally',
   path: '/#header'
 };
-
 const LIMITS = {
   maxHeaderBytes: 2 * 1024 * 1024,
   maxHeaderCount: 5000,
@@ -19,7 +17,6 @@ const LIMITS = {
   maxCompoundDepth: 256,
   maxCompoundFileBytes: 128 * 1024 * 1024
 };
-
 export function renderHeaderRework(app) {
   app.innerHTML = `
     <div class="tool-window" id="mailHeaderWindow">
@@ -27,7 +24,6 @@ export function renderHeaderRework(app) {
         <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
         <strong>E-mail message header analyzer</strong>
       </div>
-
       <section class="card">
         <h2>E-mail message header analyzer</h2>
         <p class="small">
@@ -66,13 +62,11 @@ export function renderHeaderRework(app) {
       <section class="card" id="mailHeaderResult" hidden></section>
     </div>
   `;
-
   const fileInput = $('#mailHeaderFile');
   const dropZone = $('#mailHeaderWindow');
   const analysisMode = $('#mailHeaderAnalysisMode');
   const dnsDetails = $('#mailHeaderDnsDetails');
   analysisMode.onchange = () => { dnsDetails.hidden = analysisMode.value !== 'supplied-dns'; };
-
   $('#mailHeaderPick').onclick = () => fileInput.click();
   fileInput.onchange = async e => {
     const f = e.target.files?.[0];
@@ -80,7 +74,6 @@ export function renderHeaderRework(app) {
     await loadMailFile(f);
     fileInput.value = '';
   };
-
   dropZone.addEventListener('dragover', e => {
     e.preventDefault();
     dropZone.classList.add('drag-over');
@@ -93,7 +86,6 @@ export function renderHeaderRework(app) {
     if (!f) return;
     await loadMailFile(f);
   });
-
   async function loadMailFile(f) {
     try {
       const info = $('#mailHeaderFileInfo');
@@ -118,7 +110,6 @@ export function renderHeaderRework(app) {
       result.innerHTML = `<div class="status danger">${escapeHtml(err.message || 'The message file could not be read.')}</div>`;
     }
   }
-
   $('#mailHeaderClear').onclick = () => {
     $('#mailHeaders').value = '';
     $('#mailHeaderResult').hidden = true;
@@ -129,28 +120,23 @@ export function renderHeaderRework(app) {
     $('#mailHeaderDmarcRecord').value = '';
     $('#mailHeaderDkimKeyRecord').value = '';
   };
-
   $('#mailHeaderAnalyze').onclick = analyze;
   $('#mailHeaders').addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analyze();
   });
-
   enableToolDragging(
     $('#mailHeaderWindow'),
     $('#mailHeaderDragHandle'),
     () => document.body.classList.contains('sidebar-detached')
   );
-
   function analyze() {
     const raw = $('#mailHeaders').value;
     const result = $('#mailHeaderResult');
-
     if (!raw.trim()) {
       result.hidden = false;
       result.innerHTML = '<div class="status warning">Paste message headers first.</div>';
       return;
     }
-
     try {
       const headers = parseHeaders(raw);
       const analysis = analyzeHeaders(headers, readSuppliedEvidence());
@@ -163,7 +149,6 @@ export function renderHeaderRework(app) {
     }
   }
 }
-
 function readSuppliedEvidence() {
   const mode = document.querySelector('#mailHeaderAnalysisMode')?.value || 'headers';
   if (mode !== 'supplied-dns') return { mode, dns: {} };
@@ -176,19 +161,16 @@ function readSuppliedEvidence() {
     }
   };
 }
-
 function parseHeaders(raw) {
   const text = String(raw ?? '').replace(/^\uFEFF/, '');
   const byteLength = utf8ByteLength(text);
   if (byteLength > LIMITS.maxHeaderBytes) {
     throw new Error(`Header input exceeds the ${formatBytes(LIMITS.maxHeaderBytes)} local-analysis limit.`);
   }
-
   const headerPart = extractEmlHeaders(text);
   const physical = headerPart.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
   const unfolded = [];
   const parseWarnings = [];
-
   for (let i = 0; i < physical.length; i++) {
     const line = physical[i];
     if (/^[ \t]/.test(line)) {
@@ -219,15 +201,12 @@ function parseHeaders(raw) {
       });
     }
   }
-
   if (unfolded.length > LIMITS.maxHeaderCount) {
     throw new Error(`The message contains more than ${LIMITS.maxHeaderCount} parsed headers, exceeding the local safety limit.`);
   }
   if (!unfolded.length) throw new Error('No RFC-style message headers were found.');
-
   return unfolded.map((h, index) => ({ ...h, index: index + 1, rawValue: h.value }));
 }
-
 function values(headers, name) {
   return headers.filter(h => h.name === name).map(h => h.value);
 }
@@ -238,15 +217,12 @@ function last(headers, name) {
   const vs = values(headers, name);
   return vs[vs.length - 1] || '';
 }
-
 function escapeRegExp(s) {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-
 function parseAuthResults(headers) {
   const ars = values(headers, 'authentication-results').slice(0, LIMITS.maxAuthenticationResults);
   const out = { records: [], spf: [], dkim: [], dmarc: [], arc: [], compauth: [], other: [] };
-
   for (let index = 0; index < ars.length; index++) {
     const raw = ars[index];
     const clean = normalizeHeaderWhitespace(raw);
@@ -263,7 +239,6 @@ function parseAuthResults(headers) {
       methods: [],
       parserWarnings: []
     };
-
     for (const segment of parts) {
       const method = parseAuthenticationMethod(segment);
       if (!method) {
@@ -281,22 +256,18 @@ function parseAuthResults(headers) {
     }
     out.records.push(record);
   }
-
   return out;
 }
-
 function parseAuthenticationMethod(segment) {
   // Authentication-Results clauses are normally: method=result [reason=...] [type.property=value ...]
   const m = segment.match(/^([a-z][a-z0-9_-]*)\s*=\s*([a-z][a-z0-9_-]*)(.*)$/i);
   if (!m) return null;
-
   const mechanism = m[1].toLowerCase();
   const result = m[2].toLowerCase();
   const tail = m[3] || '';
   const tokenParts = tokenizeAuthResultTail(tail);
   const properties = {};
   let reason = '';
-
   for (let i = 0; i < tokenParts.length; i++) {
     const token = tokenParts[i];
     const eq = token.indexOf('=');
@@ -306,30 +277,24 @@ function parseAuthenticationMethod(segment) {
     if (key === 'reason') reason = val;
     else properties[key] = val;
   }
-
   const detail = Object.entries(properties)
     .map(([k, v]) => `${k}=${v}`)
     .join('; ');
-
   return { mechanism, result, reason, properties, detail, raw: segment };
 }
-
 function tokenizeAuthResultTail(input) {
   const out = [];
   let current = '';
   let quote = null;
   let commentDepth = 0;
-
   const flush = () => {
     const v = current.trim();
     if (v) out.push(v);
     current = '';
   };
-
   for (let i = 0; i < input.length; i++) {
     const ch = input[i];
     const prev = input[i - 1];
-
     if (quote) {
       current += ch;
       if (ch === quote && prev !== '\\') quote = null;
@@ -359,7 +324,6 @@ function tokenizeAuthResultTail(input) {
   flush();
   return out;
 }
-
 function parseReceivedSpf(headers) {
   return values(headers, 'received-spf').map(raw => {
     const clean = normalizeHeaderWhitespace(raw);
@@ -370,12 +334,10 @@ function parseReceivedSpf(headers) {
     return { result: firstWord, props, raw };
   });
 }
-
 function parseAuthSignature(headers, name) {
   return values(headers, name).slice(0, name === 'dkim-signature' ? LIMITS.maxDkimSignatures : LIMITS.maxArcSeals).map(raw => {
     const fields = {};
     const warnings = [];
-
     const chunks = splitOutsideQuotes(raw, ';');
     for (const chunk of chunks) {
       const eq = chunk.indexOf('=');
@@ -386,24 +348,20 @@ function parseAuthSignature(headers, name) {
       if (Object.prototype.hasOwnProperty.call(fields, key)) warnings.push(`Duplicate DKIM/ARC tag: ${key}`);
       fields[key] = value;
     }
-
     if (!fields.v) warnings.push('Missing v= version tag.');
     if (!fields.a && name === 'dkim-signature') warnings.push('Missing a= algorithm tag.');
     if (!fields.d && name === 'dkim-signature') warnings.push('Missing d= signing domain.');
     if (!fields.s && name === 'dkim-signature') warnings.push('Missing s= selector.');
     if (name === 'dkim-signature' && !fields.h) warnings.push('Missing h= signed-header list.');
     if (name === 'dkim-signature' && !fields.b) warnings.push('Missing b= signature data.');
-
     const signedHeaders = fields.h
       ? fields.h.split(':').map(x => x.trim().toLowerCase()).filter(Boolean)
       : [];
-
     const coveredSet = new Set(signedHeaders);
     const dkimHeaderCoverage = ['from', 'to', 'subject', 'date', 'message-id', 'reply-to'].map(header => ({
       header,
       signed: coveredSet.has(header)
     }));
-
     return {
       fields,
       warnings,
@@ -415,13 +373,11 @@ function parseAuthSignature(headers, name) {
     };
   });
 }
-
 function parseAddressHeader(value) {
   const raw = String(value || '').trim();
   const decoded = decodeMimeWords(raw);
   const matches = parseAddressList(decoded);
   const firstAddress = matches[0] || { name: '', address: '', domain: '' };
-
   return {
     ...firstAddress,
     raw,
@@ -429,7 +385,6 @@ function parseAddressHeader(value) {
     addresses: matches
   };
 }
-
 function parseAddressList(value) {
   const tokens = splitAddressList(value);
   return tokens
@@ -440,20 +395,16 @@ function parseAddressList(value) {
       domain: getDomain(x.address)
     }));
 }
-
 function parseMailbox(value) {
   let s = String(value || '').trim();
   if (!s) return { name: '', address: '' };
-
   s = removeComments(s).trim();
   if (!s) return { name: '', address: '' };
-
   const groupMatch = s.match(/^([^:]+):\s*(.*);$/s);
   if (groupMatch) {
     const groupAddresses = parseAddressList(groupMatch[2]);
     return groupAddresses[0] || { name: groupMatch[1].trim(), address: '' };
   }
-
   const angle = s.match(/^(.*?)\s*<\s*([^<>\s]+)\s*>\s*$/s);
   if (angle) {
     return {
@@ -461,7 +412,6 @@ function parseMailbox(value) {
       address: angle[2].trim()
     };
   }
-
   const simple = s.match(/([!#$%&'*+\-/=?^_`{|}~0-9A-Za-z.]+@[A-Za-z0-9.-]+)$/);
   if (simple) {
     return {
@@ -469,13 +419,11 @@ function parseMailbox(value) {
       address: simple[1]
     };
   }
-
   return {
     name: '',
     address: s.replace(/^<|>$/g, '').trim()
   };
 }
-
 function deriveAlignment(
   fromDomain,
   dmarcDomains,
@@ -486,7 +434,6 @@ function deriveAlignment(
 ) {
   const fromD = normalizeDomain(fromDomain);
   const dmarcD = normalizeDomain(dmarcDomains[0] || '');
-
   if (!fromD || !dmarcResult) {
     return {
       label: 'DMARC alignment',
@@ -513,45 +460,37 @@ function deriveAlignment(
       explanation: 'A reported DMARC result and a usable From domain are required. No DNS policy lookup was performed.'
     };
   }
-
   const dkim = bestAlignedDomain(fromD, dkimDomains);
   const spf = bestAlignedDomain(fromD, spfDomains);
   const policy = {
     adkim: dmarcPolicy?.adkim || 'unknown',
     aspf: dmarcPolicy?.aspf || 'unknown'
   };
-
   dkim.policyAligned =
     policy.adkim === 's'
       ? dkim.strict
       : policy.adkim === 'r'
         ? dkim.relaxed
         : false;
-
   spf.policyAligned =
     policy.aspf === 's'
       ? spf.strict
       : policy.aspf === 'r'
         ? spf.relaxed
         : false;
-
   const reportedPass = String(dmarcResult).toLowerCase() === 'pass';
   const observedAligned = dkim.relaxed || spf.relaxed;
   const policyKnown = policy.adkim !== 'unknown' || policy.aspf !== 'unknown';
   const policyAligned = dkim.policyAligned || spf.policyAligned;
-
   let state = resultState(dmarcResult, { empty: true });
   let value = String(dmarcResult).toLowerCase();
   let explanation = `From=${fromD}.`;
-
   if (reportedPass && policyKnown && policyAligned) {
     state = 'good';
     value = 'aligned';
-
     const paths = [];
     if (dkim.policyAligned) paths.push(`DKIM ${dkim.domain}`);
     if (spf.policyAligned) paths.push(`SPF ${spf.domain}`);
-
     explanation =
       `${paths.join(' and ')} satisfies the supplied ${`
         policy.adkim === 's' ? 'strict' : policy.adkim === 'r' ? 'relaxed' : 'unknown'
@@ -582,14 +521,12 @@ function deriveAlignment(
       'DMARC=pass was reported, but locally observed DKIM/SPF identifiers did not establish '
       + 'the required alignment. Authentication-Results is not independently verified.';
   }
-
   if (policyKnown) {
     explanation += ` Supplied policy: adkim=${policy.adkim}; aspf=${policy.aspf}.`;
   } else {
     explanation +=
       ' DMARC policy alignment mode was not obtained from DNS, so strict-vs-relaxed policy cannot be confirmed offline.';
   }
-
   return {
     label: 'DMARC alignment',
     state,
@@ -606,12 +543,10 @@ function deriveAlignment(
     explanation
   };
 }
-
 function bestAlignedDomain(fromDomain, domains) {
   const clean = domains.map(normalizeDomain).filter(Boolean);
   const exact = clean.find(d => d === fromDomain) || '';
   const relaxed = clean.find(d => isRelaxedAligned(fromDomain, d)) || '';
-
   return {
     domain: exact || relaxed,
     strict: !!exact,
@@ -620,7 +555,6 @@ function bestAlignedDomain(fromDomain, domains) {
     organizationalDomain: relaxed ? getOrganizationalDomain(relaxed) : ''
   };
 }
-
 /*
  * Strictly safer than the old parent/suffix test:
  * - exact domains always align;
@@ -636,7 +570,6 @@ const COMMON_PUBLIC_SUFFIXES = new Set([
   'gr','pt','ie','is','lu','li','ee','lv','lt','si','hr','rs','ua','ru','by','tr','il','za','in','cn',
   'jp','kr','sg','hk','tw','my','id','ph','th','vn','au','nz','br','mx','ar','cl'
 ]);
-
 const KNOWN_MULTI_LABEL_PUBLIC_SUFFIXES = new Set([
   'co.uk','org.uk','ac.uk','gov.uk','com.au','net.au','org.au','edu.au',
   'co.nz','org.nz','govt.nz','co.jp','ne.jp','or.jp',
@@ -645,48 +578,37 @@ const KNOWN_MULTI_LABEL_PUBLIC_SUFFIXES = new Set([
   'com.my','com.hk','com.tw','com.cn','com.ar','com.pl','com.ua',
   'com.ru','com.cy','com.gr','com.pt','com.es','com.de','co.il','co.kr'
 ]);
-
 function isRelaxedAligned(a, b) {
   const x = normalizeDomain(a);
   const y = normalizeDomain(b);
-
   if (!x || !y) return false;
   if (x === y) return true;
-
   const ox = getOrganizationalDomain(x);
   const oy = getOrganizationalDomain(y);
-
   return !!ox && !!oy && ox === oy;
 }
-
 function isKnownComparableOrganizationalDomain(a, b) {
   return !!getOrganizationalDomain(a) && !!getOrganizationalDomain(b);
 }
-
 function getOrganizationalDomain(domain) {
   const d = normalizeDomain(domain);
   if (!d) return '';
-
   const labels = d.split('.');
   if (labels.length < 2) return '';
-
   const suffix2 = labels.slice(-2).join('.');
   if (KNOWN_MULTI_LABEL_PUBLIC_SUFFIXES.has(suffix2)) {
     return labels.length >= 3 ? labels.slice(-3).join('.') : '';
   }
-
   const suffix1 = labels[labels.length - 1];
   if (COMMON_PUBLIC_SUFFIXES.has(suffix1)) {
     return labels.slice(-2).join('.');
   }
-
   /*
    * Unknown public suffix structures are intentionally not guessed.
    * Exact-domain equality still works above; relaxed comparison stays unproven.
    */
   return '';
 }
-
 function parseAlignmentMode(value) {
   const v = String(value || '').toLowerCase();
   const match = v.match(/(?:^|[;\s])(?:adkim|aspf)\s*=\s*([sr])(?:[;\s]|$)/i);
@@ -694,30 +616,24 @@ function parseAlignmentMode(value) {
     ? (match[1].toLowerCase() === 's' ? 'strict' : 'relaxed')
     : 'unknown';
 }
-
 function analyzeHeaders(headers, evidence = { mode: 'headers', dns: {} }) {
   const auth = parseAuthResults(headers);
   const receivedSpf = parseReceivedSpf(headers);
   const dkimSigs = parseAuthSignature(headers, 'dkim-signature');
   const arcSigs = parseAuthSignature(headers, 'arc-seal');
-
   const from = parseAddressHeader(first(headers, 'from'));
   const returnPath = parseAddressHeader(first(headers, 'return-path'));
   const replyTo = parseAddressHeader(first(headers, 'reply-to'));
   const sender = parseAddressHeader(first(headers, 'sender'));
-
   const subjectRaw = first(headers, 'subject');
   const subject = decodeMimeWords(subjectRaw);
-
   const messageId = normalizeMessageId(first(headers, 'message-id'));
   const dateRaw = first(headers, 'date');
   const dateParsed = parseMailDate(dateRaw);
-
   const received = values(headers, 'received');
   const receivedHops = parseReceivedChain(received);
   const receivedOrder = analyzeReceivedOrder(receivedHops);
   const headerDiagnostics = analyzeHeaderIntegrity(headers);
-
   const dkimReported = chooseBestReported(auth.dkim);
   const spfReported = chooseBestReported([
     ...auth.spf,
@@ -734,15 +650,12 @@ function analyzeHeaders(headers, evidence = { mode: 'headers', dns: {} }) {
   const dmarcReported = chooseBestReported(auth.dmarc);
   const arcReported = chooseBestReported(auth.arc);
   const compauthReported = chooseBestReported(auth.compauth);
-
   const dkimDomains = auth.dkim.flatMap(x => extractAuthDomains(x, 'dkim'));
   const spfDomains = auth.spf.flatMap(x => extractAuthDomains(x, 'spf'));
   const dmarcDomains = auth.dmarc.flatMap(x => extractAuthDomains(x, 'dmarc'));
-
   const suppliedDmarcPolicy = evidence?.dns?.dmarc
     ? parseDmarcRecord(evidence.dns.dmarc)
     : null;
-
   const dmarcPolicyMode =
     suppliedDmarcPolicy && !suppliedDmarcPolicy.recordError
       ? {
@@ -751,7 +664,6 @@ function analyzeHeaders(headers, evidence = { mode: 'headers', dns: {} }) {
           source: 'user-supplied DNS evidence'
         }
       : null;
-
   const checks = [
     makeAuthCheck(
       'SPF',
@@ -790,7 +702,6 @@ function analyzeHeaders(headers, evidence = { mode: 'headers', dns: {} }) {
       ''
     )
   ];
-
   if (compauthReported) {
     checks.push(
       makeAuthCheck(
@@ -801,7 +712,6 @@ function analyzeHeaders(headers, evidence = { mode: 'headers', dns: {} }) {
       )
     );
   }
-
   const alignment = deriveAlignment(
     from.domain,
     dmarcDomains,
@@ -810,11 +720,8 @@ function analyzeHeaders(headers, evidence = { mode: 'headers', dns: {} }) {
     dmarcReported?.result,
     dmarcPolicyMode
   );
-
   checks.push(alignment);
-
   const authConflicts = detectAuthenticationConflicts(auth);
-
   const anomalies = buildAnomalies({
     headers,
     auth,
@@ -841,7 +748,6 @@ function analyzeHeaders(headers, evidence = { mode: 'headers', dns: {} }) {
     spfDomains,
     authConflicts
   });
-
   const verificationPreview = analyzeSuppliedDnsEvidence({
     evidence,
     from,
@@ -853,11 +759,9 @@ function analyzeHeaders(headers, evidence = { mode: 'headers', dns: {} }) {
     receivedSpf,
     receivedHops
   });
-
   for (const finding of verificationPreview.findings) {
     anomalies.push(finding);
   }
-
   const summary = summarize(checks, anomalies);
   const timestamp = deriveTransportTimeline(receivedHops, dateParsed, dkimSigs);
   const identityRelationships = deriveIdentityRelationships(
@@ -869,9 +773,7 @@ function analyzeHeaders(headers, evidence = { mode: 'headers', dns: {} }) {
     spfDomains,
     dmarcDomains
   );
-
   const verification = verificationPreview;
-
   return {
     checks,
     summary,
@@ -916,10 +818,8 @@ function analyzeHeaders(headers, evidence = { mode: 'headers', dns: {} }) {
     ]
   };
 }
-
 function chooseBestReported(items) {
   if (!items?.length) return null;
-
   const priority = new Map([
     ['pass', 10],
     ['bestguesspass', 9],
@@ -929,15 +829,12 @@ function chooseBestReported(items) {
     ['permerror', 3],
     ['fail', 1]
   ]);
-
   return [...items].sort(
     (a, b) => (priority.get(b.result) || 0) - (priority.get(a.result) || 0)
   )[0] || items[0];
 }
-
 function extractAuthDomains(item, mechanism) {
   if (!item) return [];
-
   const keys =
     mechanism === 'dkim'
       ? ['header.d', 'header.i']
@@ -946,25 +843,19 @@ function extractAuthDomains(item, mechanism) {
         : mechanism === 'dmarc'
           ? ['header.from']
           : [];
-
   const out = [];
-
   for (const key of keys) {
     const v = item.properties?.[key];
     if (!v) continue;
-
     const candidate =
       key === 'header.i'
         ? (v.includes('@') ? v.slice(v.lastIndexOf('@') + 1) : v)
         : v;
-
     const d = normalizeDomain(candidate);
     if (d && !out.includes(d)) out.push(d);
   }
-
   return out;
 }
-
 function deriveReportedDmarcPolicyMode(items) {
   /*
    * Authentication-Results does not normally carry adkim/aspf policy.
@@ -975,20 +866,15 @@ function deriveReportedDmarcPolicyMode(items) {
     const joined = [item.reason, item.detail, item.raw]
       .filter(Boolean)
       .join(' ');
-
     const mode = parseAlignmentMode(joined);
     if (mode !== 'unknown') return mode;
   }
-
   return '';
 }
-
 function makeAuthCheck(label, value, source, detail) {
   const state = resultState(value, { empty: true });
   const normalized = value ? String(value).toLowerCase() : '';
-
   let explanation = source;
-
   if (normalized === 'pass') {
     explanation = `${source}${detail ? ` · ${detail}` : ''}`;
   } else if (!value) {
@@ -996,7 +882,6 @@ function makeAuthCheck(label, value, source, detail) {
   } else {
     explanation = `${source} · reported ${normalized}`;
   }
-
   return {
     label,
     state,
@@ -1004,32 +889,25 @@ function makeAuthCheck(label, value, source, detail) {
     explanation
   };
 }
-
 function resultState(value, options = {}) {
   const v = String(value || '').toLowerCase();
-
   if (v === 'pass' || v === 'valid' || v === 'bestguesspass') return 'good';
   if (v === 'fail' || v === 'hardfail' || v === 'invalid') return 'bad';
   if (v === 'softfail' || v === 'neutral' || v === 'temperror' || v === 'permerror') return 'warn';
-
   return options.empty ? 'neutral' : 'unknown';
 }
-
 function summarize(checks, anomalies) {
   const primary = checks.filter(x => ['SPF', 'DKIM', 'DMARC'].includes(x.label));
   const good = primary.filter(x => x.state === 'good').length;
   const bad = primary.filter(x => x.state === 'bad').length;
   const warn = primary.filter(x => x.state === 'warn').length;
-
   const anomalyBad = anomalies.filter(a => a.level === 'bad').length;
   const anomalyWarn = anomalies.filter(a => a.level === 'warn').length;
-
   let state = 'neutral';
   let title = 'Insufficient reported authentication evidence';
   let text =
     'The headers do not contain enough positive reported SPF/DKIM/DMARC results '
     + 'to describe the message as strongly authenticated.';
-
   if (bad > 0 || anomalyBad > 0) {
     state = 'bad';
     title = 'Authentication or header warning';
@@ -1055,7 +933,6 @@ function summarize(checks, anomalies) {
       'The headers contain useful signals, but some are missing, neutral, '
       + 'conflicting, or deserve attention.';
   }
-
   return {
     state,
     title,
@@ -1066,11 +943,9 @@ function summarize(checks, anomalies) {
     primaryCount: primary.length
   };
 }
-
 function buildAnomalies(ctx) {
   const a = [];
   const count = name => ctx.headers.filter(h => h.name === name).length;
-
   const duplicatesOfInterest = [
     'from',
     'sender',
@@ -1086,7 +961,6 @@ function buildAnomalies(ctx) {
     'content-type',
     'content-transfer-encoding'
   ];
-
   if (!ctx.from.address) {
     a.push({
       level: 'bad',
@@ -1094,7 +968,6 @@ function buildAnomalies(ctx) {
       text: 'No usable From address was found.'
     });
   }
-
   if (!ctx.dateRaw) {
     a.push({
       level: 'warn',
@@ -1102,7 +975,6 @@ function buildAnomalies(ctx) {
       text: 'No Date header was found.'
     });
   }
-
   if (ctx.dateRaw && !ctx.dateParsed.valid) {
     a.push({
       level: 'warn',
@@ -1110,7 +982,6 @@ function buildAnomalies(ctx) {
       text: `Date header could not be parsed as a valid message date: ${ctx.dateRaw}`
     });
   }
-
   if (!ctx.messageId) {
     a.push({
       level: 'warn',
@@ -1118,7 +989,6 @@ function buildAnomalies(ctx) {
       text: 'No Message-ID header was found.'
     });
   }
-
   if (
     ctx.replyTo.address &&
     ctx.from.domain &&
@@ -1134,7 +1004,6 @@ function buildAnomalies(ctx) {
         + 'but deserves attention.'
     });
   }
-
   if (ctx.received.length === 0) {
     a.push({
       level: 'warn',
@@ -1142,7 +1011,6 @@ function buildAnomalies(ctx) {
       text: 'No Received headers were found.'
     });
   }
-
   if (ctx.received.length > LIMITS.maxReceivedCount) {
     a.push({
       level: 'warn',
@@ -1151,7 +1019,6 @@ function buildAnomalies(ctx) {
         `More than ${LIMITS.maxReceivedCount} Received headers were present; analysis was capped.`
     });
   }
-
   for (const name of duplicatesOfInterest) {
     const n = count(name);
     if (n > 1) {
@@ -1168,7 +1035,6 @@ function buildAnomalies(ctx) {
       });
     }
   }
-
   for (const d of ctx.headerDiagnostics.warnings) {
     a.push({
       level: d.level,
@@ -1176,7 +1042,6 @@ function buildAnomalies(ctx) {
       text: d.text
     });
   }
-
   for (const c of ctx.authConflicts || []) {
     a.push({
       level: 'warn',
@@ -1184,7 +1049,6 @@ function buildAnomalies(ctx) {
       text: c.text
     });
   }
-
   for (const hop of ctx.receivedHops) {
     for (const issue of hop.issues) {
       a.push({
@@ -1194,7 +1058,6 @@ function buildAnomalies(ctx) {
       });
     }
   }
-
   if (ctx.receivedOrder.negativeDelays > 0) {
     a.push({
       level: 'bad',
@@ -1204,10 +1067,8 @@ function buildAnomalies(ctx) {
         + 'Header order and timestamps are inconsistent.'
     });
   }
-
   if (ctx.receivedOrder.largeDelays.length) {
     const biggest = ctx.receivedOrder.largeDelays[0];
-
     a.push({
       level: 'warn',
       category: 'timestamps',
@@ -1216,17 +1077,13 @@ function buildAnomalies(ctx) {
         + `Received hops #${biggest.from} and #${biggest.to}.`
     });
   }
-
   if (ctx.receivedHops.length && ctx.dateParsed.valid) {
     const parseable = ctx.receivedHops
       .filter(h => h.timestamp.valid)
       .sort((x, y) => x.timestamp.date - y.timestamp.date);
-
     const oldest = parseable[0];
-
     if (oldest) {
       const delta = oldest.timestamp.date - ctx.dateParsed.date;
-
       if (delta < -5 * 60 * 1000) {
         a.push({
           level: 'warn',
@@ -1246,12 +1103,10 @@ function buildAnomalies(ctx) {
       }
     }
   }
-
   for (const sig of ctx.dkimSigs) {
     if (sig.signedAt && ctx.dateParsed.valid) {
       const delta =
         ctx.dateParsed.date.getTime() - sig.signedAt.getTime();
-
       if (Math.abs(delta) > 24 * 60 * 60 * 1000) {
         a.push({
           level: 'warn',
@@ -1261,7 +1116,6 @@ function buildAnomalies(ctx) {
         });
       }
     }
-
     if (sig.expiresAt && sig.signedAt && sig.expiresAt <= sig.signedAt) {
       a.push({
         level: 'warn',
@@ -1271,10 +1125,8 @@ function buildAnomalies(ctx) {
       });
     }
   }
-
   if (ctx.dkimSigs.some(x => x.warnings.length)) {
     const total = ctx.dkimSigs.reduce((n, x) => n + x.warnings.length, 0);
-
     a.push({
       level: 'warn',
       category: 'dkim',
@@ -1283,7 +1135,6 @@ function buildAnomalies(ctx) {
         + 'This is metadata analysis only; the signature was not cryptographically verified.'
     });
   }
-
   if (
     ctx.dkimSigs.some(
       x => x.fields.h && !x.signedHeaders.includes('from')
@@ -1297,19 +1148,14 @@ function buildAnomalies(ctx) {
         + 'DKIM verification requires the From field to be protected.'
     });
   }
-
   return dedupeAnomalies(a);
 }
-
 function analyzeHeaderIntegrity(headers) {
   const duplicates = {};
-
   for (const h of headers) {
     duplicates[h.name] = (duplicates[h.name] || 0) + 1;
   }
-
   const warnings = [];
-
   for (const h of headers) {
     if (/[^\x09\x20-\x7E]/.test(h.name)) {
       warnings.push({
@@ -1317,7 +1163,6 @@ function analyzeHeaderIntegrity(headers) {
         text: `Header name "${h.originalName}" contains non-ASCII characters.`
       });
     }
-
     if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(h.value)) {
       warnings.push({
         level: 'bad',
@@ -1325,34 +1170,26 @@ function analyzeHeaderIntegrity(headers) {
       });
     }
   }
-
   return { duplicates, warnings };
 }
-
 function dedupeAnomalies(items) {
   const seen = new Set();
   const out = [];
-
   for (const item of items) {
     const key = `${item.level}|${item.category}|${item.text}`;
     if (seen.has(key)) continue;
-
     seen.add(key);
     out.push(item);
   }
-
   return out;
 }
-
 function detectAuthenticationConflicts(auth) {
   const out = [];
-
   for (const mechanism of ['spf', 'dkim', 'dmarc', 'arc', 'compauth']) {
     const items = auth[mechanism] || [];
     const results = [
       ...new Set(items.map(x => x.result).filter(Boolean))
     ];
-
     if (results.length > 1) {
       out.push({
         mechanism,
@@ -1363,10 +1200,8 @@ function detectAuthenticationConflicts(auth) {
       });
     }
   }
-
   return out;
 }
-
 function deriveIdentityRelationships(
   from,
   returnPath,
@@ -1385,15 +1220,12 @@ function deriveIdentityRelationships(
     fromVsDmarc: compareMany(from.domain, dmarcDomains)
   };
 }
-
 function domainsEqual(a, b) {
   return normalizeDomain(a) === normalizeDomain(b);
 }
-
 function compareDomains(a, b) {
   const x = normalizeDomain(a);
   const y = normalizeDomain(b);
-
   if (!x || !y) {
     return {
       available: false,
@@ -1403,7 +1235,6 @@ function compareDomains(a, b) {
       b: y
     };
   }
-
   return {
     available: true,
     exact: x === y,
@@ -1412,12 +1243,10 @@ function compareDomains(a, b) {
     b: y
   };
 }
-
 function compareMany(a, valuesList) {
   const candidates = valuesList
     .filter(Boolean)
     .map(v => compareDomains(a, v));
-
   return {
     available: candidates.some(x => x.available),
     exact: candidates.some(x => x.exact),
@@ -1425,16 +1254,13 @@ function compareMany(a, valuesList) {
     candidates
   };
 }
-
 function parseReceivedChain(receivedValues) {
   return receivedValues
     .slice(0, LIMITS.maxReceivedCount)
     .map((raw, i) => parseReceivedHop(raw, i + 1));
 }
-
 function parseReceivedHop(raw, appearanceIndex) {
   const text = normalizeHeaderWhitespace(raw);
-
   const timestamp = parseReceivedTimestamp(text);
   const fromPart = extractReceivedSegment(text, 'from', 'by');
   const byPart = extractReceivedSegment(
@@ -1442,14 +1268,11 @@ function parseReceivedHop(raw, appearanceIndex) {
     'by',
     'with|id|for|;|$'
   );
-
   const withMatch = text.match(/\bwith\s+([^\s;]+)/i);
   const idMatch = text.match(/\bid\s+([^\s;]+)/i);
   const forMatch = text.match(/\bfor\s+([^;]+)/i);
-
   const from = parseReceivedNode(fromPart);
   const by = parseReceivedNode(byPart);
-
   const protocol = withMatch?.[1] || '';
   const id = idMatch?.[1] || '';
   const forAddress = forMatch
@@ -1458,16 +1281,13 @@ function parseReceivedHop(raw, appearanceIndex) {
         || forMatch[1].trim()
       )
     : '';
-
   const issues = [];
-
   if (!by.host && !by.ip) {
     issues.push({
       level: 'warn',
       text: 'No usable by-host was recognized.'
     });
   }
-
   if (from.ip && isSpecialOrPrivateIp(from.ip)) {
     issues.push({
       level: 'warn',
@@ -1476,7 +1296,6 @@ function parseReceivedHop(raw, appearanceIndex) {
         + 'or otherwise special-use address.'
     });
   }
-
   if (by.ip && isSpecialOrPrivateIp(by.ip)) {
     issues.push({
       level: 'warn',
@@ -1485,7 +1304,6 @@ function parseReceivedHop(raw, appearanceIndex) {
         + 'or otherwise special-use address.'
     });
   }
-
   if (
     from.host &&
     by.host &&
@@ -1498,7 +1316,6 @@ function parseReceivedHop(raw, appearanceIndex) {
         + 'for local processing.'
     });
   }
-
   return {
     appearanceIndex,
     raw,
@@ -1511,10 +1328,8 @@ function parseReceivedHop(raw, appearanceIndex) {
     issues
   };
 }
-
 function parseReceivedNode(segment) {
   const clean = String(segment || '').trim();
-
   if (!clean) {
     return {
       host: '',
@@ -1524,41 +1339,33 @@ function parseReceivedNode(segment) {
       comments: []
     };
   }
-
   const bracketIp = clean.match(/\[([^\]]+)\]/);
   const ip =
     bracketIp && isIpLiteral(bracketIp[1])
       ? bracketIp[1]
       : findFirstIp(clean);
-
   let remainder = clean;
-
   if (bracketIp) {
     remainder = remainder.replace(bracketIp[0], ' ');
   }
-
   const comments = [
     ...remainder.matchAll(/\(([^()]*)\)/g)
   ]
     .map(m => m[1].trim())
     .filter(Boolean);
-
   const hostCandidates = remainder
     .replace(/\([^)]*\)/g, ' ')
     .trim()
     .split(/\s+/)
     .filter(Boolean);
-
   const host =
     hostCandidates
       .find(x => looksLikeHostname(x))
       ?.replace(/[(),;]$/g, '')
     || '';
-
   const helo =
     comments.find(x => looksLikeHostname(x))
     || '';
-
   return {
     host,
     ip: ip || '',
@@ -1567,20 +1374,16 @@ function parseReceivedNode(segment) {
     comments
   };
 }
-
 function extractReceivedSegment(text, keyword, endPattern) {
   const re = new RegExp(
     `\\b${keyword}\\s+(.+?)(?=\\s+\\b(?:${endPattern})\\b|\\s*;\\s|$)`,
     'i'
   );
-
   const m = text.match(re);
   return m ? m[1].trim() : '';
 }
-
 function parseReceivedTimestamp(text) {
   const semicolon = text.lastIndexOf(';');
-
   if (semicolon < 0) {
     return {
       valid: false,
@@ -1588,16 +1391,13 @@ function parseReceivedTimestamp(text) {
       raw: ''
     };
   }
-
   const raw = text.slice(semicolon + 1).trim();
   const date = parseMailDate(raw);
-
   return {
     ...date,
     raw
   };
 }
-
 function analyzeReceivedOrder(hops) {
   const chronological = hops
     .filter(h => h.timestamp.valid)
@@ -1605,11 +1405,9 @@ function analyzeReceivedOrder(hops) {
       appearanceIndex: h.appearanceIndex,
       time: h.timestamp.date.getTime()
     }));
-
   const intervals = [];
   let negativeDelays = 0;
   const largeDelays = [];
-
   /*
    * Received fields are normally prepended by each receiving hop,
    * so appearance order is newest -> oldest.
@@ -1617,31 +1415,23 @@ function analyzeReceivedOrder(hops) {
   for (let i = 0; i + 1 < chronological.length; i++) {
     const newer = chronological[i];
     const older = chronological[i + 1];
-
     const ms = newer.time - older.time;
-
     const item = {
       from: older.appearanceIndex,
       to: newer.appearanceIndex,
       ms
     };
-
     intervals.push(item);
-
     if (ms < 0) {
       negativeDelays++;
     }
-
     if (ms > 60 * 60 * 1000) {
       largeDelays.push(item);
     }
   }
-
   largeDelays.sort((a, b) => b.ms - a.ms);
-
   const chronologicalHops = [...chronological]
     .sort((a, b) => a.time - b.time);
-
   return {
     intervals,
     negativeDelays,
@@ -1649,30 +1439,24 @@ function analyzeReceivedOrder(hops) {
     chronologicalHops
   };
 }
-
 function deriveTransportTimeline(hops, dateParsed, dkimSigs) {
   const valid = hops
     .filter(h => h.timestamp.valid)
     .sort((a, b) => a.timestamp.date - b.timestamp.date);
-
   const firstObserved = valid[0]?.timestamp.date || null;
   const lastObserved = valid[valid.length - 1]?.timestamp.date || null;
-
   const transitMs =
     firstObserved && lastObserved
       ? Math.max(0, lastObserved - firstObserved)
       : null;
-
   const dkimSignedAt = dkimSigs
     .map(x => x.signedAt)
     .filter(Boolean)
     .map(x => new Date(x));
-
   const dkimExpiresAt = dkimSigs
     .map(x => x.expiresAt)
     .filter(Boolean)
     .map(x => new Date(x));
-
   return {
     firstObserved,
     lastObserved,
@@ -1682,10 +1466,8 @@ function deriveTransportTimeline(hops, dateParsed, dkimSigs) {
     dkimExpiresAt
   };
 }
-
 function renderResult(a) {
   const s = a.summary;
-
   const summaryHtml = `<div class="status ${statusClass(s.state)}">
     <strong>
       <span aria-hidden="true" style="font-size:1.15em;margin-right:6px">
@@ -1695,19 +1477,15 @@ function renderResult(a) {
     </strong><br>
     <span>${escapeHtml(s.text)}</span>
   </div>`;
-
   const primaryChecks = a.checks.filter(
     x => ['SPF', 'DKIM', 'DMARC'].includes(x.label)
   );
-
   const supplementaryChecks = a.checks.filter(
     x => !['SPF', 'DKIM', 'DMARC', 'DMARC alignment'].includes(x.label)
   );
-
   const alignment = a.checks.find(
     x => x.label === 'DMARC alignment'
   );
-
   const evidenceCards = primaryChecks.map(c => `
     <div class="stat">
       <span>${escapeHtml(c.label)}</span>
@@ -1720,7 +1498,6 @@ function renderResult(a) {
       <div class="small">${escapeHtml(c.explanation)}</div>
     </div>
   `).join('');
-
   const supplementaryHtml = supplementaryChecks.length
     ? supplementaryChecks.map(c => `
       <div class="stat">
@@ -1735,7 +1512,6 @@ function renderResult(a) {
       </div>
     `).join('')
     : '<p class="small">No supplementary authentication results were reported.</p>';
-
   const facts = [
     ['Reported primary auth', `${s.good}/${s.primaryCount} PASS`],
     ['Received hops', String(a.counts.received)],
@@ -1745,7 +1521,6 @@ function renderResult(a) {
     ['DKIM signatures', String(a.counts.dkimSignatures)],
     ['ARC seals', String(a.counts.arcSeals)]
   ];
-
   const identity = `
     <div class="grid">
       ${stat('From', formatAddress(a.from))}
@@ -1757,7 +1532,6 @@ function renderResult(a) {
       ${stat('Parsed Date', a.dateParsed.valid ? a.dateParsed.date.toISOString() : 'Not parsed')}
       ${stat('Message-ID', a.messageId || 'Not found')}
     </div>`;
-
   const relationshipRows = [
     relationRow('From ↔ Return-Path', a.identityRelationships.fromVsReturnPath),
     relationRow('From ↔ Reply-To', a.identityRelationships.fromVsReplyTo),
@@ -1766,7 +1540,6 @@ function renderResult(a) {
     relationRow('From ↔ SPF identity', a.identityRelationships.fromVsSpf),
     relationRow('From ↔ DMARC header.from', a.identityRelationships.fromVsDmarc)
   ].join('');
-
   const authRows = a.auth.records.flatMap(r =>
     r.methods.map(x => ({
       mechanism: x.mechanism.toUpperCase(),
@@ -1777,7 +1550,6 @@ function renderResult(a) {
       authserv: r.authserv
     }))
   );
-
   const authTable = authRows.length
     ? `
       <div class="table-wrap"><table>
@@ -1804,7 +1576,6 @@ function renderResult(a) {
       </table></div>
     `
     : '<div class="status warning">No Authentication-Results method records were parsed.</div>';
-
   const conflictHtml = a.authConflicts.length
     ? `
       <div class="status warning">
@@ -1819,11 +1590,9 @@ function renderResult(a) {
         No conflicting SPF/DKIM/DMARC/ARC/CompAuth result values were found across Authentication-Results records.
       </div>
     `;
-
   const receivedTable = renderReceivedTable(a);
   const timeline = renderTimeline(a);
   const dkimTable = renderDkimTable(a);
-
   const anomalyHtml = a.anomalies.length
     ? `
       <ul class="mail-findings">
@@ -1837,7 +1606,6 @@ function renderResult(a) {
       </ul>
     `
     : '<div class="status success">No local heuristic anomalies were detected.</div>';
-
   const allHeaderRows = a.headers
     .map(h => `
       <tr>
@@ -1847,21 +1615,17 @@ function renderResult(a) {
       </tr>
     `)
     .join('');
-
   return `${summaryHtml}
-
     <h3>Evidence at a glance</h3>
     <div class="grid">
       ${facts.map(([k, v]) => stat(k, v)).join('')}
     </div>
-
     <h3>Primary authentication — reported values</h3>
     <div class="grid">${evidenceCards}</div>
     <p class="small">
       These are values reported by mail infrastructure in the supplied headers.
       The browser did not independently perform DNS lookups or cryptographic verification.
     </p>
-
     <h3>Domain relationships and DMARC alignment</h3>
     <div class="table-wrap">
       <table>
@@ -1876,7 +1640,6 @@ function renderResult(a) {
         <tbody>${relationshipRows}</tbody>
       </table>
     </div>
-
     <div class="stat" style="margin-top:10px">
       <span>${escapeHtml(alignment.label)}</span>
       <strong>
@@ -1887,14 +1650,11 @@ function renderResult(a) {
       </strong>
       <div class="small">${escapeHtml(alignment.explanation)}</div>
     </div>
-
     <h3>Supplementary authentication</h3>
     <div class="grid">${supplementaryHtml}</div>
-
     <h3>Authentication-Results detail</h3>
     ${authTable}
     ${conflictHtml}
-
     <h3>Received path</h3>
     <p class="small">
       Received fields are listed in message-header appearance order (normally newest → oldest).
@@ -1903,19 +1663,14 @@ function renderResult(a) {
     </p>
     ${timeline}
     ${receivedTable}
-
     <h3>Message identity</h3>
     ${identity}
-
     <h3>Optional supplied-DNS evidence</h3>
     ${renderVerification(a.verification)}
-
     <h3>DKIM / ARC signature metadata</h3>
     ${dkimTable}
-
     <h3>Header anomalies and forensic checks</h3>
     ${anomalyHtml}
-
     <h3>All headers</h3>
     <div class="table-wrap">
       <table>
@@ -1929,13 +1684,11 @@ function renderResult(a) {
         <tbody>${allHeaderRows}</tbody>
       </table>
     </div>
-
     <div class="result-actions">
       <button class="btn" id="mailExportJson">Export analysis JSON</button>
       <button class="btn" id="mailExportText">Export forensic summary TXT</button>
       <button class="btn" id="mailCopyReport">Copy forensic summary</button>
     </div>
-
     <details style="margin-top:14px">
       <summary>Observed vs derived vs unverified</summary>
       <p class="small">
@@ -1953,12 +1706,10 @@ function renderResult(a) {
     </details>
   `;
 }
-
 function renderReceivedTable(a) {
   if (!a.receivedHops.length) {
     return '<div class="status warning">No Received headers found.</div>';
   }
-
   const rows = a.receivedHops.map(h => `
     <tr>
       <td>${h.appearanceIndex}</td>
@@ -1978,7 +1729,6 @@ function renderReceivedTable(a) {
       <td>${h.id ? escapeHtml(h.id) : '—'}</td>
     </tr>
   `).join('');
-
   return `
     <div class="table-wrap">
       <table>
@@ -1998,7 +1748,6 @@ function renderReceivedTable(a) {
     </div>
   `;
 }
-
 function getTransportPath(receivedHops) {
   return [...(receivedHops || [])]
     .reverse()
@@ -2007,11 +1756,9 @@ function getTransportPath(receivedHops) {
       hopIndex: index + 1
     }));
 }
-
 function renderTimeline(a) {
   const path = getTransportPath(a.receivedHops);
   const valid = path.filter(h => h.timestamp.valid);
-
   if (!path.length) {
     return `
       <div class="status warning">
@@ -2019,27 +1766,21 @@ function renderTimeline(a) {
       </div>
     `;
   }
-
   const cards = path.map((hop, index) => {
     const previous = path[index - 1];
-
     let intervalText = 'Oldest observed hop';
-
     if (previous?.timestamp.valid && hop.timestamp.valid) {
       const delta =
         hop.timestamp.date.getTime() -
         previous.timestamp.date.getTime();
-
       intervalText = `+${formatDuration(delta)} from previous hop`;
     }
-
     return `
       <div class="stat">
         <span>
           Hop ${hop.hopIndex}
           <span class="small">· header #${hop.appearanceIndex}</span>
         </span>
-
         <strong>
           ${escapeHtml(
             hop.by.host ||
@@ -2047,7 +1788,6 @@ function renderTimeline(a) {
             'unknown receiver'
           )}
         </strong>
-
         ${
           hop.timestamp.valid
             ? `<div class="small">
@@ -2055,11 +1795,9 @@ function renderTimeline(a) {
               </div>`
             : ''
         }
-
         <div class="small">
           ${escapeHtml(intervalText)}
         </div>
-
         ${
           hop.from.host || hop.from.ip
             ? `<div class="small mono">
@@ -2071,12 +1809,9 @@ function renderTimeline(a) {
       </div>
     `;
   }).join('');
-
   const timestampNotes = [];
-
   if (valid.length >= 2) {
     const intervals = [];
-
     for (let i = 1; i < valid.length; i++) {
       const older = valid[i - 1];
       const newer = valid[i];
@@ -2088,36 +1823,29 @@ function renderTimeline(a) {
           older.timestamp.date.getTime()
       });
     }
-
     const negative = intervals.filter(x => x.ms < 0);
-
     if (negative.length) {
       timestampNotes.push(
         `${negative.length} timestamp interval(s) run backwards`
       );
     }
-
     const largest = [...intervals]
       .filter(x => x.ms >= 0)
       .sort((a, b) => b.ms - a.ms)[0];
-
     if (largest) {
       timestampNotes.push(
         `largest observed gap: ${formatDuration(largest.ms)}`
       );
     }
   }
-
   return `
     <div class="small" style="margin-bottom:8px">
       Transport path is shown oldest → newest.
       Header # refers to the original position of the Received field.
     </div>
-
     <div class="grid">
       ${cards}
     </div>
-
     ${
       timestampNotes.length
         ? `<p class="small">${escapeHtml(timestampNotes.join(' · '))}</p>`
@@ -2125,13 +1853,10 @@ function renderTimeline(a) {
     }
   `;
 }
-
 function analyzeSuppliedDnsEvidence(ctx) {
   const dns = ctx.evidence?.dns || {};
   const supplied = Boolean(dns.spf || dns.dmarc || dns.dkimKey);
-
   const findings = [];
-
   if (!supplied) {
     return {
       mode: 'headers',
@@ -2142,7 +1867,6 @@ function analyzeSuppliedDnsEvidence(ctx) {
       findings
     };
   }
-
   const clientIp =
     ctx.receivedSpf?.[0]?.props?.['client-ip']
     || findObservedClientIp(
@@ -2150,19 +1874,15 @@ function analyzeSuppliedDnsEvidence(ctx) {
       ctx.receivedHops,
       ctx.dkimSigs
     );
-
   const spf = dns.spf
     ? parseSpfRecord(dns.spf, clientIp)
     : null;
-
   const dmarc = dns.dmarc
     ? parseDmarcRecord(dns.dmarc)
     : null;
-
   const dkimKey = dns.dkimKey
     ? parseDkimKeyRecord(dns.dkimKey)
     : null;
-
   if (spf?.unsupportedMechanisms?.length) {
     findings.push({
       level: 'warn',
@@ -2172,7 +1892,6 @@ function analyzeSuppliedDnsEvidence(ctx) {
         + `${spf.unsupportedMechanisms.join(', ')}.`
     });
   }
-
   if (
     spf?.result &&
     ctx.spfReported?.result &&
@@ -2187,7 +1906,6 @@ function analyzeSuppliedDnsEvidence(ctx) {
         + `while the message reports SPF=${ctx.spfReported.result}.`
     });
   }
-
   if (dmarc?.recordError) {
     findings.push({
       level: 'warn',
@@ -2196,7 +1914,6 @@ function analyzeSuppliedDnsEvidence(ctx) {
         `Supplied DMARC record could not be fully parsed: ${dmarc.recordError}`
     });
   }
-
   if (
     dmarc &&
     !dmarc.recordError &&
@@ -2204,7 +1921,6 @@ function analyzeSuppliedDnsEvidence(ctx) {
     ctx.from?.domain
   ) {
     const fromDomain = normalizeDomain(ctx.from.domain);
-
     const dkimAligned = (ctx.dkimSigs || [])
       .map(sig => normalizeDomain(sig.fields?.d || ''))
       .filter(Boolean)
@@ -2213,7 +1929,6 @@ function analyzeSuppliedDnsEvidence(ctx) {
           ? d === fromDomain
           : isRelaxedAligned(d, fromDomain)
       );
-
     const spfAligned = (
       ctx.spfReported?.properties
         ? Object.values(ctx.spfReported.properties)
@@ -2226,7 +1941,6 @@ function analyzeSuppliedDnsEvidence(ctx) {
           ? d === fromDomain
           : isRelaxedAligned(d, fromDomain)
       );
-
     if (!dkimAligned && !spfAligned) {
       findings.push({
         level: 'warn',
@@ -2237,7 +1951,6 @@ function analyzeSuppliedDnsEvidence(ctx) {
       });
     }
   }
-
   if (dkimKey?.recordError) {
     findings.push({
       level: 'warn',
@@ -2246,7 +1959,6 @@ function analyzeSuppliedDnsEvidence(ctx) {
         `Supplied DKIM key record has an issue: ${dkimKey.recordError}`
     });
   }
-
   return {
     mode: 'supplied-dns',
     supplied: true,
@@ -2256,32 +1968,25 @@ function analyzeSuppliedDnsEvidence(ctx) {
     findings
   };
 }
-
 function findObservedClientIp(receivedSpf, receivedHops) {
   const v = receivedSpf?.[0]?.props?.['client-ip'];
-
   if (v && isIpLiteral(v)) {
     return v;
   }
-
   const hopIp = [...(receivedHops || [])]
     .reverse()
     .find(h => h.from?.ip)
     ?.from?.ip;
-
   if (hopIp && isIpLiteral(hopIp)) {
     return hopIp;
   }
-
   return '';
 }
-
 function parseSpfRecord(record, clientIp) {
   const tokens = String(record || '')
     .trim()
     .split(/\s+/)
     .filter(Boolean);
-
   const result = {
     record,
     version: tokens[0]?.toLowerCase() === 'v=spf1' ? 'spf1' : '',
@@ -2290,7 +1995,6 @@ function parseSpfRecord(record, clientIp) {
     result: 'unknown',
     clientIp: clientIp || ''
   };
-
   if (result.version !== 'spf1') {
     return {
       ...result,
@@ -2298,38 +2002,30 @@ function parseSpfRecord(record, clientIp) {
       recordError: 'Record does not begin with v=spf1.'
     };
   }
-
   let terminal = null;
-
   for (const token of tokens.slice(1)) {
     const m = token.match(
       /^([+?~-]?)([a-z][a-z0-9]*(?::[^ ]+)?)$/i
     );
-
     if (!m) continue;
-
     const qualifier = m[1] || '+';
     const body = m[2].toLowerCase();
     const base = body.split(':', 1)[0];
-
     result.mechanisms.push({
       qualifier,
       mechanism: base,
       value: body
     });
-
     if (['all', 'ip4', 'ip6'].includes(base)) {
       const local = evaluateSpfDirectMechanism(
         base,
         body,
         clientIp
       );
-
       if (local === true) {
         terminal = spfQualifierResult(qualifier);
         break;
       }
-
       if (base === 'all') {
         terminal = spfQualifierResult(qualifier);
         break;
@@ -2338,29 +2034,22 @@ function parseSpfRecord(record, clientIp) {
       result.unsupportedMechanisms.push(base);
     }
   }
-
   result.result =
     terminal
     || (clientIp ? 'not_locally_determined' : 'no_client_ip');
-
   return result;
 }
-
 function evaluateSpfDirectMechanism(base, token, clientIp) {
   if (!clientIp) return false;
-
   if (base === 'ip4') {
     const cidr = token.slice(4);
     return isIpv4(clientIp) && ip4InCidr(clientIp, cidr);
   }
-
   if (base === 'ip6') {
     return isIpv6(clientIp) && ip6InCidr(clientIp, token.slice(4));
   }
-
   return false;
 }
-
 function spfQualifierResult(q) {
   return q === '+'
     ? 'pass'
@@ -2370,64 +2059,49 @@ function spfQualifierResult(q) {
         ? 'softfail'
         : 'neutral';
 }
-
 function ip4InCidr(ip, cidr) {
   const [network, bitsText] = String(cidr || '').split('/');
-
   if (!isIpv4(network) || !isIpv4(ip)) return false;
-
   const bits =
     bitsText == null
       ? 32
       : Number(bitsText);
-
   if (!Number.isInteger(bits) || bits < 0 || bits > 32) {
     return false;
   }
-
   const toInt = v =>
     v.split('.').reduce(
       (n, x) => ((n << 8) | Number(x)) >>> 0,
       0
     );
-
   const mask =
     bits === 0
       ? 0
       : (0xffffffff << (32 - bits)) >>> 0;
-
   return (
     (toInt(ip) & mask)
     ===
     (toInt(network) & mask)
   );
 }
-
 function ip6InCidr(ip, cidr) {
   const [networkText, bitsText] = String(cidr || '').split('/');
   if (!isIpv6(networkText) || !isIpv6(ip)) return false;
-
   const bits =
     bitsText == null
       ? 128
       : Number(bitsText);
-
   if (!Number.isInteger(bits) || bits < 0 || bits > 128) {
     return false;
   }
-
   const ipBytes = ipv6ToBytes(ip);
   const networkBytes = ipv6ToBytes(networkText);
-
   if (!ipBytes || !networkBytes) return false;
-
   const fullBytes = Math.floor(bits / 8);
   const remainingBits = bits % 8;
-
   for (let i = 0; i < fullBytes; i++) {
     if (ipBytes[i] !== networkBytes[i]) return false;
   }
-
   if (remainingBits) {
     const mask = 0xff << (8 - remainingBits);
     if (
@@ -2438,57 +2112,40 @@ function ip6InCidr(ip, cidr) {
       return false;
     }
   }
-
   return true;
 }
-
 function ipv6ToBytes(value) {
   let v = String(value || '').toLowerCase().trim();
-
   if (!isIpv6(v)) return null;
-
   if (v.includes('::')) {
     const [left, right] = v.split('::');
-
     const leftParts = left ? left.split(':').filter(Boolean) : [];
     const rightParts = right ? right.split(':').filter(Boolean) : [];
-
     const missing = 8 - leftParts.length - rightParts.length;
-
     const parts = [
       ...leftParts,
       ...Array(Math.max(0, missing)).fill('0'),
       ...rightParts
     ];
-
     return ipv6PartsToBytes(parts);
   }
-
   return ipv6PartsToBytes(v.split(':'));
 }
-
 function ipv6PartsToBytes(parts) {
   if (parts.length !== 8) return null;
-
   const out = new Uint8Array(16);
-
   for (let i = 0; i < parts.length; i++) {
     const n = parseInt(parts[i] || '0', 16);
-
     if (!Number.isInteger(n) || n < 0 || n > 0xffff) {
       return null;
     }
-
     out[i * 2] = (n >> 8) & 0xff;
     out[i * 2 + 1] = n & 0xff;
   }
-
   return out;
 }
-
 function parseDmarcRecord(record) {
   const tags = parseTagRecord(record);
-
   const out = {
     record,
     version: tags.v || '',
@@ -2502,43 +2159,34 @@ function parseDmarcRecord(record) {
     tags,
     recordError: ''
   };
-
   if (out.version.toLowerCase() !== 'dmarc1') {
     out.recordError = 'Missing or invalid v=DMARC1.';
   }
-
   if (!['none', 'quarantine', 'reject'].includes(out.p)) {
     out.recordError =
       out.recordError
       || 'p= must be none, quarantine, or reject.';
   }
-
   if (!['r', 's'].includes(out.adkim)) {
     out.recordError =
       out.recordError
       || 'adkim= must be r or s.';
   }
-
   if (!['r', 's'].includes(out.aspf)) {
     out.recordError =
       out.recordError
       || 'aspf= must be r or s.';
   }
-
   const pct = Number(out.pct);
-
   if (!Number.isInteger(pct) || pct < 0 || pct > 100) {
     out.recordError =
       out.recordError
       || 'pct= must be an integer from 0 to 100.';
   }
-
   return out;
 }
-
 function parseDkimKeyRecord(record) {
   const tags = parseTagRecord(record);
-
   const out = {
     record,
     tags,
@@ -2549,7 +2197,6 @@ function parseDkimKeyRecord(record) {
     notes: tags.n || '',
     recordError: ''
   };
-
   if (
     out.version
     && out.version.toLowerCase() !== 'dkim1'
@@ -2557,18 +2204,15 @@ function parseDkimKeyRecord(record) {
     out.recordError =
       'Unexpected DKIM key version.';
   }
-
   if (!out.publicKeyPresent) {
     out.recordError =
       'The public-key record has no p= value.';
   }
-
   if (!['rsa', 'ed25519'].includes(out.algorithm)) {
     out.recordError =
       out.recordError
       || `Unsupported DKIM key algorithm for this metadata check: ${out.algorithm}.`;
   }
-
   if (
     out.publicKeyPresent
     && !/^[A-Za-z0-9+/=]+$/.test(out.tags.p)
@@ -2577,28 +2221,21 @@ function parseDkimKeyRecord(record) {
       out.recordError
       || 'p= contains characters that are not valid base64.';
   }
-
   return out;
 }
-
 function parseTagRecord(record) {
   const tags = {};
-
   for (const part of String(record || '').split(';')) {
     const eq = part.indexOf('=');
     if (eq <= 0) continue;
-
     const key = part.slice(0, eq).trim().toLowerCase();
     const value = part.slice(eq + 1).trim();
-
     if (key) {
       tags[key] = value;
     }
   }
-
   return tags;
 }
-
 function renderVerification(v) {
   if (!v?.supplied) {
     return `
@@ -2607,9 +2244,7 @@ function renderVerification(v) {
       </p>
     `;
   }
-
   const cards = [];
-
   if (v.spf) {
     cards.push(
       stat(
@@ -2618,7 +2253,6 @@ function renderVerification(v) {
       )
     );
   }
-
   if (v.dmarc) {
     cards.push(
       stat(
@@ -2627,7 +2261,6 @@ function renderVerification(v) {
       )
     );
   }
-
   if (v.dkimKey) {
     cards.push(
       stat(
@@ -2636,7 +2269,6 @@ function renderVerification(v) {
       )
     );
   }
-
   const findings = v.findings?.length
     ? `
       <ul>
@@ -2653,7 +2285,6 @@ function renderVerification(v) {
         No inconsistencies were found between the supplied records and the locally evaluated evidence.
       </div>
     `;
-
   return `
     <div class="grid">${cards.join('')}</div>
     <p class="small">
@@ -2662,12 +2293,10 @@ function renderVerification(v) {
     ${findings}
   `;
 }
-
 function renderDkimTable(a) {
   if (!a.dkimSigs.length && !a.arcSigs.length) {
     return '<p class="small">No DKIM-Signature or ARC-Seal metadata was found.</p>';
   }
-
   const dkimRows = a.dkimSigs.map((x, i) => `
     <tr>
       <td>DKIM #${i + 1}</td>
@@ -2679,7 +2308,6 @@ function renderDkimTable(a) {
       <td>${escapeHtml(x.warnings.join(' · ') || 'None')}</td>
     </tr>
   `).join('');
-
   const arcRows = a.arcSigs.map((x, i) => `
     <tr>
       <td>ARC #${i + 1}</td>
@@ -2694,7 +2322,6 @@ function renderDkimTable(a) {
       <td>${escapeHtml(x.warnings.join(' · ') || 'None')}</td>
     </tr>
   `).join('');
-
   return `
     <div class="table-wrap">
       <table>
@@ -2718,7 +2345,6 @@ function renderDkimTable(a) {
     </p>
   `;
 }
-
 function relationRow(label, rel) {
   if (!rel.available) {
     return `
@@ -2730,13 +2356,11 @@ function relationRow(label, rel) {
       </tr>
     `;
   }
-
   const observed = rel.candidates?.length
     ? rel.candidates.map(x =>
         `${x.b} (${x.exact ? 'exact' : x.relaxed ? 'relaxed' : 'different'})`
       ).join('; ')
     : `${rel.b || ''}`;
-
   return `
     <tr>
       <td>${escapeHtml(label)}</td>
@@ -2746,20 +2370,17 @@ function relationRow(label, rel) {
     </tr>
   `;
 }
-
 function formatAuthProperties(properties) {
   return Object.entries(properties || {})
     .map(([k, v]) => `${k}=${v}`)
     .join('; ');
 }
-
 function formatAddress(x) {
   if (!x?.address) return 'Not found';
   return x.name
     ? `${x.name} <${x.address}>`
     : x.address;
 }
-
 function stat(label, value) {
   return `
     <div class="stat">
@@ -2768,7 +2389,6 @@ function stat(label, value) {
     </div>
   `;
 }
-
 function statusClass(state) {
   return state === 'good'
     ? 'success'
@@ -2778,7 +2398,6 @@ function statusClass(state) {
         ? 'warning'
         : '';
 }
-
 function statusIcon(state) {
   return state === 'good'
     ? '&#10003;'
@@ -2788,7 +2407,6 @@ function statusIcon(state) {
         ? '&#9888;'
         : '&#8212;';
 }
-
 function sanitizeExport(a) {
   return {
     note:
@@ -2797,7 +2415,6 @@ function sanitizeExport(a) {
     version: 2,
     summary: a.summary,
     checks: a.checks,
-
     identity: {
       from: a.from,
       returnPath: a.returnPath,
@@ -2808,7 +2425,6 @@ function sanitizeExport(a) {
       dateParsed: a.dateParsed,
       messageId: a.messageId
     },
-
     relationships: a.identityRelationships,
     counts: a.counts,
     anomalies: a.anomalies,
@@ -2825,7 +2441,6 @@ function sanitizeExport(a) {
     limitations: a.limitations
   };
 }
-
 function bindExports(a) {
   $('#mailExportJson').onclick = () => {
     downloadText(
@@ -2834,7 +2449,6 @@ function bindExports(a) {
       'application/json;charset=utf-8'
     );
   };
-
   $('#mailExportText').onclick = () => {
     downloadText(
       'email-header-analysis.txt',
@@ -2842,16 +2456,12 @@ function bindExports(a) {
       'text/plain;charset=utf-8'
     );
   };
-
   $('#mailCopyReport').onclick = async () => {
     try {
       await navigator.clipboard.writeText(buildTextReport(a));
-
       const btn = $('#mailCopyReport');
       const old = btn.textContent;
-
       btn.textContent = 'Copied';
-
       setTimeout(() => {
         btn.textContent = old;
       }, 1200);
@@ -2863,13 +2473,11 @@ function bindExports(a) {
     }
   };
 }
-
 function formatReceivedSpfProperties(props) {
   return Object.entries(props || {})
     .map(([k, v]) => `${k}=${v}`)
     .join('; ');
 }
-
 function buildTextReport(a) {
   const lines = [
     'Mail Header Analysis',
@@ -2916,67 +2524,52 @@ function buildTextReport(a) {
     'Limitations:',
     ...a.limitations.map(x => `- ${x}`)
   ];
-
   return lines.join('\n');
 }
-
 function formatNodeText(node) {
   if (!node) return 'unknown';
-
   const base = node.host || 'unknown';
-
   return node.ip
     ? `${base} [${node.ip}]`
     : base;
 }
-
 async function readLocalTextFile(file) {
   if (file.size > LIMITS.maxCompoundFileBytes) {
     throw new Error(
       `The selected file is larger than ${formatBytes(LIMITS.maxCompoundFileBytes)}.`
     );
   }
-
   const buffer = await file.arrayBuffer();
   const bytes = new Uint8Array(buffer);
-
   if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
     return new TextDecoder('utf-16le').decode(bytes);
   }
-
   if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff) {
     return decodeUtf16Be(bytes);
   }
-
   try {
     return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   } catch {
     return new TextDecoder('windows-1252').decode(bytes);
   }
 }
-
 function extractEmlHeaders(raw) {
   const text = String(raw || '').replace(/^\uFEFF/, '');
   const m = text.search(/\r?\n\r?\n/);
-
   return m >= 0
     ? text.slice(0, m)
     : text;
 }
-
 async function parseMsgFile(file) {
   const buffer = await file.arrayBuffer();
-
   if (buffer.byteLength > LIMITS.maxCompoundFileBytes) {
     throw new Error(
       `The selected MSG file is larger than ${formatBytes(LIMITS.maxCompoundFileBytes)}.`
     );
   }
-
   const cfb = parseCompoundFile(buffer);
   const props = extractMsgStringProperties(cfb.streams);
   const headers = props['007d'] || '';
-
   const properties = {
     subject: props['0037'] || '',
     senderName: props['0c1a'] || '',
@@ -2987,7 +2580,6 @@ async function parseMsgFile(file) {
     replyTo: props['0050'] || '',
     messageId: props['1035'] || ''
   };
-
   if (headers) {
     return {
       headers: extractEmlHeaders(headers),
@@ -2997,7 +2589,6 @@ async function parseMsgFile(file) {
         + 'from the Outlook MSG container.'
     };
   }
-
   return {
     headers: buildSyntheticHeaders(properties),
     properties,
@@ -3007,44 +2598,35 @@ async function parseMsgFile(file) {
       + 'cannot be inferred from those fields.'
   };
 }
-
 function buildSyntheticHeaders(p) {
   const lines = [];
-
   if (p.subject) {
     lines.push(`Subject: ${p.subject}`);
   }
-
   if (p.senderEmail || p.senderName) {
     lines.push(
       `From: ${p.senderName ? `${p.senderName} ` : ''}${p.senderEmail ? `<${p.senderEmail}>` : ''}`.trim()
     );
   }
-
   if (p.displayTo) lines.push(`To: ${p.displayTo}`);
   if (p.displayCc) lines.push(`Cc: ${p.displayCc}`);
   if (p.displayBcc) lines.push(`Bcc: ${p.displayBcc}`);
   if (p.replyTo) lines.push(`Reply-To: ${p.replyTo}`);
   if (p.messageId) lines.push(`Message-ID: ${p.messageId}`);
-
   return lines.join('\n');
 }
-
 function parseCompoundFile(buffer) {
   if (buffer.byteLength < 512) {
     throw new Error(
       'The selected Outlook MSG / Compound File is too small to contain a valid CFB header.'
     );
   }
-
   const view = new DataView(buffer);
   const bytes = new Uint8Array(buffer);
-
   const sig = [
     0xd0, 0xcf, 0x11, 0xe0,
     0xa1, 0xb1, 0x1a, 0xe1
   ];
-
   for (let i = 0; i < sig.length; i++) {
     if (bytes[i] !== sig[i]) {
       throw new Error(
@@ -3052,32 +2634,26 @@ function parseCompoundFile(buffer) {
       );
     }
   }
-
   const sectorShift = view.getUint16(30, true);
   const miniSectorShift = view.getUint16(32, true);
-
   if (![9, 10, 11, 12].includes(sectorShift)) {
     throw new Error(
       `Unsupported Compound File sector size exponent: ${sectorShift}.`
     );
   }
-
   if (![6, 7].includes(miniSectorShift)) {
     throw new Error(
       `Unsupported Compound File mini-sector size exponent: ${miniSectorShift}.`
     );
   }
-
   const sectorSize = 1 << sectorShift;
   const miniSectorSize = 1 << miniSectorShift;
-
   const firstDirSector = view.getInt32(48, true);
   const miniCutoff = view.getUint32(56, true);
   const firstMiniFatSector = view.getInt32(60, true);
   const numMiniFatSectors = view.getUint32(64, true);
   const firstDifatSector = view.getInt32(68, true);
   const numDifatSectors = view.getUint32(72, true);
-
   if (
     sectorSize + 512 > bytes.length
     && bytes.length > 512
@@ -3086,17 +2662,13 @@ function parseCompoundFile(buffer) {
       'Compound File sector geometry is inconsistent with the file size.'
     );
   }
-
   const fatSectors = [];
-
   for (let i = 0; i < 109; i++) {
     const sid = view.getInt32(76 + i * 4, true);
     if (sid >= 0) fatSectors.push(sid);
   }
-
   let difat = firstDifatSector;
   const seenDifat = new Set();
-
   for (
     let n = 0;
     n < Math.min(numDifatSectors, 4096) && difat >= 0;
@@ -3105,52 +2677,40 @@ function parseCompoundFile(buffer) {
     if (seenDifat.has(difat)) {
       throw new Error('Compound File DIFAT contains a cycle.');
     }
-
     seenDifat.add(difat);
-
     const base = 512 + difat * sectorSize;
-
     if (!rangeWithin(base, sectorSize, bytes.length)) {
       throw new Error(
         'Compound File DIFAT sector is outside the file.'
       );
     }
-
     for (let i = 0; i < (sectorSize / 4) - 1; i++) {
       const sid = view.getInt32(base + i * 4, true);
       if (sid >= 0) fatSectors.push(sid);
     }
-
     difat = view.getInt32(
       base + sectorSize - 4,
       true
     );
   }
-
   const fat = [];
-
   for (const sid of fatSectors) {
     const base = 512 + sid * sectorSize;
-
     if (!rangeWithin(base, sectorSize, bytes.length)) {
       throw new Error(
         'Compound File FAT sector is outside the file.'
       );
     }
-
     for (let i = 0; i < sectorSize / 4; i++) {
       fat.push(
         view.getInt32(base + i * 4, true)
       );
     }
   }
-
   const chain = start => {
     const out = [];
     const seen = new Set();
-
     let cur = start;
-
     while (
       cur >= 0
       && cur !== 0xfffffffe
@@ -3163,85 +2723,66 @@ function parseCompoundFile(buffer) {
           'Compound File sector chain references a sector outside the FAT.'
         );
       }
-
       seen.add(cur);
       out.push(cur);
       cur = fat[cur];
     }
-
     if (out.length >= LIMITS.maxCompoundChain) {
       throw new Error(
         'Compound File sector chain exceeds the local safety limit.'
       );
     }
-
     return out;
   };
-
   const readRegular = (start, size) => {
     if (!size || start < 0) {
       return new Uint8Array();
     }
-
     if (size > LIMITS.maxCompoundFileBytes) {
       throw new Error(
         'Compound File stream exceeds the local safety limit.'
       );
     }
-
     const ids = chain(start);
     const out = new Uint8Array(
       Math.min(size, ids.length * sectorSize)
     );
-
     let pos = 0;
-
     for (const sid of ids) {
       const base = 512 + sid * sectorSize;
       const take = Math.min(
         sectorSize,
         out.length - pos
       );
-
       if (take <= 0) break;
-
       if (!rangeWithin(base, take, bytes.length)) {
         throw new Error(
           'Compound File stream points outside the file.'
         );
       }
-
       out.set(
         bytes.subarray(base, base + take),
         pos
       );
-
       pos += take;
     }
-
     return out;
   };
-
   const dirIds = chain(firstDirSector);
-
   const dirChunks = dirIds.map(s => {
     const base = 512 + s * sectorSize;
-
     if (!rangeWithin(base, sectorSize, bytes.length)) {
       throw new Error(
         'Compound File directory sector is outside the file.'
       );
     }
-
     return bytes.slice(
       base,
       base + sectorSize
     );
   });
-
   const dir = concatBytes(dirChunks);
   const entries = [];
-
   for (
     let off = 0;
     off + 128 <= dir.length;
@@ -3253,24 +2794,20 @@ function parseCompoundFile(buffer) {
       2,
       'u16'
     );
-
     if (nameLen < 2) {
       entries.push(null);
       continue;
     }
-
     const safeNameLen = Math.min(
       nameLen - 2,
       62
     );
-
     const name = decodeUtf16LE(
       dir.slice(
         off,
         off + safeNameLen
       )
     );
-
     const type = dir[off + 66];
     const left = viewAt(
       dir,
@@ -3308,17 +2845,14 @@ function parseCompoundFile(buffer) {
       4,
       'u32'
     );
-
     const size = sizeHigh
       ? (sizeHigh * 0x100000000 + sizeLow)
       : sizeLow;
-
     if (size > LIMITS.maxCompoundFileBytes) {
       throw new Error(
         'Compound File directory contains an oversized stream.'
       );
     }
-
     entries.push({
       name,
       type,
@@ -3328,26 +2862,21 @@ function parseCompoundFile(buffer) {
       start,
       size
     });
-
     if (entries.length > LIMITS.maxCompoundEntries) {
       throw new Error(
         'Compound File directory exceeds the local safety limit.'
       );
     }
   }
-
   const root = entries.findIndex(
     e => e && e.type === 5
   );
-
   if (root < 0) {
     throw new Error(
       'Compound File root directory entry was not found.'
     );
   }
-
   const rootEntry = entries[root];
-
   const rootMiniStream =
     rootEntry && rootEntry.start >= 0
       ? readRegular(
@@ -3355,9 +2884,7 @@ function parseCompoundFile(buffer) {
           rootEntry.size
         )
       : new Uint8Array();
-
   const miniFat = [];
-
   if (firstMiniFatSector >= 0 && numMiniFatSectors) {
     for (
       const sid of chain(firstMiniFatSector)
@@ -3367,13 +2894,11 @@ function parseCompoundFile(buffer) {
         )
     ) {
       const base = 512 + sid * sectorSize;
-
       if (!rangeWithin(base, sectorSize, bytes.length)) {
         throw new Error(
           'Compound File mini-FAT sector is outside the file.'
         );
       }
-
       for (let i = 0; i < sectorSize / 4; i++) {
         miniFat.push(
           view.getInt32(
@@ -3384,18 +2909,14 @@ function parseCompoundFile(buffer) {
       }
     }
   }
-
   const readMini = (start, size) => {
     if (!size || start < 0 || !miniFat.length) {
       return new Uint8Array();
     }
-
     const chunks = [];
     const seen = new Set();
-
     let cur = start;
     let count = 0;
-
     while (
       cur >= 0
       && cur !== 0xfffffffe
@@ -3408,72 +2929,54 @@ function parseCompoundFile(buffer) {
           'Compound File mini-stream references a sector outside the mini-FAT.'
         );
       }
-
       seen.add(cur);
-
       const base = cur * miniSectorSize;
-
       if (base >= rootMiniStream.length) {
         throw new Error(
           'Compound File mini-stream points outside the root mini-stream.'
         );
       }
-
       chunks.push(
         rootMiniStream.slice(
           base,
           base + miniSectorSize
         )
       );
-
       cur = miniFat[cur];
       count++;
-
       if (count > LIMITS.maxCompoundChain) {
         throw new Error(
           'Compound File mini-stream chain exceeds the local safety limit.'
         );
       }
     }
-
     return concatBytes(chunks).slice(0, size);
   };
-
   const streams = new Map();
   const visitedNodes = new Set();
-
   const visit = (id, path, depth = 0) => {
     if (id < 0 || !entries[id]) return;
-
     if (depth > LIMITS.maxCompoundDepth) {
       throw new Error(
         'Compound File directory nesting exceeds the local safety limit.'
       );
     }
-
     const visitKey = `${id}|${path}`;
-
     if (visitedNodes.has(visitKey)) {
       return;
     }
-
     visitedNodes.add(visitKey);
-
     if (visitedNodes.size > LIMITS.maxCompoundEntries * 2) {
       throw new Error(
         'Compound File directory traversal exceeded the local safety limit.'
       );
     }
-
     const e = entries[id];
-
     visit(e.left, path, depth + 1);
-
     const current =
       path
         ? `${path}/${e.name}`
         : e.name;
-
     if (e.type === 1 || e.type === 5) {
       visit(e.child, current, depth + 1);
     } else if (e.type === 2) {
@@ -3481,33 +2984,24 @@ function parseCompoundFile(buffer) {
         e.size < miniCutoff
           ? readMini(e.start, e.size)
           : readRegular(e.start, e.size);
-
       streams.set(current, data);
     }
-
     visit(e.right, path, depth + 1);
   };
-
   if (root >= 0) {
     visit(entries[root].child, '');
   }
-
   return { streams };
 }
-
 function extractMsgStringProperties(streams) {
   const strings = {};
-
   for (const [path, data] of streams) {
     const m = path.match(
       /__substg1\.0_([0-9A-Fa-f]{4})([0-9A-Fa-f]{4})$/
     );
-
     if (!m) continue;
-
     const prop = m[1].toLowerCase();
     const type = m[2].toLowerCase();
-
     if (type === '001f') {
       strings[prop] =
         decodeUtf16LE(data).replace(/\u0000+$/, '');
@@ -3516,80 +3010,65 @@ function extractMsgStringProperties(streams) {
         decodeWindows1252(data).replace(/\u0000+$/, '');
     }
   }
-
   return strings;
 }
-
 function viewAt(bytes, offset, size, kind) {
   const v = new DataView(
     bytes.buffer,
     bytes.byteOffset,
     bytes.byteLength
   );
-
   return kind === 'u16'
     ? v.getUint16(offset, true)
     : kind === 'u32'
       ? v.getUint32(offset, true)
       : v.getInt32(offset, true);
 }
-
 function concatBytes(chunks) {
   const total = chunks.reduce(
     (n, c) => n + c.length,
     0
   );
-
   const out = new Uint8Array(total);
   let pos = 0;
-
   for (const c of chunks) {
     out.set(c, pos);
     pos += c.length;
   }
-
   return out;
 }
-
 function normalizeHeaderWhitespace(value) {
   return String(value || '')
     .replace(/[\r\n]+/g, ' ')
     .replace(/[\t ]+/g, ' ')
     .trim();
 }
-
 function splitOutsideComments(input, delimiter) {
   const out = [];
   let start = 0;
   let quote = null;
   let commentDepth = 0;
-
   for (let i = 0; i < input.length; i++) {
     const ch = input[i];
     const prev = input[i - 1];
-
     if (quote) {
       if (ch === quote && prev !== '\\') {
         quote = null;
       }
       continue;
     }
-
     if (ch === '"' || ch === "'") {
       quote = ch;
       continue;
     }
-
     if (ch === '(') {
       commentDepth++;
       continue;
     }
-
     if (ch === ')' && commentDepth > 0) {
       commentDepth--;
       continue;
     }
-
     if (
       commentDepth === 0
       && input.startsWith(delimiter, i)
@@ -3597,65 +3076,52 @@ function splitOutsideComments(input, delimiter) {
       out.push(
         input.slice(start, i)
       );
-
       start =
         i + delimiter.length;
-
       i += delimiter.length - 1;
     }
   }
-
   out.push(
     input.slice(start)
   );
-
   return out;
 }
-
 function splitOutsideQuotes(input, delimiter) {
   return splitOutsideComments(
     input,
     delimiter
   );
 }
-
 function splitAddressList(input) {
   const out = [];
   let start = 0;
   let quote = null;
   let commentDepth = 0;
   let angleDepth = 0;
-
   for (let i = 0; i < input.length; i++) {
     const ch = input[i];
     const prev = input[i - 1];
-
     if (quote) {
       if (ch === quote && prev !== '\\') {
         quote = null;
       }
       continue;
     }
-
     if (ch === '"') {
       quote = ch;
       continue;
     }
-
     if (ch === '(') {
       commentDepth++;
       continue;
     }
-
     if (ch === ')' && commentDepth > 0) {
       commentDepth--;
       continue;
     }
-
     if (!commentDepth && ch === '<') {
       angleDepth++;
     }
-
     if (
       !commentDepth
       && ch === '>'
@@ -3663,7 +3129,6 @@ function splitAddressList(input) {
     ) {
       angleDepth--;
     }
-
     if (
       !commentDepth
       && angleDepth === 0
@@ -3672,138 +3137,108 @@ function splitAddressList(input) {
       out.push(
         input.slice(start, i).trim()
       );
-
       start = i + 1;
     }
   }
-
   out.push(
     input.slice(start).trim()
   );
-
   return out.filter(Boolean);
 }
-
 function removeComments(value) {
   let input = String(value || '');
   let result = '';
   let depth = 0;
   let quote = null;
-
   for (let i = 0; i < input.length; i++) {
     const ch = input[i];
     const prev = input[i - 1];
-
     if (quote) {
       result += ch;
-
       if (ch === quote && prev !== '\\') {
         quote = null;
       }
-
       continue;
     }
-
     if (ch === '"' || ch === "'") {
       quote = ch;
       result += ch;
       continue;
     }
-
     if (ch === '(') {
       depth++;
       continue;
     }
-
     if (ch === ')' && depth > 0) {
       depth--;
       continue;
     }
-
     if (!depth) {
       result += ch;
     }
   }
-
   return result;
 }
-
 function normalizeDomain(value) {
   let d = String(value || '')
     .trim()
     .toLowerCase();
-
   d = d
     .replace(/^.*@/, '')
     .replace(/^\[|\]$/g, '')
     .replace(/\.$/, '');
-
   d = d.replace(
     /[^a-z0-9._:-]+$/g,
     ''
   );
-
   return d;
 }
-
 function getDomain(address) {
   const i = String(address || '')
     .lastIndexOf('@');
-
   return i > -1
     ? normalizeDomain(
         address.slice(i + 1)
       )
     : '';
 }
-
 function normalizeHostname(value) {
   return String(value || '')
     .toLowerCase()
     .replace(/^\[|\]$/g, '')
     .replace(/\.$/, '');
 }
-
 function looksLikeHostname(value) {
   const v = String(value || '')
     .replace(
       /^[\[(]|[\]),;:]$/g,
       ''
     );
-
   return (
     /^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$/.test(v)
     && /[A-Za-z]/.test(v)
   );
 }
-
 function isIpLiteral(value) {
   return isIpv4(value) || isIpv6(value);
 }
-
 function findFirstIp(text) {
   const ipv6 = text.match(
     /\b(?:[0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}\b/
   );
-
   if (ipv6 && isIpv6(ipv6[0])) {
     return ipv6[0];
   }
-
   const ipv4 = text.match(
     /\b(?:\d{1,3}\.){3}\d{1,3}\b/
   );
-
   if (ipv4 && isIpv4(ipv4[0])) {
     return ipv4[0];
   }
-
   return '';
 }
-
 function isIpv4(value) {
   const parts = String(value || '').split('.');
-
   return (
     parts.length === 4
     && parts.every(
@@ -3812,37 +3247,28 @@ function isIpv4(value) {
     )
   );
 }
-
 function isIpv6(value) {
   const v = String(value || '').trim();
-
   if (!v.includes(':')) return false;
   if (!/^[0-9a-f:]+$/i.test(v)) return false;
-
   const double = (
     v.match(/::/g) || []
   ).length;
-
   if (double > 1) return false;
-
   const parts = v.split(':');
-
   if (double === 0) {
     return parts.length === 8;
   }
-
   return (
     parts.length <= 8
     && parts.some(Boolean) === true
   );
 }
-
 function isSpecialOrPrivateIp(ip) {
   if (isIpv4(ip)) {
     const [a, b] = ip
       .split('.')
       .map(Number);
-
     return (
       a === 10
       || a === 127
@@ -3855,10 +3281,8 @@ function isSpecialOrPrivateIp(ip) {
       || (a >= 224)
     );
   }
-
   if (isIpv6(ip)) {
     const v = ip.toLowerCase();
-
     return (
       v === '::1'
       || v === '::'
@@ -3867,13 +3291,10 @@ function isSpecialOrPrivateIp(ip) {
       || v.startsWith('fd')
     );
   }
-
   return false;
 }
-
 function parseMailDate(value) {
   const raw = String(value || '').trim();
-
   if (!raw) {
     return {
       valid: false,
@@ -3881,9 +3302,7 @@ function parseMailDate(value) {
       raw: ''
     };
   }
-
   const time = Date.parse(raw);
-
   if (Number.isNaN(time)) {
     return {
       valid: false,
@@ -3891,41 +3310,30 @@ function parseMailDate(value) {
       raw
     };
   }
-
   const date = new Date(time);
-
   return {
     valid: true,
     date,
     raw
   };
 }
-
 function parseEpochSeconds(value) {
   const n = Number(
     String(value || '').trim()
   );
-
   if (!Number.isFinite(n) || n <= 0) {
     return null;
   }
-
   return new Date(n * 1000);
 }
-
 function normalizeMessageId(value) {
   const v = String(value || '').trim();
-
   if (!v) return '';
-
   const m = v.match(/<[^<>]+>/);
-
   return m ? m[0] : v;
 }
-
 function stripOuterQuotes(value) {
   const v = String(value ?? '').trim();
-
   if (
     v.length >= 2
     && (
@@ -3941,13 +3349,10 @@ function stripOuterQuotes(value) {
   ) {
     return v.slice(1, -1);
   }
-
   return v;
 }
-
 function decodeMimeWords(value) {
   const input = String(value || '');
-
   return input.replace(
     /=\?([^?\s]+)\?([bBqQ])\?([^?]*)\?=/g,
     (full, charset, encoding, payload) => {
@@ -3958,7 +3363,6 @@ function decodeMimeWords(value) {
             : latin1ToBytes(
                 decodeQuotedPrintableWord(payload)
               );
-
         return decodeBytes(
           bytes,
           charset
@@ -3969,7 +3373,6 @@ function decodeMimeWords(value) {
     }
   );
 }
-
 function decodeQuotedPrintableWord(value) {
   return String(value || '')
     .replace(/_/g, ' ')
@@ -3981,43 +3384,33 @@ function decodeQuotedPrintableWord(value) {
         )
     );
 }
-
 function base64ToBytes(value) {
   const clean = String(value || '')
     .replace(/\s+/g, '');
-
   const bin = atob(clean);
   const out = new Uint8Array(bin.length);
-
   for (let i = 0; i < bin.length; i++) {
     out[i] = bin.charCodeAt(i);
   }
-
   return out;
 }
-
 function latin1ToBytes(value) {
   const s = String(value || '');
   const out = new Uint8Array(s.length);
-
   for (let i = 0; i < out.length; i++) {
     out[i] = s.charCodeAt(i) & 0xff;
   }
-
   return out;
 }
-
 function decodeBytes(bytes, charset) {
   const normalized = String(
     charset || ''
   ).toLowerCase();
-
   const decoderCharset =
     normalized === 'iso-8859-1'
     || normalized === 'latin1'
       ? 'windows-1252'
       : normalized;
-
   try {
     return new TextDecoder(
       decoderCharset
@@ -4028,22 +3421,18 @@ function decodeBytes(bytes, charset) {
     ).decode(bytes);
   }
 }
-
 function decodeUtf16Be(bytes) {
   const hasBom =
     bytes.length >= 2
     && bytes[0] === 0xfe
     && bytes[1] === 0xff;
-
   const start = hasBom ? 2 : 0;
-
   const copy = new Uint8Array(
     Math.max(
       0,
       bytes.length - start
     )
   );
-
   for (
     let i = start, j = 0;
     i + 1 < bytes.length;
@@ -4052,80 +3441,59 @@ function decodeUtf16Be(bytes) {
     copy[j] = bytes[i + 1];
     copy[j + 1] = bytes[i];
   }
-
   return new TextDecoder(
     'utf-16le'
   ).decode(copy);
 }
-
 function utf8ByteLength(value) {
   return new TextEncoder()
     .encode(String(value || ''))
     .length;
 }
-
 function formatBytes(n) {
   if (n < 1024) return `${n} B`;
-
   if (n < 1024 ** 2) {
     return `${(n / 1024).toFixed(1)} KiB`;
   }
-
   if (n < 1024 ** 3) {
     return `${(n / 1024 ** 2).toFixed(1)} MiB`;
   }
-
   return `${(n / 1024 ** 3).toFixed(1)} GiB`;
 }
-
 function formatDuration(ms) {
   if (!Number.isFinite(ms)) {
     return 'unknown';
   }
-
   const sign = ms < 0 ? '-' : '';
-
   let seconds = Math.round(
     Math.abs(ms) / 1000
   );
-
   const days = Math.floor(
     seconds / 86400
   );
-
   seconds %= 86400;
-
   const hours = Math.floor(
     seconds / 3600
   );
-
   seconds %= 3600;
-
   const minutes = Math.floor(
     seconds / 60
   );
-
   seconds %= 60;
-
   const parts = [];
-
   if (days) parts.push(`${days}d`);
   if (hours) parts.push(`${hours}h`);
   if (minutes) parts.push(`${minutes}m`);
-
   if (seconds || !parts.length) {
     parts.push(`${seconds}s`);
   }
-
   return sign + parts.join(' ');
 }
-
 function formatSignedDuration(ms) {
   return ms >= 0
     ? `+${formatDuration(ms)}`
     : formatDuration(ms);
 }
-
 function displayHeaderName(name) {
   return String(name || '')
     .split('-')
@@ -4136,7 +3504,6 @@ function displayHeaderName(name) {
     )
     .join('-');
 }
-
 function rangeWithin(start, length, total) {
   return (
     Number.isSafeInteger(start)
@@ -4146,11 +3513,9 @@ function rangeWithin(start, length, total) {
     && start + length <= total
   );
 }
-
 function decodeUtf16LE(bytes) {
   return new TextDecoder('utf-16le').decode(bytes);
 }
-
 function decodeWindows1252(bytes) {
   try {
     return new TextDecoder('windows-1252').decode(bytes);
@@ -4158,7 +3523,6 @@ function decodeWindows1252(bytes) {
     return new TextDecoder('iso-8859-1').decode(bytes);
   }
 }
-
 export const headerAnalyzerInternals = {
   parseHeaders,
   parseAuthResults,
