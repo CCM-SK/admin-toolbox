@@ -129,21 +129,36 @@ export function renderPowershell(app) {
     render(report);
   };
   $('#psNormalize').onclick = () => {
-    const normalized = normalizePowerShell(input.value);
-    if (normalized.code === '' && input.value.trim() !== '') {
+  const original = input.value;
+
+  try {
+    const normalized = normalizePowerShell(original);
+
+    if (original.trim() && !normalized.code.trim()) {
       normalizeInfo.textContent =
-        'Normalization failed safely; the original code was preserved.';
+        'Normalization produced no output; the original code was preserved.';
       return;
     }
     input.value = normalized.code;
     report = analyze(input.value);
     render(report);
-    normalizeInfo.textContent =
-      `Removed ${normalized.stats.removedBlankLines} empty line(s), ` +
-      `changed whitespace on ${normalized.stats.whitespaceChangedLines} line(s), ` +
-      `adjusted indentation on ${normalized.stats.indentedLines} line(s).`;
+    if (!normalized.changed) {
+      normalizeInfo.textContent =
+        'The code is already normalized. No changes were necessary.';
+    } else {
+      normalizeInfo.textContent =
+        `Normalized: ${normalized.stats.changedLines} line(s) changed, ` +
+        `${normalized.stats.indentedLines} line(s) re-indented, ` +
+        `${normalized.stats.removedBlankLines} empty line(s) removed.`;
+    }
     input.focus();
-  };
+  } catch (err) {
+    input.value = original;
+    normalizeInfo.textContent =
+      'Normalization failed; the original code was preserved.';
+    console.error('PowerShell normalization error:', err);
+  }
+};
   $('#psClear').onclick = () => {
     input.value = '';
     results.hidden = true;
@@ -300,15 +315,16 @@ export function renderPowershell(app) {
   }
 }
 function normalizePowerShell(code) {
-  const rawLines = String(code ?? '')
-    .replace(/^\uFEFF/, '')
+  const original = String(code ?? '')
+    .replace(/^\uFEFF/, '');
+  const rawLines = original
     .replace(/\r\n?/g, '\n')
     .split('\n');
   const output = [];
   let depth = 0;
   let continuation = false;
   let removedBlankLines = 0;
-  let whitespaceChangedLines = 0;
+  let changedLines = 0;
   let indentedLines = 0;
   for (const rawLine of rawLines) {
     const cleaned = rawLine
@@ -332,10 +348,11 @@ function normalizePowerShell(code) {
     const targetDepth = currentDepth + continuationDepth;
     const formatted =
       INDENT.repeat(targetDepth) + trimmed;
-    if (cleaned !== trimmed) {
-      whitespaceChangedLines++;
+    if (rawLine !== formatted) {
+      changedLines++;
     }
-    if (cleaned !== formatted) {
+    if (rawLine !== formatted &&
+        rawLine.replace(/\t/g, INDENT).trim() === trimmed) {
       indentedLines++;
     }
     output.push(formatted);
@@ -347,13 +364,16 @@ function normalizePowerShell(code) {
     );
     continuation = structure.continues;
   }
+  const normalized = output.join('\n');
+  const changed = normalized !== original.replace(/\r\n?/g, '\n');
   return {
-    code: output.join('\n'),
+    code: normalized,
+    changed,
     stats: {
       inputLines: rawLines.length,
       outputLines: output.length,
       removedBlankLines,
-      whitespaceChangedLines,
+      changedLines,
       indentedLines,
     },
   };
