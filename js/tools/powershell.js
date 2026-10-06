@@ -307,46 +307,35 @@ function normalizePowerShell(code) {
   const output = [];
   let depth = 0;
   let continuation = false;
-  let hereString = null;
   let removedBlankLines = 0;
   let whitespaceChangedLines = 0;
   let indentedLines = 0;
   for (const rawLine of rawLines) {
-    const expanded = rawLine.replace(/\t/g, INDENT);
-    const trimmed = expanded.trim();
-    if (hereString) {
-      output.push(expanded.replace(/[ \t]+$/g, ''));
-      if (trimmed === `${hereString}@`) {
-        hereString = null;
-        continuation = false;
-      }
-      continue;
+    const cleaned = rawLine
+      .replace(/\t/g, INDENT)
+      .replace(/[ \t]+$/g, '');
+    const trimmed = cleaned.trim();
     if (!trimmed) {
       removedBlankLines++;
       continuation = false;
       continue;
     }
-    if (trimmed === '@"' || trimmed === "@'") {
-      hereString = trimmed[1];
-      const formatted = trimmed;
-      if (expanded !== formatted) {
-        whitespaceChangedLines++;
-      }
-      output.push(formatted);
-      continue;
-    }
-    const structure = analyzeLineStructure(trimmed);
-    const closingCount = Math.min(structure.leadingClosers, depth);
-    const lineDepth = Math.max(0, depth - closingCount);
+    const structure = scanPowerShellLine(trimmed);
+    const currentDepth = Math.max(
+      0,
+      depth - structure.leadingClosers,
+    );
     const continuationDepth =
-      continuation && closingCount === 0 ? 1 : 0;
-    const targetDepth = lineDepth + continuationDepth;
+      continuation && structure.leadingClosers === 0
+        ? 1
+        : 0;
+    const targetDepth = currentDepth + continuationDepth;
     const formatted =
       INDENT.repeat(targetDepth) + trimmed;
-    if (expanded !== trimmed) {
+    if (cleaned !== trimmed) {
       whitespaceChangedLines++;
     }
-    if (expanded !== formatted) {
+    if (cleaned !== formatted) {
       indentedLines++;
     }
     output.push(formatted);
@@ -357,12 +346,6 @@ function normalizePowerShell(code) {
         structure.closers,
     );
     continuation = structure.continues;
-  }
-  while (
-    output.length &&
-    !output[output.length - 1].trim()
-  ) {
-    output.pop();
   }
   return {
     code: output.join('\n'),
@@ -375,7 +358,7 @@ function normalizePowerShell(code) {
     },
   };
 }
-function analyzeLineStructure(line) {
+function scanPowerShellLine(line) {
   let mode = 'code';
   let openers = 0;
   let closers = 0;
@@ -384,9 +367,6 @@ function analyzeLineStructure(line) {
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
     const next = line[i + 1];
-    if (mode === 'comment') {
-      break;
-    }
     if (mode === 'single') {
       if (ch === "'" && next === "'") {
         i++;
@@ -404,8 +384,7 @@ function analyzeLineStructure(line) {
       continue;
     }
     if (ch === '#') {
-      mode = 'comment';
-      continue;
+      break;
     }
     if (ch === "'") {
       mode = 'single';
@@ -437,11 +416,11 @@ function analyzeLineStructure(line) {
     openers,
     closers,
     leadingClosers,
-    continues: detectContinuation(line),
+    continues: hasContinuation(line),
   };
 }
-function detectContinuation(line) {
-  const code = stripComment(line).trimEnd();
+function hasContinuation(line) {
+  const code = stripPowerShellComment(line).trimEnd();
   if (!code) {
     return false;
   }
@@ -454,16 +433,11 @@ function detectContinuation(line) {
   if (code.endsWith(',')) {
     return true;
   }
-  if (
-    /(?:=|\+|-|\*|\/|%|&&|\|\||-and|-or|-eq|-ne|-lt|-le|-gt|-ge)\s*$/i.test(
-      code,
-    )
-  ) {
-    return true;
-  }
-  return false;
+  return /(?:=|\+|-|\*|\/|%|&&|\|\||-and|-or|-eq|-ne|-lt|-le|-gt|-ge)\s*$/i.test(
+    code,
+  );
 }
-function stripComment(line) {
+function stripPowerShellComment(line) {
   let mode = 'code';
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
@@ -497,5 +471,4 @@ function stripComment(line) {
     }
   }
   return line;
-}
 }
