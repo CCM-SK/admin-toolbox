@@ -1,11 +1,20 @@
 import { $, downloadText } from '../utils.js';
-const WORD_LIST = [
-  'amber', 'atlas', 'beacon', 'binary', 'bridge', 'cedar', 'circuit', 'cloud',
-  'cobalt', 'delta', 'echo', 'ember', 'engine', 'forest', 'galaxy', 'harbor',
-  'kernel', 'linen', 'matrix', 'maple', 'mosaic', 'north', 'orbit', 'packet',
-  'pepper', 'quartz', 'river', 'rocket', 'signal', 'silver', 'socket', 'spruce',
-  'subnet', 'vector', 'violet', 'window', 'willow',
-];
+const WORD_LIST = ['amber', 'apple', 'arrow', 'atlas', 'basil', 'beacon', 'binary', 'blaze',
+  'bloom', 'bridge', 'bronze', 'breeze', 'canyon', 'canvas', 'caper', 'carbon',
+  'cedar', 'cinder', 'circuit', 'cloud', 'cobalt', 'coral', 'crystal', 'delta',
+  'dawn', 'dune', 'echo', 'eagle', 'elm', 'ember', 'engine', 'falcon', 'flame',
+  'flint', 'forest', 'frost', 'galaxy', 'garden', 'glacier', 'granite', 'grove',
+  'harbor', 'hazel', 'horizon', 'iris', 'island', 'jade', 'jungle', 'kernel',
+  'lilac', 'linen', 'lunar', 'marble', 'maple', 'matrix', 'meadow', 'mercury',
+  'meteor', 'mint', 'mirror', 'mosaic', 'nebula', 'nickel', 'north', 'oasis',
+  'olive', 'onyx', 'opal', 'orange', 'orbit', 'packet', 'panda', 'parchment',
+  'pebble', 'pepper', 'pine', 'planet', 'plasma', 'plum', 'prairie', 'quartz',
+  'rain', 'raven', 'reed', 'ridge', 'rocket', 'ruby', 'sage', 'sand',
+  'sapphire', 'scarlet', 'shadow', 'shale', 'shell', 'signal', 'silver', 'sky',
+  'slate', 'socket', 'solar', 'spruce', 'stone', 'storm', 'subnet', 'summit',
+  'sunset', 'terra', 'thunder', 'timber', 'topaz', 'trail', 'tulip', 'valley',
+  'vector', 'velvet', 'violet', 'wave', 'willow', 'window', 'winter', 'woodland',
+  'zephyr', 'zinc',];
 const CHARSETS = {
   lower: 'abcdefghijklmnopqrstuvwxyz',
   upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
