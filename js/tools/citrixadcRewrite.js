@@ -534,9 +534,8 @@ function posByName(cmd, name) {
 function validateCommand(cmd) {
   const errors = [];
   const fail = (code, title, detail) => errors.push({ code, title, detail });
-  // Only enforce arity where TYPE_DEFS describes positional fields.
   if (cmd.verb === 'add' && !cmd.def.singleton && !cmd.def.toggle && !cmd.def.global && cmd.def.pos.length) {
-    const expected = 1 + cmd.def.pos.length; // object name + described fields
+    const expected = 1 + cmd.def.pos.length;
     if (cmd.positional.length < expected) {
       fail('MISSING_ARGUMENT', 'Missing required argument',
         `Command expects ${expected - 1} argument(s) after the ${cmd.def.label.toLowerCase()} command name.`);

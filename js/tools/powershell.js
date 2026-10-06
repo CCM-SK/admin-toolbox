@@ -1,4 +1,5 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
+const INDENT = '  ';
 const RULES = [
   {
     id: 'invoke-expression',
@@ -92,18 +93,26 @@ export function renderPowershell(app) {
         Static analysis only. Nothing is executed, imported, or sent anywhere.
         Checks common security, reliability, and readability issues.
       </p>
+      <p class="small">
+        <strong>Normalize</strong> only changes presentation:
+        indentation, whitespace, line endings, and empty code lines.
+        It does not execute PowerShell or rewrite commands.
+      </p>
       <label for="psCode">PowerShell</label>
       <textarea
         id="psCode"
         class="mono"
         style="min-height:340px"
+        spellcheck="false"
         placeholder="Paste PowerShell here"
       ></textarea>
       <div class="row" style="margin-top:10px">
         <button class="btn primary" id="psAnalyze">Analyze</button>
+        <button class="btn" id="psNormalize">Normalize</button>
         <button class="btn" id="psClear">Clear</button>
         <button class="btn" id="psExport">Export report</button>
       </div>
+      <p class="small" id="psNormalizeInfo" aria-live="polite"></p>
     </section>
     <section class="card" id="psResults" hidden>
       <div id="psSummary"></div>
@@ -113,14 +122,34 @@ export function renderPowershell(app) {
   `;
   const input = $('#psCode');
   const results = $('#psResults');
+  const normalizeInfo = $('#psNormalizeInfo');
   let report = null;
   $('#psAnalyze').onclick = () => {
     report = analyze(input.value);
     render(report);
   };
+  $('#psNormalize').onclick = () => {
+    const original = input.value;
+    const normalized = normalizePowerShell(original);
+    input.value = normalized.code;
+    // Keep the analyzer in sync with the normalized text.
+    report = analyze(input.value);
+    render(report);
+    normalizeInfo.textContent =
+      `Normalized: removed ${normalized.stats.removedBlankLines} empty ` +
+      `line${normalized.stats.removedBlankLines === 1 ? '' : 's'}, ` +
+      `cleaned whitespace on ${normalized.stats.whitespaceChangedLines} ` +
+      `line${normalized.stats.whitespaceChangedLines === 1 ? '' : 's'}, ` +
+      `and adjusted indentation on ${normalized.stats.indentedLines} ` +
+      `line${normalized.stats.indentedLines === 1 ? '' : 's'}.`;
+    if (original !== input.value) {
+      input.focus();
+    }
+  };
   $('#psClear').onclick = () => {
     input.value = '';
     results.hidden = true;
+    normalizeInfo.textContent = '';
     report = null;
     input.focus();
   };
@@ -138,6 +167,10 @@ export function renderPowershell(app) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       $('#psAnalyze').click();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'n') {
+      e.preventDefault();
+      $('#psNormalize').click();
     }
   });
   function analyze(code) {
@@ -267,4 +300,252 @@ export function renderPowershell(app) {
       </div>
     `;
   }
+}
+function normalizePowerShell(code) {
+  const source = String(code ?? '').replace(/^\uFEFF/, '');
+  const rawLines = source.replace(/\r\n?/g, '\n').split('\n');
+  const output = [];
+  let stack = [];
+  let hereString = null;
+  let removedBlankLines = 0;
+  let whitespaceChangedLines = 0;
+  let indentedLines = 0;
+  let continuation = false;
+  for (let i = 0; i < rawLines.length; i++) {
+    const raw = rawLines[i];
+    const normalizedWhitespace = raw.replace(/\t/g, INDENT);
+    const line = normalizedWhitespace.replace(/[ \t]+$/g, '');
+    if (hereString) {
+      output.push(line);
+      if (isHereStringTerminator(line, hereString)) {
+        hereString = null;
+        continuation = false;
+      }
+      continue;
+    }
+    const trimmed = line.trim();
+    if (!trimmed) {
+      removedBlankLines++;
+      continuation = false;
+      continue;
+    }
+    const hereStart = detectHereStringStart(trimmed);
+    if (hereStart) {
+      if (line !== raw) {
+        whitespaceChangedLines++;
+      }
+      output.push(line);
+      hereString = hereStart;
+      continuation = false;
+      continue;
+    }
+    const scan = scanPowerShellLine(trimmed);
+    const code = scan.code;
+    const leadingClosers = countLeadingClosers(code);
+    const baseDepth = Math.max(0, stack.length - leadingClosers);
+    const continuationDepth =
+      continuation && leadingClosers === 0 ? 1 : 0;
+    const targetIndent = baseDepth + continuationDepth;
+    const formatted = INDENT.repeat(targetIndent) + code;
+    if (line !== raw) {
+      whitespaceChangedLines++;
+    }
+    if (formatted !== line) {
+      indentedLines++;
+    }
+    output.push(formatted);
+    stack = updateDelimiterStack(stack, code);
+    continuation = hasLineContinuation(code);
+  while (output.length && output[output.length - 1] === '') {
+    output.pop();
+  }
+  return {
+    code: output.join('\n'),
+    stats: {
+      inputLines: rawLines.length,
+      outputLines: output.length,
+      removedBlankLines,
+      whitespaceChangedLines,
+      indentedLines,
+    },
+  };
+}
+function detectHereStringStart(line) {
+  const match = line.match(/^@(["'])/);
+  return match ? match[1] : null;
+}
+function isHereStringTerminator(line, quote) {
+  return line.trim() === `${quote}@`;
+}
+function countLeadingClosers(line) {
+  let count = 0;
+  for (const ch of line) {
+    if (ch === '}' || ch === ')' || ch === ']') {
+      count++;
+      continue;
+    }
+    break;
+  }
+  return count;
+}
+function scanPowerShellLine(line) {
+  let out = '';
+  let mode = 'code';
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    const next = line[i + 1];
+    if (mode === 'comment') {
+      out += line.slice(i);
+      break;
+    }
+    if (mode === 'single') {
+      out += ch;
+      if (ch === "'" && next === "'") {
+        out += next;
+        i++;
+      } else if (ch === "'") {
+        mode = 'code';
+      }
+      continue;
+    }
+    if (mode === 'double') {
+      out += ch;
+      if (ch === '`' && i + 1 < line.length) {
+        out += line[i + 1];
+        i++;
+      } else if (ch === '"') {
+        mode = 'code';
+      }
+      continue;
+    }
+    if (ch === '#') {
+      mode = 'comment';
+      out += line.slice(i);
+      break;
+    }
+    if (ch === "'") {
+      mode = 'single';
+      out += ch;
+      continue;
+    }
+    if (ch === '"') {
+      mode = 'double';
+      out += ch;
+      continue;
+    }
+    out += ch;
+  }
+  return {
+    code: out.trim(),
+  };
+}
+function updateDelimiterStack(stack, line) {
+  const next = [...stack];
+  let mode = 'code';
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    const nextChar = line[i + 1];
+    if (mode === 'comment') {
+      break;
+    }
+    if (mode === 'single') {
+      if (ch === "'" && nextChar === "'") {
+        i++;
+      } else if (ch === "'") {
+        mode = 'code';
+      }
+      continue;
+    }
+    if (mode === 'double') {
+      if (ch === '`' && i + 1 < line.length) {
+        i++;
+      } else if (ch === '"') {
+        mode = 'code';
+      }
+      continue;
+    }
+    if (ch === '#') {
+      mode = 'comment';
+      continue;
+    }
+    if (ch === "'") {
+      mode = 'single';
+      continue;
+    }
+    if (ch === '"') {
+      mode = 'double';
+      continue;
+    }
+    if (ch === '{' || ch === '(' || ch === '[') {
+      next.push(ch);
+      continue;
+    }
+    if (ch === '}' || ch === ')' || ch === ']') {
+      const expected =
+        ch === '}'
+          ? '{'
+          : ch === ')'
+            ? '('
+            : '[';
+      const index = next.lastIndexOf(expected);
+      if (index >= 0) {
+        next.splice(index, 1);
+      }
+    }
+  }
+  return next;
+}
+function hasLineContinuation(line) {
+  const code = stripTrailingCommentForContinuation(line).trimEnd();
+  if (!code) {
+    return false;
+  }
+  if (/`$/.test(code)) {
+    return true;
+  }
+  if (/[|,]$/.test(code)) {
+    return true;
+  }
+  if (
+    /(?:=|\+|-|\*|\/|%|\.|\?|:|&&|\|\|)\s*$/.test(code)
+  ) {
+    return true;
+  }
+  return false;
+}
+function stripTrailingCommentForContinuation(line) {
+  let mode = 'code';
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    const next = line[i + 1];
+    if (mode === 'single') {
+      if (ch === "'" && next === "'") {
+        i++;
+      } else if (ch === "'") {
+        mode = 'code';
+      }
+      continue;
+    }
+    if (mode === 'double') {
+      if (ch === '`' && next) {
+        i++;
+      } else if (ch === '"') {
+        mode = 'code';
+      }
+      continue;
+    }
+    if (ch === "'") {
+      mode = 'single';
+      continue;
+    }
+    if (ch === '"') {
+      mode = 'double';
+      continue;
+    }
+    if (ch === '#') {
+      return line.slice(0, i);
+    }
+  }
+  return line;
+}
 }
