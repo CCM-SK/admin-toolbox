@@ -304,8 +304,8 @@ export function renderTimestamp(app) {
         <div class="row" id="ts-datestyle-row" hidden style="margin-top:8px">
           <label for="ts-datestyle" class="small" style="margin:0">Ambiguous local dates (e.g. 05/06/2026) mean:</label>
           <select id="ts-datestyle">
+            <option value="dmy">Day/Month/Year (Europe)</option>
             <option value="mdy">Month/Day/Year (US)</option>
-            <option value="dmy">Day/Month/Year (most of the world)</option>
           </select>
         </div>
         <div class="row" style="margin-top:10px">
