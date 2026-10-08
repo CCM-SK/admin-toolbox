@@ -88,7 +88,14 @@ export function renderAudit(app) {
       'identity-inspector',
       'header-analyzer',
       'json-yaml-xml-workbench',
-      'identity-metadata'
+      'identity-metadata',
+      'palo-alto-log-parser',
+      'timestamp-analyzer',
+      'url-encoding-decoding',
+      'url-parameter-inspector',
+      'cisco-acl-parser',
+      'citrix-adc-parser',
+      'timeline-visualizer'
     ],
     review: {
       auditScreen: true,
