@@ -5,7 +5,7 @@ import { renderHash } from './tools/hash.js';
 import { renderSubnet } from './tools/subnet.js';
 import { renderPasswords } from './tools/passwords.js';
 import { renderCerts } from './tools/certs.js';
-import { renderDiff } from './tools/diff.js';
+import { renderDiff } from './tools/diffRewrite.js';
 import { renderAudit } from './tools/audit.js';
 import { renderPowershell } from './tools/powershell.js';
 import { renderIdentity } from './tools/identity.js';
