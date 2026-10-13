@@ -14,17 +14,36 @@ export function renderSapLandscape(app) {
       </div>
       <section class="card">
         <h2>SAP GUI Landscape XML</h2>
-        <p class="small">Analyze SAP GUI landscape XML locally. Identify suspicious settings, incomplete connections, duplicate entries, insecure references and unusual connection configurations. External landscape includes are reported but never fetched. Findings are configuration indicators, not proof that a system is vulnerable.</p>
+        <p class="small">
+          Analyze SAP GUI landscape XML locally. Identify suspicious settings, incomplete connections, duplicate entries, insecure references and unusual connection configurations. External landscape includes are reported but never fetched. Findings are configuration indicators, not proof that a system is vulnerable.
+        </p>
         <div class="dropzone" id="sapLandscapeDrop">
-          Drop an XML or TXT file here or <button class="btn" type="button" id="sapLandscapePick">Select file</button>
-          <input hidden id="sapLandscapeFile" type="file" accept=".xml,.txt,application/xml,text/xml">
+          Drop an XML or TXT file here or
+          <button class="btn" type="button" id="sapLandscapePick">Select file</button>
+          <input
+            hidden
+            id="sapLandscapeFile"
+            type="file"
+            accept=".xml,.txt,application/xml,text/xml"
+          >
         </div>
         <label for="sapLandscapeInput">XML input</label>
-        <textarea id="sapLandscapeInput" rows="12" spellcheck="false" placeholder="Paste SAPUILandscape.xml or SAPUILandscapeGlobal.xml here..."></textarea>
+        <textarea
+          id="sapLandscapeInput"
+          rows="12"
+          spellcheck="false"
+          placeholder="Paste SAPUILandscape.xml or SAPUILandscapeGlobal.xml here..."
+        ></textarea>
         <div class="row">
-          <button class="btn primary" type="button" id="sapLandscapeAnalyze">Analyze XML</button>
-          <button class="btn" type="button" id="sapLandscapeExample">Load example</button>
-          <button class="btn" type="button" id="sapLandscapeClear">Clear</button>
+          <button class="btn primary" type="button" id="sapLandscapeAnalyze">
+            Analyze XML
+          </button>
+          <button class="btn" type="button" id="sapLandscapeExample">
+            Load example
+          </button>
+          <button class="btn" type="button" id="sapLandscapeClear">
+            Clear
+          </button>
         </div>
         <p class="small" id="sapLandscapeStatus" aria-live="polite"></p>
       </section>
@@ -32,8 +51,12 @@ export function renderSapLandscape(app) {
         <div class="row">
           <strong>Analysis results</strong>
           <span class="spacer"></span>
-          <button class="btn" type="button" id="sapLandscapeExportJson">Export JSON</button>
-          <button class="btn" type="button" id="sapLandscapeExportText">Download readable report (.txt)</button>
+          <button class="btn" type="button" id="sapLandscapeExportJson" hidden>
+            Export JSON
+          </button>
+          <button class="btn" type="button" id="sapLandscapeExportText" hidden>
+            Download readable report (.txt)
+          </button>
         </div>
         <div id="sapLandscapeResults"></div>
       </section>
@@ -46,20 +69,65 @@ export function renderSapLandscape(app) {
   );
   const input = $('#sapLandscapeInput');
   const fileInput = $('#sapLandscapeFile');
+  const dropZone = $('#sapLandscapeDrop');
+  const pickButton = $('#sapLandscapePick');
   const status = $('#sapLandscapeStatus');
   const results = $('#sapLandscapeResults');
-  const exports = $('#sapLandscapeExports');
+  const resultCard = $('#sapLandscapeResultCard');
+  const exportJsonButton = $('#sapLandscapeExportJson');
+  const exportTextButton = $('#sapLandscapeExportText');
   let lastReport = null;
+  pickButton.addEventListener('click', () => {
+    fileInput.click();
+  });
   fileInput.addEventListener('change', async event => {
     const file = event.target.files?.[0];
     if (!file) return;
+    await loadFile(file);
+  });
+  dropZone.addEventListener('dragover', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'copy';
+    }
+    dropZone.classList.add('dragover');
+  });
+  dropZone.addEventListener('dragleave', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!dropZone.contains(event.relatedTarget)) {
+      dropZone.classList.remove('dragover');
+    }
+  });
+  dropZone.addEventListener('drop', async event => {
+    event.preventDefault();
+    event.stopPropagation();
+    dropZone.classList.remove('dragover');
+    const file = event.dataTransfer?.files?.[0];
+    if (!file) {
+      showStatus('No file was dropped.', 'danger');
+      return;
+    }
+    if (!/\.(xml|txt)$/i.test(file.name)) {
+      showStatus('Please select an XML or TXT file.', 'danger');
+      return;
+    }
+    await loadFile(file);
+  });
+  async function loadFile(file) {
+    if (!/\.(xml|txt)$/i.test(file.name)) {
+      showStatus('Please select an XML or TXT file.', 'danger');
+      return;
+    }
     try {
       input.value = await file.text();
+      fileInput.value = '';
       analyze();
     } catch {
       showStatus('Unable to read the selected file.', 'danger');
     }
-  });
+  }
   $('#sapLandscapeAnalyze').addEventListener('click', analyze);
   $('#sapLandscapeExample').addEventListener('click', () => {
     input.value = createExample();
@@ -70,7 +138,9 @@ export function renderSapLandscape(app) {
     fileInput.value = '';
     status.innerHTML = '';
     results.innerHTML = '';
-    exports.hidden = true;
+    resultCard.hidden = true;
+    exportJsonButton.hidden = true;
+    exportTextButton.hidden = true;
     lastReport = null;
   });
   $('#sapLandscapeExportJson').addEventListener('click', () => {
@@ -92,6 +162,11 @@ export function renderSapLandscape(app) {
   function analyze() {
     const xmlText = input.value.trim();
     if (!xmlText) {
+      lastReport = null;
+      results.innerHTML = '';
+      resultCard.hidden = true;
+      exportJsonButton.hidden = true;
+      exportTextButton.hidden = true;
       showStatus('Select a file or paste XML first.', 'danger');
       return;
     }
@@ -111,7 +186,9 @@ export function renderSapLandscape(app) {
       }
       lastReport = analyzeDocument(documentNode);
       renderReport(lastReport);
-      exports.hidden = false;
+      resultCard.hidden = false;
+      exportJsonButton.hidden = false;
+      exportTextButton.hidden = false;
       const counts = countSeverities(lastReport.findings);
       showStatus(
         `Analysis complete: ${lastReport.summary.services} services, ` +
@@ -125,7 +202,9 @@ export function renderSapLandscape(app) {
     } catch (error) {
       lastReport = null;
       results.innerHTML = '';
-      exports.hidden = true;
+      resultCard.hidden = true;
+      exportJsonButton.hidden = true;
+      exportTextButton.hidden = true;
       showStatus(error.message || 'Unable to parse this XML.', 'danger');
     }
   }
@@ -493,7 +572,11 @@ export function renderSapLandscape(app) {
           );
         }
       }
-      if (attrs.sncop !== undefined && attrs.sncop.trim() !== '0' && !service.sncName) {
+      if (
+        attrs.sncop !== undefined &&
+        attrs.sncop.trim() !== '0' &&
+        !service.sncName
+      ) {
         addFinding(
           findings,
           'medium',
@@ -698,7 +781,10 @@ export function renderSapLandscape(app) {
         label
       );
     }
-    if (!/^\/H\//i.test(routerString) && !/^[a-z][a-z0-9+.-]*:\/\//i.test(routerString)) {
+    if (
+      !/^\/H\//i.test(routerString) &&
+      !/^[a-z][a-z0-9+.-]*:\/\//i.test(routerString)
+    ) {
       addFinding(
         findings,
         'low',
@@ -824,7 +910,9 @@ export function renderSapLandscape(app) {
   function checkRouterReferences(services, routers, findings) {
     if (routers.length === 0) return;
     const ids = new Set(
-      routers.filter(router => router.uuid).map(router => router.uuid.toLowerCase())
+      routers
+        .filter(router => router.uuid)
+        .map(router => router.uuid.toLowerCase())
     );
     for (const service of services) {
       if (!service.routerId) continue;
@@ -843,7 +931,9 @@ export function renderSapLandscape(app) {
   }
   function checkWorkspaceReferences(doc, services, findings) {
     const serviceIds = new Set(
-      services.filter(service => service.uuid).map(service => service.uuid.toLowerCase())
+      services
+        .filter(service => service.uuid)
+        .map(service => service.uuid.toLowerCase())
     );
     const references = [];
     for (const element of elements(doc, 'Item')) {
@@ -853,12 +943,19 @@ export function renderSapLandscape(app) {
         'service',
         'uuid'
       ]);
-      if (ref) references.push({ ref, name: attr(element, 'name') });
+      if (ref) {
+        references.push({
+          ref,
+          name: attr(element, 'name')
+        });
+      }
     }
     for (const reference of references) {
       if (
         /^[{(]?[0-9a-f-]{16,}[)}]?$/i.test(reference.ref) &&
-        !serviceIds.has(reference.ref.replace(/[{}()]/g, '').toLowerCase())
+        !serviceIds.has(
+          reference.ref.replace(/[{}()]/g, '').toLowerCase()
+        )
       ) {
         addFinding(
           findings,
@@ -881,7 +978,15 @@ export function renderSapLandscape(app) {
       value === '127.0.0.1' ||
       value.startsWith('127.');
   }
-  function addFinding(findings, severity, code, title, details, recommendation, target = '') {
+  function addFinding(
+    findings,
+    severity,
+    code,
+    title,
+    details,
+    recommendation,
+    target = ''
+  ) {
     findings.push({
       severity,
       code,
@@ -958,15 +1063,18 @@ export function renderSapLandscape(app) {
       `;
     }
     const sorted = [...findings].sort((a, b) => {
-      const order = { critical: 0, high: 1, medium: 2, low: 3 };
+      const order = {
+        critical: 0,
+        high: 1,
+        medium: 2,
+        low: 3
+      };
       return order[a.severity] - order[b.severity];
     });
     return `
       <h3>Findings (${findings.length})</h3>
       <div class="tool-toolbar">
-        <label for="sapLandscapeSeverity">
-          Filter severity
-        </label>
+        <label for="sapLandscapeSeverity">Filter severity</label>
         <select id="sapLandscapeSeverity">
           <option value="all">All findings</option>
           <option value="high">High priority</option>
