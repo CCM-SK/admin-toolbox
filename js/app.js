@@ -40,6 +40,7 @@ import { renderCookies } from './tools/cookies.js';
 import { renderRoute } from './tools/route.js';
 import { renderSddl } from './tools/sddl.js';
 import { renderTimeline } from './tools/timeline.js';
+import { renderSapLandscape } from './tools/saplandscape.js';
 
 const views = {
   dashboard: renderDashboard,
@@ -82,7 +83,8 @@ const views = {
   cookies: renderCookies,
   route: renderRoute,
   sddl: renderSddl,
-  timeline: renderTimeline
+  timeline: renderTimeline,
+  saplandscape: renderSapLandscape
 };
 
 const app = $('#app');
