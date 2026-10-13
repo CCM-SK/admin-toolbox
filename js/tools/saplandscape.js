@@ -8,61 +8,35 @@ export const metadata = {
 export function renderSapLandscape(app) {
   app.innerHTML = `
     <div class="tool-window" id="sapLandscapeWindow">
-    <div class="tool-window-header" id="sapLandscapeDragHandle" title="Drag tool">
+      <div class="tool-window-header" id="sapLandscapeDragHandle" title="Drag tool">
         <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
         <strong>SAP GUI Landscape Analyzer</strong>
-    </div>
-    <section class="card">
-        <p class="small">
-        Analyze SAP GUI landscape XML locally. Identify suspicious settings, incomplete connections, duplicate entries, insecure references and unusual connection configurations.
-        </p>
-        <div class="notice">
-        <strong>Local analysis only.</strong>
-        Files are not uploaded. External landscape includes are reported but never fetched. Findings are configuration indicators, not proof that a system is vulnerable.
+      </div>
+      <section class="card">
+        <h2>SAP GUI Landscape XML</h2>
+        <p class="small">Analyze SAP GUI landscape XML locally. Identify suspicious settings, incomplete connections, duplicate entries, insecure references and unusual connection configurations. External landscape includes are reported but never fetched. Findings are configuration indicators, not proof that a system is vulnerable.</p>
+        <div class="dropzone" id="sapLandscapeDrop">
+          Drop an XML or TXT file here or <button class="btn" type="button" id="sapLandscapePick">Select file</button>
+          <input hidden id="sapLandscapeFile" type="file" accept=".xml,.txt,application/xml,text/xml">
         </div>
-        <div class="tool-section">
-        <label for="sapLandscapeFile">
-            Select SAP landscape XML
-        </label>
-        <input
-            id="sapLandscapeFile"
-            type="file"
-            accept=".xml,.txt,application/xml,text/xml"
-        />
-        <div class="tool-toolbar">
-            <button class="btn primary" id="sapLandscapeAnalyze">
-            Analyze XML
-            </button>
-            <button class="btn" id="sapLandscapeExample">
-            Load example
-            </button>
-            <button class="btn" id="sapLandscapeClear">
-            Clear
-            </button>
+        <label for="sapLandscapeInput">XML input</label>
+        <textarea id="sapLandscapeInput" rows="12" spellcheck="false" placeholder="Paste SAPUILandscape.xml or SAPUILandscapeGlobal.xml here..."></textarea>
+        <div class="row">
+          <button class="btn primary" type="button" id="sapLandscapeAnalyze">Analyze XML</button>
+          <button class="btn" type="button" id="sapLandscapeExample">Load example</button>
+          <button class="btn" type="button" id="sapLandscapeClear">Clear</button>
         </div>
-        <label for="sapLandscapeInput">
-            XML input
-        </label>
-        <textarea
-            id="sapLandscapeInput"
-            rows="12"
-            spellcheck="false"
-            placeholder="Paste SAPUILandscape.xml or SAPUILandscapeGlobal.xml here..."
-        ></textarea>
+        <p class="small" id="sapLandscapeStatus" aria-live="polite"></p>
+      </section>
+      <section class="card" id="sapLandscapeResultCard" hidden>
+        <div class="row">
+          <strong>Analysis results</strong>
+          <span class="spacer"></span>
+          <button class="btn" type="button" id="sapLandscapeExportJson">Export JSON</button>
+          <button class="btn" type="button" id="sapLandscapeExportText">Download readable report (.txt)</button>
         </div>
-        <div id="sapLandscapeStatus" aria-live="polite"></div>
         <div id="sapLandscapeResults"></div>
-        <div id="sapLandscapeExports" hidden>
-        <div class="tool-toolbar">
-            <button class="btn" id="sapLandscapeExportJson">
-            Export JSON report
-            </button>
-            <button class="btn" id="sapLandscapeExportText">
-            Export text report
-            </button>
-        </div>
-        </div>
-    </section>
+      </section>
     </div>
   `;
   enableToolDragging(
