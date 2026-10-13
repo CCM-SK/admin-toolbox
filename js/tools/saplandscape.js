@@ -7,60 +7,62 @@ export const metadata = {
 };
 export function renderSapLandscape(app) {
   app.innerHTML = `
-    <div class="card tool-window" id="sapLandscapeWindow">
-      <div class="tool-window-header" id="sapLandscapeDragHandle" title="Drag tool">
+    <div class="tool-window" id="sapLandscapeWindow">
+    <div class="tool-window-header" id="sapLandscapeDragHandle" title="Drag tool">
         <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
         <strong>SAP GUI Landscape Analyzer</strong>
-      </div>
-      <p class="small">
+    </div>
+    <section class="card">
+        <p class="small">
         Analyze SAP GUI landscape XML locally. Identify suspicious settings, incomplete connections, duplicate entries, insecure references and unusual connection configurations.
-      </p>
-      <div class="notice">
+        </p>
+        <div class="notice">
         <strong>Local analysis only.</strong>
         Files are not uploaded. External landscape includes are reported but never fetched. Findings are configuration indicators, not proof that a system is vulnerable.
-      </div>
-      <div class="tool-section">
+        </div>
+        <div class="tool-section">
         <label for="sapLandscapeFile">
-          Select SAP landscape XML
+            Select SAP landscape XML
         </label>
         <input
-          id="sapLandscapeFile"
-          type="file"
-          accept=".xml,.txt,application/xml,text/xml"
+            id="sapLandscapeFile"
+            type="file"
+            accept=".xml,.txt,application/xml,text/xml"
         />
         <div class="tool-toolbar">
-          <button class="btn primary" id="sapLandscapeAnalyze">
+            <button class="btn primary" id="sapLandscapeAnalyze">
             Analyze XML
-          </button>
-          <button class="btn" id="sapLandscapeExample">
+            </button>
+            <button class="btn" id="sapLandscapeExample">
             Load example
-          </button>
-          <button class="btn" id="sapLandscapeClear">
+            </button>
+            <button class="btn" id="sapLandscapeClear">
             Clear
-          </button>
+            </button>
         </div>
         <label for="sapLandscapeInput">
-          XML input
+            XML input
         </label>
         <textarea
-          id="sapLandscapeInput"
-          rows="12"
-          spellcheck="false"
-          placeholder="Paste SAPUILandscape.xml or SAPUILandscapeGlobal.xml here..."
+            id="sapLandscapeInput"
+            rows="12"
+            spellcheck="false"
+            placeholder="Paste SAPUILandscape.xml or SAPUILandscapeGlobal.xml here..."
         ></textarea>
-      </div>
-      <div id="sapLandscapeStatus" aria-live="polite"></div>
-      <div id="sapLandscapeResults"></div>
-      <div id="sapLandscapeExports" hidden>
-        <div class="tool-toolbar">
-          <button class="btn" id="sapLandscapeExportJson">
-            Export JSON report
-          </button>
-          <button class="btn" id="sapLandscapeExportText">
-            Export text report
-          </button>
         </div>
-      </div>
+        <div id="sapLandscapeStatus" aria-live="polite"></div>
+        <div id="sapLandscapeResults"></div>
+        <div id="sapLandscapeExports" hidden>
+        <div class="tool-toolbar">
+            <button class="btn" id="sapLandscapeExportJson">
+            Export JSON report
+            </button>
+            <button class="btn" id="sapLandscapeExportText">
+            Export text report
+            </button>
+        </div>
+        </div>
+    </section>
     </div>
   `;
   enableToolDragging(
