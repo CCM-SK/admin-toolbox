@@ -1,12 +1,10 @@
 import { $, escapeHtml, downloadText, enableToolDragging } from '../utils.js';
-
 export const metadata = {
   id: 'dism',
   title: 'DISM Analyzer',
   description: 'Parse and interpret Windows DISM output locally',
   path: '/#dism'
 };
-
 export function renderDism(app) {
     app.innerHTML = `
     <div class="tool-window" id="dismWindow">
@@ -14,10 +12,8 @@ export function renderDism(app) {
         <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
         <strong>DISM Analyzer</strong>
         </div>
-
         <section class="card">
         <h2>DISM output analyzer</h2>
-
         <p class="small">
             Paste output from <code>DISM</code>, <code>DISM /Online</code>,
             <code>/Get-*</code>, <code>/ScanHealth</code>,
@@ -25,58 +21,44 @@ export function renderDism(app) {
             package/feature/capability queries or similar commands.
             Everything is parsed locally in your browser.
         </p>
-
         <textarea
             id="dismInput"
             spellcheck="false"
             placeholder="Paste DISM output here...
-
     Example:
-
     Deployment Image Servicing and Management tool
     Version: 10.0.26100.1
-
     Image Version: 10.0.26100.1742
-
     [==========================100.0%==========================]
-
     No component store corruption detected.
     The operation completed successfully."
         ></textarea>
-
         <div class="row" style="margin-top:10px">
             <button class="btn primary" id="dismAnalyze">Analyze</button>
             <button class="btn" id="dismClear">Clear</button>
             <button class="btn" id="dismExample">Load example</button>
         </div>
-
         <div id="dismInputInfo" class="small" style="margin-top:10px"></div>
         </section>
-
         <section class="card" id="dismResult" hidden></section>
     </div>
     `;
-
   $('#dismAnalyze').onclick = analyze;
   $('#dismClear').onclick = clear;
   $('#dismExample').onclick = loadExample;
-
   $('#dismInput').addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
       analyze();
     }
   });
-
     enableToolDragging(
     $('#dismWindow'),
     $('#dismDragHandle'),
     () => document.body.classList.contains('sidebar-detached')
     );
-
   function analyze() {
     const raw = $('#dismInput').value;
     const result = $('#dismResult');
-
     if (!raw.trim()) {
       result.hidden = false;
       result.innerHTML = `
@@ -86,13 +68,10 @@ export function renderDism(app) {
       `;
       return;
     }
-
     try {
       const analysis = analyzeDism(raw);
-
       result.hidden = false;
       result.innerHTML = renderResult(analysis);
-
       bindExports(analysis);
     } catch (error) {
       result.hidden = false;
@@ -103,23 +82,19 @@ export function renderDism(app) {
       `;
     }
   }
-
   function clear() {
     $('#dismInput').value = '';
     $('#dismInputInfo').textContent = '';
     $('#dismResult').hidden = true;
     $('#dismResult').innerHTML = '';
   }
-
   function loadExample() {
     $('#dismInput').value = EXAMPLE_DISM_OUTPUT;
     $('#dismInputInfo').textContent =
       'Example DISM output loaded locally.';
-
     analyze();
   }
 }
-
 function analyzeDism(raw) {
   const text = normalizeText(raw);
   const lines = text.split('\n');
@@ -234,7 +209,6 @@ function parseVersions(lines) {
   }
   return result;
 }
-
 function detectOperation(text) {
   const lower = text.toLowerCase();
   const checks = [
@@ -258,15 +232,12 @@ function detectOperation(text) {
     [/remove-capability/i, 'Remove-Capability'],
     [/cleanup-image/i, 'Cleanup-Image']
   ];
-
   const found = [];
   for (const [regex, name] of checks) {
     if (regex.test(lower)) found.push(name);
   }
-
   return found.length ? found : ['Unknown / not explicitly identifiable'];
 }
-
 function parseImageInformation(lines) {
   const result = {
     imageVersion: '',
@@ -292,13 +263,11 @@ function parseImageInformation(lines) {
     match = trimmed.match(/^(?:Language|Sprache)\s*:\s*(.+)$/i);
     if (match) result.language = match[1].trim();
   }
-
   if (result.imageVersion) {
     result.build = extractBuild(result.imageVersion);
   }
   return result;
 }
-
 function extractBuild(version) {
   const match = String(version).match(
     /^\d+\.\d+\.(\d+)(?:\.(\d+))?/
@@ -308,7 +277,6 @@ function extractBuild(version) {
     ? `${match[1]}.${match[2]}`
     : match[1];
 }
-
 function parseHealth(text) {
   const lower = text.toLowerCase();
   const health = {
@@ -360,7 +328,6 @@ function parseHealth(text) {
       health.evidence.push(pattern);
     }
   }
-
   return health;
 }
 function parseOperationResult(text) {
@@ -417,7 +384,6 @@ function detectRebootRequirement(text) {
     evidence: found.map(String)
   };
 }
-
 function parsePackages(lines) {
   const packages = [];
   let current = null;
@@ -528,7 +494,6 @@ function parseCapabilities(lines) {
   }
   return capabilities;
 }
-
 function parseDrivers(lines) {
   const drivers = [];
   for (let i = 0; i < lines.length; i++) {
@@ -603,7 +568,6 @@ function parseDrivers(lines) {
   }
   return dedupeBy(drivers, x => x.publishedName || JSON.stringify(x));
 }
-
 function parseCleanup(lines, text) {
   const lower = text.toLowerCase();
   const result = {
@@ -704,7 +668,6 @@ function parseComponentStore(lines, text) {
   }
   return result;
 }
-
 function parseErrors(lines) {
   const errors = [];
   for (let i = 0; i < lines.length; i++) {
@@ -734,7 +697,6 @@ function parseErrors(lines) {
       }
     }
   }
-
   return errors;
 }
 function extractErrorCode(text) {
@@ -743,7 +705,6 @@ function extractErrorCode(text) {
   );
   return match ? match[1].toUpperCase() : '';
 }
-
 function parseWarnings(lines) {
   const warnings = [];
   for (let i = 0; i < lines.length; i++) {
@@ -762,7 +723,6 @@ function parseWarnings(lines) {
   }
   return warnings;
 }
-
 function parseProgress(text) {
   const percentages = [];
   for (const match of text.matchAll(
@@ -793,10 +753,8 @@ function parseRepairSource(lines, text) {
     /source path\s*:\s*(.+)$/i,
     /quellpfad\s*:\s*(.+)$/i
   ];
-
   for (const regex of sourcePatterns) {
     const match = text.match(regex);
-
     if (match) {
       result.detected = true;
       result.explicit = true;
@@ -810,7 +768,6 @@ function parseRepairSource(lines, text) {
   ) {
     result.detected = true;
   }
-
   return result;
 }
 function detectCommands(lines) {
@@ -824,10 +781,8 @@ function detectCommands(lines) {
       commands.push(trimmed);
     }
   }
-
   return dedupeBy(commands, x => x);
 }
-
 function detectSections(lines) {
   const sections = [];
   let current = null;
@@ -854,7 +809,6 @@ function detectSections(lines) {
   }
   return sections;
 }
-
 function isHeading(line) {
   if (line.length > 100) return false;
   if (/^[=-]{3,}$/.test(line)) return false;
@@ -864,10 +818,8 @@ function isHeading(line) {
     )
   );
 }
-
 function buildObservations(data) {
   const observations = [];
-
   if (data.health.state === 'good') {
     observations.push({
       level: 'good',
@@ -875,7 +827,6 @@ function buildObservations(data) {
       text: 'The supplied output contains a positive health indication.'
     });
   }
-
   if (data.health.state === 'warn') {
     observations.push({
       level: 'warn',
@@ -883,7 +834,6 @@ function buildObservations(data) {
       text: 'DISM output indicates corruption or another condition for which repair may be possible.'
     });
   }
-
   if (data.health.state === 'bad') {
     observations.push({
       level: 'bad',
@@ -891,7 +841,6 @@ function buildObservations(data) {
       text: 'The supplied output contains an indication that the image/component store cannot be repaired normally.'
     });
   }
-
   if (data.result.state === 'good') {
     observations.push({
       level: 'good',
@@ -899,7 +848,6 @@ function buildObservations(data) {
       text: data.result.label
     });
   }
-
   if (data.result.state === 'bad') {
     observations.push({
       level: 'bad',
@@ -907,7 +855,6 @@ function buildObservations(data) {
       text: 'Inspect the error codes below before taking further action.'
     });
   }
-
   if (data.reboot.required) {
     observations.push({
       level: 'warn',
@@ -915,7 +862,6 @@ function buildObservations(data) {
       text: 'The output contains an indication of a pending operation or required restart.'
     });
   }
-
   for (const error of data.errors) {
     observations.push({
       level: 'bad',
@@ -925,7 +871,6 @@ function buildObservations(data) {
       text: error.text
     });
   }
-
   for (const warning of data.warnings) {
     observations.push({
       level: 'warn',
@@ -933,10 +878,8 @@ function buildObservations(data) {
       text: warning.text
     });
   }
-
   for (const pkg of data.packages) {
     const state = classifyPackageState(pkg.state);
-
     if (state === 'pending') {
       observations.push({
         level: 'warn',
@@ -944,7 +887,6 @@ function buildObservations(data) {
         text: pkg.identity
       });
     }
-
     if (state === 'superseded') {
       observations.push({
         level: 'warn',
@@ -955,7 +897,6 @@ function buildObservations(data) {
     if (state === 'installed') {
     }
   }
-
   for (const driver of data.drivers) {
     if (
       driver.signerName &&
@@ -968,7 +909,6 @@ function buildObservations(data) {
       });
     }
   }
-
   if (data.cleanup.recommended === 'Yes') {
     observations.push({
       level: 'warn',
@@ -976,7 +916,6 @@ function buildObservations(data) {
       text: 'The supplied output indicates that cleanup may be useful.'
     });
   }
-
   if (data.source.detected) {
     observations.push({
       level: 'neutral',
@@ -984,16 +923,13 @@ function buildObservations(data) {
       text: data.source.source || 'A /Source or equivalent repair source was referenced.'
     });
   }
-
   return observations;
 }
-
 function buildSummary(data) {
   let state = 'neutral';
   let title = 'DISM output parsed';
   let text =
     'The output was parsed locally. Review the sections below for image, health, package and error information.';
-
   if (data.errors.length > 0 || data.health.state === 'bad') {
     state = 'bad';
     title = 'DISM reported a problem';
@@ -1023,14 +959,12 @@ function buildSummary(data) {
     text =
       'DISM reported successful completion. No explicit component-store problem was detected in the supplied output.';
   }
-
   return {
     state,
     title,
     text
   };
 }
-
 function renderResult(a) {
   const summary = `
     <div class="status ${statusClass(a.summary.state)}">
@@ -1107,7 +1041,6 @@ function renderResult(a) {
       <pre class="mono" style="white-space:pre-wrap;max-height:500px;overflow:auto">${escapeHtml(a.raw)}</pre>
     </details>
   `;
-
   return `
     ${summary}
     ${exports}
@@ -1126,7 +1059,6 @@ function renderResult(a) {
     ${warnings}
     ${commands}
     ${raw}
-
     <details style="margin-top:14px">
       <summary>Parser notes</summary>
       <p class="small">
@@ -1135,7 +1067,6 @@ function renderResult(a) {
     </details>
   `;
 }
-
 function renderPackages(packages) {
   if (!packages.length) return '';
   return `
@@ -1164,7 +1095,6 @@ function renderPackages(packages) {
     </div>
   `;
 }
-
 function renderFeatures(features) {
   if (!features.length) return '';
   return `
@@ -1191,7 +1121,6 @@ function renderFeatures(features) {
 }
 function renderCapabilities(capabilities) {
   if (!capabilities.length) return '';
-
   return `
     <h3>Capabilities</h3>
     <div class="table-wrap">
@@ -1218,10 +1147,8 @@ function renderCapabilities(capabilities) {
     </div>
   `;
 }
-
 function renderDrivers(drivers) {
   if (!drivers.length) return '';
-
   return `
     <h3>Drivers</h3>
     <div class="table-wrap">
@@ -1250,10 +1177,8 @@ function renderDrivers(drivers) {
     </div>
   `;
 }
-
 function renderComponentStore(store) {
   if (!store.detected) return '';
-
   return `
     <h3>Component store</h3>
     <div class="grid">
@@ -1267,10 +1192,8 @@ function renderComponentStore(store) {
     </div>
   `;
 }
-
 function renderCleanup(cleanup) {
   if (!cleanup.detected) return '';
-
   return `
     <h3>Component cleanup</h3>
     <div class="grid">
@@ -1281,10 +1204,8 @@ function renderCleanup(cleanup) {
     </div>
   `;
 }
-
 function renderSource(source) {
   if (!source.detected) return '';
-
   return `
     <h3>Repair source</h3>
     <div class="status">
@@ -1304,7 +1225,6 @@ function renderErrors(errors) {
       </div>
     `;
   }
-
   return `
     <h3>Errors</h3>
     ${errors.map(error => `
@@ -1319,10 +1239,8 @@ function renderErrors(errors) {
     `).join('')}
   `;
 }
-
 function renderWarnings(warnings) {
   if (!warnings.length) return '';
-
   return `
     <h3>Warnings</h3>
     ${warnings.map(warning => `
@@ -1335,10 +1253,8 @@ function renderWarnings(warnings) {
     `).join('')}
   `;
 }
-
 function renderCommands(commands) {
   if (!commands.length) return '';
-
   return `
     <h3>Detected commands / switches</h3>
     <div class="table-wrap">
@@ -1359,7 +1275,6 @@ function renderCommands(commands) {
     </div>
   `;
 }
-
 function renderObservation(observation) {
   return `
     <div class="status ${statusClass(observation.level)}">
@@ -1374,23 +1289,18 @@ function renderObservation(observation) {
     </div>
   `;
 }
-
 function renderStateBadge(state, text) {
   if (state === 'installed' || state === 'good') {
     return `<span class="status success" style="display:inline-block;padding:3px 7px">${escapeHtml(text)}</span>`;
   }
-
   if (state === 'pending' || state === 'warn') {
     return `<span class="status warning" style="display:inline-block;padding:3px 7px">${escapeHtml(text)}</span>`;
   }
-
   if (state === 'bad') {
     return `<span class="status danger" style="display:inline-block;padding:3px 7px">${escapeHtml(text)}</span>`;
   }
-
   return escapeHtml(text);
 }
-
 function bindExports(a) {
   $('#dismExportJson').onclick = () => {
     downloadText(
@@ -1399,7 +1309,6 @@ function bindExports(a) {
       'application/json;charset=utf-8'
     );
   };
-
   $('#dismExportText').onclick = () => {
     downloadText(
       'dism-analysis.txt',
@@ -1408,7 +1317,6 @@ function bindExports(a) {
     );
   };
 }
-
 function sanitizeExport(a) {
   return {
     note:
@@ -1435,7 +1343,6 @@ function sanitizeExport(a) {
     counts: a.counts
   };
 }
-
 function buildTextExport(a) {
   const lines = [
     'DISM ANALYSIS',
@@ -1455,149 +1362,114 @@ function buildTextExport(a) {
     `Restart required: ${a.reboot.required ? 'Yes' : 'No'}`,
     ''
   ];
-
   if (a.errors.length) {
     lines.push('ERRORS');
     lines.push('------');
-
     for (const error of a.errors) {
       lines.push(
         `Line ${error.line}: ${error.code || 'ERROR'} — ${error.text}`
       );
     }
-
     lines.push('');
   }
-
   if (a.warnings.length) {
     lines.push('WARNINGS');
     lines.push('--------');
-
     for (const warning of a.warnings) {
       lines.push(
         `Line ${warning.line}: ${warning.text}`
       );
     }
-
     lines.push('');
   }
-
   if (a.observations.length) {
     lines.push('INTERPRETATION');
     lines.push('--------------');
-
     for (const observation of a.observations) {
       lines.push(
         `${observation.level.toUpperCase()}: ${observation.title} — ${observation.text}`
       );
     }
-
     lines.push('');
   }
-
   if (a.packages.length) {
     lines.push('PACKAGES');
     lines.push('--------');
-
     for (const pkg of a.packages) {
       lines.push(
         `${pkg.identity} | ${pkg.state || 'Unknown'}`
       );
     }
-
     lines.push('');
   }
-
   if (a.features.length) {
     lines.push('FEATURES');
     lines.push('--------');
-
     for (const feature of a.features) {
       lines.push(
         `${feature.name} | ${feature.state || 'Unknown'}`
       );
     }
-
     lines.push('');
   }
-
   if (a.drivers.length) {
     lines.push('DRIVERS');
     lines.push('-------');
-
     for (const driver of a.drivers) {
       lines.push(
         `${driver.publishedName || 'Unknown'} | ${driver.providerName || ''} | ${driver.version || ''}`
       );
     }
-
     lines.push('');
   }
-
   return lines.join('\n');
 }
-
 function classifyPackageState(state) {
   const value = String(state || '').toLowerCase();
-
   if (
     /installed|installiert|enabled|aktiviert/.test(value)
   ) {
     return 'installed';
   }
-
   if (
     /pending|ausstehend|staged|bereitgestellt|install pending/.test(value)
   ) {
     return 'pending';
   }
-
   if (
     /superseded|ersetzt|obsolete/.test(value)
   ) {
     return 'superseded';
   }
-
   if (
     /failed|error|fehler/.test(value)
   ) {
     return 'bad';
   }
-
   return 'unknown';
 }
-
 function assignIfMatch(object, key, text, regex) {
   const match = text.match(regex);
-
   if (match) {
     object[key] = match[1].trim();
     return true;
   }
-
   return false;
 }
-
 function containsAny(text, patterns) {
   return patterns.some(pattern => text.includes(pattern));
 }
-
 function dedupeBy(items, keyFn) {
   const seen = new Set();
   const result = [];
-
   for (const item of items) {
     const key = keyFn(item);
-
     if (seen.has(key)) continue;
-
     seen.add(key);
     result.push(item);
   }
-
   return result;
 }
-
 function stat(label, value) {
   return `
     <div class="stat">
@@ -1608,7 +1480,6 @@ function stat(label, value) {
     </div>
   `;
 }
-
 function healthStat(label, state, value) {
   return `
     <div class="stat">
@@ -1622,28 +1493,21 @@ function healthStat(label, state, value) {
     </div>
   `;
 }
-
 function statusClass(state) {
   if (state === 'good') return 'success';
   if (state === 'bad') return 'danger';
   if (state === 'warn') return 'warning';
   return '';
 }
-
 function statusIcon(state) {
   if (state === 'good') return '&#10003;';
   if (state === 'bad') return '&#10007;';
   if (state === 'warn') return '&#9888;';
   return '&#8212;';
 }
-
-
 const EXAMPLE_DISM_OUTPUT = `Deployment Image Servicing and Management tool
 Version: 10.0.26100.1
-
 Image Version: 10.0.26100.1742
-
 [==========================100.0%==========================]
-
 No component store corruption detected.
 The operation completed successfully.`;

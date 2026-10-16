@@ -1,8 +1,7 @@
 import { $, escapeHtml, downloadText, dropBinder, enableToolDragging } from '../utils.js';
-
 export const metadata = {
   id: 'citrixadc',
-  title: 'Citrix ADC Config Parser',
+  title: 'Citrix ADC Config Analyzer',
   description:
     'Turn a Citrix ADC / NetScaler VPX running configuration into a readable, cross-referenced report locally',
   path: '/#citrixadc'
@@ -386,7 +385,6 @@ const POS_LABELS = {
   destination: 'Destination'
 };
 // end of weird constants
-
 function tokenize(line) {
   const out = [];
   const n = line.length;
@@ -1840,7 +1838,6 @@ function toJson(model, findings, R) {
     unparsed: model.unparsed
   };
 }
-
 function buildCache(model, R) {
   const vservers = vserversVM(model, R);
   const catalogue = [...model.entities.values()]
@@ -1880,13 +1877,12 @@ function renderOther(cache) {
     [...groups].map(([label, items]) => `<h4>${h(label)} (${items.length})</h4>${renderCatalogueTable(items)}`).join('');
 }
 // End of weird functions
-
 export function renderCitrixAdc(app) {
   app.innerHTML = `
     <div class="tool-window" id="cxWindow">
       <div class="tool-window-header" id="cxDragHandle" title="Drag tool">
         <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
-        <strong>Citrix ADC config parser</strong>
+        <strong>Citrix ADC config analyzer</strong>
       </div>
       <section class="card">
         <h2>Citrix ADC / NetScaler VPX running configuration</h2>

@@ -140,7 +140,6 @@ export function renderJsonViewer(app) {
     if (!file) return;
     await handleFile(file);
   });
-
   async function handleFile(file) {
     if (!isJsonFile(file)) {
       showError('Please select a JSON file.');

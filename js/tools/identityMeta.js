@@ -1,5 +1,4 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
-
 const WELL_KNOWN_SIDS = new Map([
   [
     'S-1-0-0',
@@ -11,7 +10,6 @@ const WELL_KNOWN_SIDS = new Map([
         'A SID with no members. Commonly used when an identity is unknown or unavailable.'
     }
   ],
-
   [
     'S-1-1-0',
     {
@@ -22,7 +20,6 @@ const WELL_KNOWN_SIDS = new Map([
         'A group that includes all users.'
     }
   ],
-
   [
     'S-1-2-0',
     {
@@ -33,7 +30,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Users who log on through a locally connected terminal.'
     }
   ],
-
   [
     'S-1-2-1',
     {
@@ -44,7 +40,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Users logged on to the physical console.'
     }
   ],
-
   [
     'S-1-3-0',
     {
@@ -55,7 +50,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Placeholder SID used in inheritable ACEs and replaced with the SID of the object creator during inheritance.'
     }
   ],
-
   [
     'S-1-3-1',
     {
@@ -66,7 +60,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Placeholder SID replaced by the creator’s primary group SID when an inheritable ACE is applied.'
     }
   ],
-
   [
     'S-1-3-2',
     {
@@ -77,7 +70,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Creator/server-related placeholder SID.'
     }
   ],
-
   [
     'S-1-3-3',
     {
@@ -88,7 +80,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Creator/group-server placeholder SID.'
     }
   ],
-
   [
     'S-1-3-4',
     {
@@ -99,7 +90,6 @@ const WELL_KNOWN_SIDS = new Map([
         'SID used to identify the owner-rights trustee in security descriptors.'
     }
   ],
-
   [
     'S-1-5-1',
     {
@@ -110,7 +100,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group identity associated with users who log on using a dial-up connection.'
     }
   ],
-
   [
     'S-1-5-2',
     {
@@ -121,7 +110,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group identity added to a token for a network logon.'
     }
   ],
-
   [
     'S-1-5-3',
     {
@@ -132,7 +120,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group identity associated with batch logons, such as scheduled tasks.'
     }
   ],
-
   [
     'S-1-5-4',
     {
@@ -143,7 +130,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group identity associated with interactive logons.'
     }
   ],
-
   [
     'S-1-5-6',
     {
@@ -154,7 +140,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group identity associated with processes logged on as a service.'
     }
   ],
-
   [
     'S-1-5-7',
     {
@@ -165,7 +150,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Identity used for anonymous or null-session logons.'
     }
   ],
-
   [
     'S-1-5-8',
     {
@@ -176,7 +160,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Proxy identity. Modern Windows does not normally use this SID.'
     }
   ],
-
   [
     'S-1-5-9',
     {
@@ -187,7 +170,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group containing domain controllers in the forest.'
     }
   ],
-
   [
     'S-1-5-10',
     {
@@ -198,7 +180,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Placeholder used in ACLs for a user, group, or computer object. During access checks it represents the security principal associated with the object.'
     }
   ],
-
   [
     'S-1-5-11',
     {
@@ -209,7 +190,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group containing security principals that have been authenticated.'
     }
   ],
-
   [
     'S-1-5-12',
     {
@@ -220,7 +200,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Identity associated with a restricted security context.'
     }
   ],
-
   [
     'S-1-5-13',
     {
@@ -231,7 +210,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group identity associated with users signing in through Terminal Services / Remote Desktop Services.'
     }
   ],
-
   [
     'S-1-5-14',
     {
@@ -242,7 +220,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group identity associated with remote interactive logons such as Remote Desktop.'
     }
   ],
-
   [
     'S-1-5-15',
     {
@@ -253,7 +230,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group identity representing authenticated users from the same organization.'
     }
   ],
-
   [
     'S-1-5-17',
     {
@@ -264,7 +240,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in identity associated with the default IIS anonymous user.'
     }
   ],
-
   [
     'S-1-5-18',
     {
@@ -275,7 +250,6 @@ const WELL_KNOWN_SIDS = new Map([
         'LocalSystem identity used by Windows and services configured to run as LocalSystem.'
     }
   ],
-
   [
     'S-1-5-19',
     {
@@ -286,7 +260,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Low-privilege local service identity with limited local privileges.'
     }
   ],
-
   [
     'S-1-5-20',
     {
@@ -297,7 +270,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Service identity with limited local privileges that uses the computer identity for network authentication.'
     }
   ],
-
   [
     'S-1-5-113',
     {
@@ -308,7 +280,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Identity added to a token for a local account.'
     }
   ],
-
   [
     'S-1-5-114',
     {
@@ -319,7 +290,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Identity added to a token when a local account is also a member of the built-in Administrators group.'
     }
   ],
-
   [
     'S-1-5-32-544',
     {
@@ -330,7 +300,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in local administrators group.'
     }
   ],
-
   [
     'S-1-5-32-545',
     {
@@ -341,7 +310,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in local users group.'
     }
   ],
-
   [
     'S-1-5-32-546',
     {
@@ -352,7 +320,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in local guests group.'
     }
   ],
-
   [
     'S-1-5-32-547',
     {
@@ -363,7 +330,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group historically associated with elevated user capabilities.'
     }
   ],
-
   [
     'S-1-5-32-548',
     {
@@ -374,7 +340,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group for account-management operations.'
     }
   ],
-
   [
     'S-1-5-32-549',
     {
@@ -385,7 +350,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group for server-operating and administrative tasks.'
     }
   ],
-
   [
     'S-1-5-32-550',
     {
@@ -396,7 +360,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group for printer and print-queue administration.'
     }
   ],
-
   [
     'S-1-5-32-551',
     {
@@ -407,7 +370,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group associated with backup and restore privileges.'
     }
   ],
-
   [
     'S-1-5-32-552',
     {
@@ -418,7 +380,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group associated with legacy replication operations.'
     }
   ],
-
   [
     'S-1-5-32-554',
     {
@@ -429,7 +390,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Backward-compatibility group providing read access to specified users and groups.'
     }
   ],
-
   [
     'S-1-5-32-555',
     {
@@ -440,7 +400,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Members are granted the ability to sign in remotely through Remote Desktop Services.'
     }
   ],
-
   [
     'S-1-5-32-556',
     {
@@ -451,7 +410,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group associated with selected network-configuration privileges.'
     }
   ],
-
   [
     'S-1-5-32-557',
     {
@@ -462,7 +420,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group associated with creating incoming forest trusts.'
     }
   ],
-
   [
     'S-1-5-32-558',
     {
@@ -473,7 +430,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group associated with remote performance monitoring.'
     }
   ],
-
   [
     'S-1-5-32-559',
     {
@@ -484,7 +440,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group associated with scheduling and collecting performance logs.'
     }
   ],
-
   [
     'S-1-5-32-560',
     {
@@ -495,7 +450,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group with access to selected authorization information such as tokenGroupsGlobalAndUniversal.'
     }
   ],
-
   [
     'S-1-5-32-561',
     {
@@ -506,7 +460,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group for Terminal Server / Remote Desktop licensing servers.'
     }
   ],
-
   [
     'S-1-5-32-562',
     {
@@ -517,7 +470,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group used for selected Distributed COM access controls.'
     }
   ],
-
   [
     'S-1-5-32-568',
     {
@@ -528,7 +480,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in IIS worker-process user group.'
     }
   ],
-
   [
     'S-1-5-32-569',
     {
@@ -539,7 +490,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group associated with selected cryptographic operations.'
     }
   ],
-
   [
     'S-1-5-32-571',
     {
@@ -550,7 +500,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group whose members may have passwords replicated to read-only domain controllers.'
     }
   ],
-
   [
     'S-1-5-32-572',
     {
@@ -561,7 +510,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group whose members are denied password replication to read-only domain controllers.'
     }
   ],
-
   [
     'S-1-5-32-573',
     {
@@ -572,7 +520,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group whose members can read event logs.'
     }
   ],
-
   [
     'S-1-5-32-574',
     {
@@ -583,7 +530,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group whose members can connect to certification authorities using DCOM.'
     }
   ],
-
   [
     'S-1-5-32-575',
     {
@@ -594,7 +540,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group for servers providing Remote Desktop remote-access resources.'
     }
   ],
-
   [
     'S-1-5-32-576',
     {
@@ -605,7 +550,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group for servers hosting Remote Desktop sessions and virtual applications.'
     }
   ],
-
   [
     'S-1-5-32-577',
     {
@@ -616,7 +560,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group for servers performing routine Remote Desktop Services administration.'
     }
   ],
-
   [
     'S-1-5-32-578',
     {
@@ -627,7 +570,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group with extensive Hyper-V administrative privileges.'
     }
   ],
-
   [
     'S-1-5-32-579',
     {
@@ -638,7 +580,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group whose members can remotely query authorization attributes and resource permissions.'
     }
   ],
-
   [
     'S-1-5-32-580',
     {
@@ -649,7 +590,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group associated with selected Windows Remote Management and WMI access.'
     }
   ],
-
   [
     'S-1-5-32-581',
     {
@@ -660,7 +600,6 @@ const WELL_KNOWN_SIDS = new Map([
         'System-managed built-in group associated with the default system-managed account.'
     }
   ],
-
   [
     'S-1-5-32-582',
     {
@@ -671,7 +610,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group for Storage Replica administration.'
     }
   ],
-
   [
     'S-1-5-32-583',
     {
@@ -682,7 +620,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group associated with device-owner configuration rights.'
     }
   ],
-
   [
     'S-1-5-32-584',
     {
@@ -693,7 +630,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group associated with access to user-mode mapper drivers.'
     }
   ],
-
   [
     'S-1-5-32-585',
     {
@@ -704,7 +640,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group for users permitted to access the computer through OpenSSH.'
     }
   ],
-
   [
     'S-1-5-64-10',
     {
@@ -715,7 +650,6 @@ const WELL_KNOWN_SIDS = new Map([
         'SID used when NTLM authenticates the client.'
     }
   ],
-
   [
     'S-1-5-64-14',
     {
@@ -726,7 +660,6 @@ const WELL_KNOWN_SIDS = new Map([
         'SID used when the Schannel authentication package authenticates the client.'
     }
   ],
-
   [
     'S-1-5-64-21',
     {
@@ -737,7 +670,6 @@ const WELL_KNOWN_SIDS = new Map([
         'SID used when the Digest authentication package authenticates the client.'
     }
   ],
-
   [
     'S-1-5-65-1',
     {
@@ -748,7 +680,6 @@ const WELL_KNOWN_SIDS = new Map([
         'SID indicating a Kerberos service ticket PAC containing the relevant organization-certificate credential information.'
     }
   ],
-
   [
     'S-1-5-80',
     {
@@ -759,7 +690,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Prefix used to construct per-service SIDs.'
     }
   ],
-
   [
     'S-1-5-80-0',
     {
@@ -770,7 +700,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Group containing all service processes configured on the system. Membership is controlled by Windows.'
     }
   ],
-
   [
     'S-1-5-83-0',
     {
@@ -781,7 +710,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Built-in group created when the Hyper-V role is installed.'
     }
   ],
-
   [
     'S-1-15-2-1',
     {
@@ -792,7 +720,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Security principal representing all applications running in an app-package context.'
     }
   ],
-
   [
     'S-1-18-1',
     {
@@ -803,7 +730,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Identity asserted by an authentication authority based on proof of possession of client credentials.'
     }
   ],
-
   [
     'S-1-18-2',
     {
@@ -814,7 +740,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Identity asserted by a service.'
     }
   ],
-
   [
     'S-1-18-3',
     {
@@ -825,7 +750,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Identity based on proof of current possession of client public-key credentials.'
     }
   ],
-
   [
     'S-1-18-4',
     {
@@ -836,7 +760,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Identity based on proof of possession of public-key credentials through the key-trust mechanism.'
     }
   ],
-
   [
     'S-1-18-5',
     {
@@ -847,7 +770,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Identity indicating that the key-trust object has the multifactor-authentication property.'
     }
   ],
-
   [
     'S-1-18-6',
     {
@@ -858,7 +780,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Identity indicating that the key-trust object has the attestation property.'
     }
   ],
-
   [
     'S-1-16-0',
     {
@@ -869,7 +790,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Untrusted mandatory integrity level.'
     }
   ],
-
   [
     'S-1-16-4096',
     {
@@ -880,7 +800,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Low mandatory integrity level.'
     }
   ],
-
   [
     'S-1-16-8192',
     {
@@ -891,7 +810,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Medium mandatory integrity level.'
     }
   ],
-
   [
     'S-1-16-8448',
     {
@@ -902,7 +820,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Medium-plus mandatory integrity level.'
     }
   ],
-
   [
     'S-1-16-12288',
     {
@@ -913,7 +830,6 @@ const WELL_KNOWN_SIDS = new Map([
         'High mandatory integrity level.'
     }
   ],
-
   [
     'S-1-16-16384',
     {
@@ -924,7 +840,6 @@ const WELL_KNOWN_SIDS = new Map([
         'System mandatory integrity level.'
     }
   ],
-
   [
     'S-1-16-20480',
     {
@@ -935,7 +850,6 @@ const WELL_KNOWN_SIDS = new Map([
         'Protected-process mandatory integrity level.'
     }
   ],
-
   [
     'S-1-16-28672',
     {
@@ -947,7 +861,6 @@ const WELL_KNOWN_SIDS = new Map([
     }
   ]
 ]);
-
 const DOMAIN_RIDS = new Map([
   [
     500,
@@ -958,7 +871,6 @@ const DOMAIN_RIDS = new Map([
         'Built-in administrative account for a domain or local machine namespace.'
     }
   ],
-
   [
     501,
     {
@@ -968,7 +880,6 @@ const DOMAIN_RIDS = new Map([
         'Built-in guest account.'
     }
   ],
-
   [
     502,
     {
@@ -978,7 +889,6 @@ const DOMAIN_RIDS = new Map([
         'Key Distribution Center service account used by Active Directory domain controllers.'
     }
   ],
-
   [
     512,
     {
@@ -988,7 +898,6 @@ const DOMAIN_RIDS = new Map([
         'Global group whose members are authorized to administer the domain.'
     }
   ],
-
   [
     513,
     {
@@ -998,7 +907,6 @@ const DOMAIN_RIDS = new Map([
         'Global group containing user accounts in the domain.'
     }
   ],
-
   [
     514,
     {
@@ -1008,7 +916,6 @@ const DOMAIN_RIDS = new Map([
         'Global group associated with domain guest accounts.'
     }
   ],
-
   [
     515,
     {
@@ -1018,7 +925,6 @@ const DOMAIN_RIDS = new Map([
         'Global group containing computers joined to the domain, excluding domain controllers.'
     }
   ],
-
   [
     516,
     {
@@ -1028,7 +934,6 @@ const DOMAIN_RIDS = new Map([
         'Global group containing domain controllers in the domain.'
     }
   ],
-
   [
     517,
     {
@@ -1038,7 +943,6 @@ const DOMAIN_RIDS = new Map([
         'Group containing computers that host an enterprise certification authority.'
     }
   ],
-
   [
     518,
     {
@@ -1048,7 +952,6 @@ const DOMAIN_RIDS = new Map([
         'Group authorized to make Active Directory schema changes.'
     }
   ],
-
   [
     519,
     {
@@ -1058,7 +961,6 @@ const DOMAIN_RIDS = new Map([
         'Forest-level administrative group.'
     }
   ],
-
   [
     520,
     {
@@ -1068,7 +970,6 @@ const DOMAIN_RIDS = new Map([
         'Group authorized to create Group Policy Objects in Active Directory.'
     }
   ],
-
   [
     521,
     {
@@ -1078,7 +979,6 @@ const DOMAIN_RIDS = new Map([
         'Group containing read-only domain controllers.'
     }
   ],
-
   [
     522,
     {
@@ -1088,7 +988,6 @@ const DOMAIN_RIDS = new Map([
         'Group containing domain controllers that are eligible for cloning.'
     }
   ],
-
   [
     525,
     {
@@ -1098,7 +997,6 @@ const DOMAIN_RIDS = new Map([
         'Group whose members receive additional authentication protections.'
     }
   ],
-
   [
     526,
     {
@@ -1108,7 +1006,6 @@ const DOMAIN_RIDS = new Map([
         'Group intended for trusted administrators responsible for modifying key-related attributes.'
     }
   ],
-
   [
     527,
     {
@@ -1117,9 +1014,7 @@ const DOMAIN_RIDS = new Map([
       description:
         'Forest-level key-administration group.'
     },
-
   ],
-
   [
     553,
     {
@@ -1130,7 +1025,6 @@ const DOMAIN_RIDS = new Map([
     }
   ]
 ]);
-
 const BUILTIN_RIDS = new Map([
   [544, 'Administrators'],
   [545, 'Users'],
@@ -1168,7 +1062,6 @@ const BUILTIN_RIDS = new Map([
   [584, 'User Mode Hardware Operators'],
   [585, 'OpenSSH Users']
 ]);
-
 const SID_PATTERNS = [
   {
     id: 'logon-session',
@@ -1177,7 +1070,6 @@ const SID_PATTERNS = [
       subs.length === 3 &&
       subs[0] === 5 &&
       subs[1] === 5,
-
     resolve: subs => ({
       resolutionType: 'pattern',
       name: 'LOGON SESSION',
@@ -1190,18 +1082,15 @@ const SID_PATTERNS = [
       }
     })
   },
-
   {
     id: 'domain-sid',
     category: 'Domain SID',
     match: subs =>
       subs.length === 5 &&
       subs[0] === 21,
-
     resolve: subs => {
       const rid = subs[4];
       const entry = DOMAIN_RIDS.get(rid);
-
       if (entry) {
         return {
           resolutionType: 'contextual',
@@ -1217,7 +1106,6 @@ const SID_PATTERNS = [
           }
         };
       }
-
       return {
         resolutionType: 'pattern',
         name: null,
@@ -1232,18 +1120,15 @@ const SID_PATTERNS = [
       };
     }
   },
-
   {
     id: 'builtin-domain',
     category: 'BUILTIN group',
     match: subs =>
       subs.length === 2 &&
       subs[0] === 32,
-
     resolve: subs => {
       const rid = subs[1];
       const name = BUILTIN_RIDS.get(rid);
-
       if (!name) {
         return {
           resolutionType: 'pattern',
@@ -1257,7 +1142,6 @@ const SID_PATTERNS = [
           }
         };
       }
-
       return {
         resolutionType: 'contextual',
         name: `BUILTIN\\${name}`,
@@ -1271,17 +1155,14 @@ const SID_PATTERNS = [
       };
     }
   },
-
   {
     id: 'nt-service-account',
     category: 'Service SID',
     match: subs =>
       subs.length >= 2 &&
       subs[0] === 80,
-
     resolve: subs => {
       const serviceParts = subs.slice(1);
-
       return {
         resolutionType: 'pattern',
         name: null,
@@ -1295,14 +1176,12 @@ const SID_PATTERNS = [
       };
     }
   },
-
   {
     id: 'hyperv-virtual-machine',
     category: 'Hyper-V',
     match: subs =>
       subs.length >= 2 &&
       subs[0] === 83,
-
     resolve: subs => ({
       resolutionType: 'pattern',
       name: null,
@@ -1315,7 +1194,6 @@ const SID_PATTERNS = [
       }
     })
   },
-
   {
     id: 'capability',
     category: 'Capability',
@@ -1323,7 +1201,6 @@ const SID_PATTERNS = [
       subs.length >= 2 &&
       subs[0] === 15 &&
       subs[1] === 3,
-
     resolve: subs => ({
       resolutionType: 'pattern',
       name: null,
@@ -1336,7 +1213,6 @@ const SID_PATTERNS = [
       }
     })
   },
-
   {
     id: 'application-package-authority',
     category: 'Application package',
@@ -1344,7 +1220,6 @@ const SID_PATTERNS = [
       subs.length >= 2 &&
       subs[0] === 15 &&
       subs[1] === 2,
-
     resolve: subs => ({
       resolutionType: 'pattern',
       name:
@@ -1360,25 +1235,21 @@ const SID_PATTERNS = [
       }
     })
   },
-
   {
     id: 'integrity-level',
     category: 'Integrity level',
     match: subs =>
       subs.length === 2 &&
       subs[0] === 16,
-
     resolve: subs => {
       const sid = `S-1-16-${subs[1]}`;
       const exact = WELL_KNOWN_SIDS.get(sid);
-
       if (exact) {
         return {
           resolutionType: 'exact',
           ...exact
         };
       }
-
       return {
         resolutionType: 'pattern',
         name: null,
@@ -1392,14 +1263,12 @@ const SID_PATTERNS = [
       };
     }
   },
-
   {
     id: 'restricted-services',
     category: 'Restricted services',
     match: subs =>
       subs.length >= 1 &&
       subs[0] === 99,
-
     resolve: subs => ({
       resolutionType: 'pattern',
       name: 'Restricted Services',
@@ -1412,25 +1281,21 @@ const SID_PATTERNS = [
       }
     })
   },
-
   {
     id: 'authentication-authority',
     category: 'Authentication authority',
     match: subs =>
       subs.length >= 2 &&
       subs[0] === 18,
-
     resolve: subs => {
       const sid = `S-1-18-${subs.slice(1).join('-')}`;
       const exact = WELL_KNOWN_SIDS.get(sid);
-
       if (exact) {
         return {
           resolutionType: 'exact',
           ...exact
         };
       }
-
       return {
         resolutionType: 'pattern',
         name: null,
@@ -1444,13 +1309,11 @@ const SID_PATTERNS = [
       };
     }
   },
-
   {
     id: 'nt-authority-prefix',
     category: 'NT AUTHORITY',
     match: subs =>
       subs.length === 0,
-
     resolve: () => ({
       resolutionType: 'pattern',
       name: 'NT AUTHORITY',
@@ -1461,7 +1324,6 @@ const SID_PATTERNS = [
     })
   }
 ];
-
 export function renderIdentityMeta(app) {
   app.innerHTML = `
     <section class="card">
@@ -1470,7 +1332,6 @@ export function renderIdentityMeta(app) {
         Recognizes Windows SIDs, GUIDs, UUID byte strings, and common GUID representations.
         Processing is entirely local.
       </p>
-
       <label for="identityInput">Value</label>
       <textarea
         id="identityInput"
@@ -1483,69 +1344,55 @@ S-1-5-32-544
 550e8400-e29b-41d4-a716-446655440000
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
       ></textarea>
-
       <div class="row" style="margin-top:10px">
         <button class="btn primary" id="identityDecode">Decode</button>
         <button class="btn" id="identityClear">Clear</button>
         <button class="btn" id="identityExport">Export result</button>
       </div>
     </section>
-
     <section class="card" id="identityResult" hidden></section>
   `;
-
   let last = null;
-
   $('#identityDecode').onclick = () => {
     last = decode($('#identityInput').value.trim());
     render(last);
   };
-
   $('#identityClear').onclick = () => {
     $('#identityInput').value = '';
     $('#identityResult').hidden = true;
     last = null;
     $('#identityInput').focus();
   };
-
   $('#identityExport').onclick = () => {
     if (!last) {
       last = decode($('#identityInput').value.trim());
     }
-
     downloadText(
       'identity-decoder.json',
       JSON.stringify(last, null, 2),
       'application/json;charset=utf-8'
     );
   };
-
   function decode(v) {
     const out = {
       input: v,
       matches: []
     };
-
     if (!v) {
       return out;
     }
-
     const sid = parseSid(v);
     if (sid) {
       out.matches.push(sid);
     }
-
     const guid = parseGuid(v);
     if (guid) {
       out.matches.push(guid);
     }
-
     const bytes = parseBytes(v);
-
     if (bytes && bytes.length === 16) {
       const standard = bytesToGuid(bytes, false);
       const mixed = bytesToGuid(bytes, true);
-
       out.matches.push({
         type: 'GUID byte string',
         standardGuid: standard,
@@ -1555,35 +1402,27 @@ S-1-5-32-544
           .join(' ')
       });
     }
-
     if (!out.matches.length) {
       out.error = 'No recognized SID/GUID representation.';
     }
-
     return out;
   }
-
   function parseSid(v) {
   const input = v.trim();
   const m = input.match(
     /^S-(\d+)-(\d+|0x[0-9a-fA-F]+)((?:-\d+)+)$/i
   );
-
   if (!m) {
     return null;
   }
-
   const revision = Number(m[1]);
-
   if (
     !Number.isSafeInteger(revision) ||
     revision < 0
   ) {
     return null;
   }
-
   let authority;
-
   try {
     authority = BigInt(
       m[2].toLowerCase().startsWith('0x')
@@ -1593,30 +1432,24 @@ S-1-5-32-544
   } catch {
     return null;
   }
-
   const MAX_AUTHORITY = (1n << 48n) - 1n;
-
   if (
     authority < 0n ||
     authority > MAX_AUTHORITY
   ) {
     return null;
   }
-
   const subs = m[3]
     .slice(1)
     .split('-')
     .map(Number);
-
   if (
     subs.length < 1 ||
     subs.length > 8
   ) {
     return null;
   }
-
   const MAX_SUBAUTHORITY = 0xffffffff;
-
   if (
     subs.some(
       x =>
@@ -1627,185 +1460,123 @@ S-1-5-32-544
   ) {
     return null;
   }
-
   const canonicalSid =
     `S-${revision}-${authority.toString()}-${subs.join('-')}`;
-
   const exact = WELL_KNOWN_SIDS.get(canonicalSid);
-
   if (exact) {
     return {
       type: 'Windows SID',
-
       sid: canonicalSid,
-
       revision,
-
       identifierAuthority:
         authority.toString(),
-
       subAuthorities: subs,
-
       relativeId: subs.at(-1),
-
       resolutionType: 'exact',
-
       name: exact.name,
-
       category: exact.category,
-
       scope: exact.scope,
-
       description: exact.description,
-
       wellKnownMeaning: exact.name,
-
       displayName: exact.name,
-
       resolutionSource:
         'local-static-sid-map',
-
       isWellKnown: true,
-
       isContextual: false,
-
       isPattern: false,
-
       domainIdentifier:
         isDomainSid(subs)
           ? subs.slice(1, -1)
           : []
     };
   }
-
   for (const pattern of SID_PATTERNS) {
     if (!pattern.match(subs)) {
       continue;
     }
-
     const resolved =
       pattern.resolve(subs);
-
     if (!resolved) {
       continue;
     }
-
     return {
       type: 'Windows SID',
-
       sid: canonicalSid,
-
       revision,
-
       identifierAuthority:
         authority.toString(),
-
       subAuthorities: subs,
-
       relativeId: subs.at(-1),
-
       ...resolved,
-
       wellKnownMeaning:
         resolved.resolutionType === 'exact'
           ? resolved.name
           : null,
-
       displayName:
         resolved.name || null,
-
       resolutionSource:
         resolved.resolutionType === 'contextual'
           ? 'local-contextual-rid-map'
           : 'local-sid-pattern',
-
       isWellKnown:
         resolved.resolutionType === 'exact',
-
       isContextual:
         resolved.resolutionType === 'contextual',
-
       isPattern:
         resolved.resolutionType === 'pattern',
-
       domainIdentifier:
         isDomainSid(subs)
           ? subs.slice(1, -1)
           : []
     };
   }
-
   return {
     type: 'Windows SID',
-
     sid: canonicalSid,
-
     revision,
-
     identifierAuthority:
       authority.toString(),
-
     subAuthorities: subs,
-
     relativeId: subs.at(-1),
-
     resolutionType: 'unknown',
-
     name: null,
-
     category: 'Unknown',
-
     scope: 'Unknown',
-
     description:
       'Valid SID structure, but no matching local knowledge-base entry or pattern was found.',
-
     wellKnownMeaning: null,
-
     displayName: null,
-
     resolutionSource: null,
-
     isWellKnown: false,
-
     isContextual: false,
-
     isPattern: false,
-
     domainIdentifier:
       isDomainSid(subs)
         ? subs.slice(1, -1)
         : []
   };
 }
-
 function isDomainSid(subs) {
   return (
     subs.length === 5 &&
     subs[0] === 21
   );
 }
-
 function sidSummary(sidResult) {
   if (!sidResult) {
     return null;
   }
-
   if (sidResult.name) {
     return sidResult.name;
   }
-
   if (sidResult.resolutionType === 'pattern') {
     return `${sidResult.category}: pattern recognized`;
   }
-
   if (sidResult.resolutionType === 'unknown') {
     return 'Unknown Windows SID';
   }
-
   return null;
 }
-
   function classifySidContext(
     revision,
     authority,
@@ -1817,24 +1588,20 @@ function sidSummary(sidResult) {
     }
     if (subs.length === 2 && subs[0] === 32) {
       const meaning = BUILTIN_RIDS.get(rid);
-
       if (!meaning) {
         return null;
       }
-
       return {
         context: 'BUILTIN local group',
         meaning,
         displayName: `BUILTIN\\${meaning}`
       };
     }
-
     if (
       subs.length === 5 &&
       subs[0] === 21
     ) {
       const meaning = DOMAIN_RIDS.get(rid);
-
       if (!meaning) {
         return {
           context: 'Domain SID',
@@ -1842,27 +1609,22 @@ function sidSummary(sidResult) {
           displayName: null
         };
       }
-
       return {
         context: 'Domain account/group',
         meaning,
         displayName: `DOMAIN\\${meaning}`
       };
     }
-
     return null;
   }
-
   function isDomainSid(subs) {
     return (
       subs.length >= 5 &&
       subs[0] === 21
     );
   }
-
   function parseGuid(v) {
     const s = v.trim().replace(/[{}]/g, '');
-
     if (
       !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
         s
@@ -1870,15 +1632,12 @@ function sidSummary(sidResult) {
     ) {
       return null;
     }
-
     const hex = s
       .replaceAll('-', '')
       .toLowerCase();
-
     const bytes = hex
       .match(/../g)
       .map(x => parseInt(x, 16));
-
     return {
       type: 'GUID / UUID',
       canonical: s.toLowerCase(),
@@ -1892,43 +1651,34 @@ function sidSummary(sidResult) {
         .join(' ')
     };
   }
-
   function parseBytes(v) {
     const compact = v
       .replace(/0x/gi, '')
       .replace(/[\s,;:-]/g, '');
-
     if (
       !/^[0-9a-fA-F]+$/.test(compact) ||
       compact.length % 2
     ) {
       return null;
     }
-
     const out = new Uint8Array(compact.length / 2);
-
     for (let i = 0; i < out.length; i++) {
       out[i] = parseInt(
         compact.slice(i * 2, i * 2 + 2),
         16
       );
     }
-
     return out;
   }
-
   function bytesToGuid(b, little) {
     const x = little
       ? toMixedEndian([...b])
       : [...b];
-
     const h = x
       .map(z => z.toString(16).padStart(2, '0'))
       .join('');
-
     return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
   }
-
   function toMixedEndian(b) {
     return [
       b[3],
@@ -1942,11 +1692,9 @@ function sidSummary(sidResult) {
       ...b.slice(8)
     ];
   }
-
   function render(r) {
     const el = $('#identityResult');
     el.hidden = false;
-
     if (r.error) {
       el.innerHTML = `
         <p class="status warn">
@@ -1955,7 +1703,6 @@ function sidSummary(sidResult) {
       `;
       return;
     }
-
     el.innerHTML = r.matches
       .map(
         m => `

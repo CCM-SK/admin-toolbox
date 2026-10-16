@@ -1,5 +1,4 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
-
 export function renderRegex(app) {
 app.innerHTML = `
   <section class="card">
@@ -8,7 +7,6 @@ app.innerHTML = `
       JavaScript regular expressions only. Patterns and test text remain in your browser.
       Nothing is executed outside the JavaScript RegExp engine.
     </p>
-
     <div class="grid-2">
       <div>
         <label for="rxPattern">Pattern</label>
@@ -18,7 +16,6 @@ app.innerHTML = `
           value="(\\b[A-Z][a-z]+\\b)"
         >
       </div>
-
       <div>
         <label for="rxFlags">Flags</label>
         <input
@@ -29,29 +26,22 @@ app.innerHTML = `
         >
       </div>
     </div>
-
     <label for="rxText" class="rx-text-label">Test text</label>
-
     <textarea
       id="rxText"
       class="mono rx-text"
       placeholder="Enter text to test"
     ></textarea>
-
     <div class="row rx-actions">
       <button class="btn primary" id="rxRun">Run</button>
       <button class="btn" id="rxClear">Clear</button>
       <button class="btn" id="rxExport">Export results</button>
     </div>
   </section>
-
   <section class="card" id="rxResult" hidden></section>
 `;
-
   let last = null;
-
   $('#rxRun').onclick = run;
-
   $('#rxText').oninput = () => {
     if (
       $('#rxPattern').value &&
@@ -60,10 +50,8 @@ app.innerHTML = `
       run();
     }
   };
-
   $('#rxPattern').oninput = run;
   $('#rxFlags').oninput = run;
-
   $('#rxClear').onclick = () => {
     $('#rxPattern').value = '';
     $('#rxFlags').value = 'g';
@@ -71,23 +59,19 @@ app.innerHTML = `
     $('#rxResult').hidden = true;
     last = null;
   };
-
   $('#rxExport').onclick = () => {
     if (!last) run();
-
     downloadText(
       'regex-results.json',
       JSON.stringify(last, null, 2),
       'application/json;charset=utf-8'
     );
   };
-
   function run() {
     const pattern = $('#rxPattern').value;
     const flags = $('#rxFlags').value;
     const text = $('#rxText').value;
     const out = $('#rxResult');
-
     if (!pattern) {
       out.hidden = false;
       out.innerHTML =
@@ -95,9 +79,7 @@ app.innerHTML = `
       last = null;
       return;
     }
-
     let re;
-
     try {
       re = new RegExp(pattern, flags);
     } catch (e) {
@@ -110,37 +92,29 @@ app.innerHTML = `
       last = null;
       return;
     }
-
     const matches = [];
-
     if (re.global || re.sticky) {
       let m;
       let guard = 0;
-
       while ((m = re.exec(text)) !== null && guard++ < 10000) {
         matches.push(toMatch(m));
-
         if (m[0] === '') {
           re.lastIndex++;
         }
       }
     } else {
       const m = re.exec(text);
-
       if (m) {
         matches.push(toMatch(m));
       }
     }
-
     const replacementInput = $('#rxReplacement');
     const replacement = replacementInput
       ? replacementInput.value
       : '';
-
     const replaced = replacement
       ? text.replace(re, replacement)
       : null;
-
     last = {
       pattern,
       flags,
@@ -149,33 +123,26 @@ app.innerHTML = `
       replacement,
       replaced
     };
-
     out.hidden = false;
-
     const highlighted = highlight(text, matches);
-
     out.innerHTML = `
       <div class="grid">
         <div class="stat">
           <span>Matches</span>
           <strong>${matches.length}</strong>
         </div>
-
         <div class="stat">
           <span>Pattern</span>
           <strong>
             <code>${escapeHtml('/' + pattern + '/' + flags)}</code>
           </strong>
         </div>
-
         <div class="stat">
           <span>Test length</span>
           <strong>${text.length}</strong>
         </div>
       </div>
-
       <h3>Matches</h3>
-
       ${
         matches.length
           ? `
@@ -189,7 +156,6 @@ app.innerHTML = `
                     <th>Groups</th>
                   </tr>
                 </thead>
-
                 <tbody>
                   ${matches
                     .map(
@@ -215,27 +181,20 @@ app.innerHTML = `
           `
           : '<p class="status ok">No matches.</p>'
       }
-
       <h3>Highlighted text</h3>
-
       <pre class="mono" style="white-space:pre-wrap">${highlighted}</pre>
-
       <h3>Replace</h3>
-
       <label for="rxReplacement">Replacement pattern</label>
-
       <input
         id="rxReplacement"
         class="mono"
         value="${escapeAttr(replacement)}"
         placeholder="e.g. [$&amp;] or $1"
       >
-
       <div class="small">
         Uses JavaScript replacement syntax such as
         <code>$&amp;</code>, <code>$1</code>, and <code>$$</code>.
       </div>
-
       ${
         replacement
           ? `
@@ -247,10 +206,8 @@ app.innerHTML = `
           : ''
       }
     `;
-
     $('#rxReplacement').oninput = () => run();
   }
-
   function toMatch(m) {
     return {
       value: m[0],
@@ -259,36 +216,28 @@ app.innerHTML = `
       namedGroups: m.groups || null
     };
   }
-
   function escapeAttr(v) {
     return escapeHtml(v)
       .replace(/\n/g, '&#10;')
       .replace(/\r/g, '&#13;');
   }
-
   function highlight(text, matches) {
     if (!matches.length) {
       return escapeHtml(text);
     }
-
     let out = '';
     let last = 0;
-
     for (const m of matches) {
       const start = m.index;
       const end = start + m.value.length;
-
       if (start < last) {
         continue;
       }
-
       out +=
         escapeHtml(text.slice(last, start)) +
         `<mark>${escapeHtml(text.slice(start, end))}</mark>`;
-
       last = end;
     }
-
     return out + escapeHtml(text.slice(last));
   }
 }

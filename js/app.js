@@ -5,13 +5,14 @@ import { renderHash } from './tools/hash.js';
 import { renderSubnet } from './tools/subnet.js';
 import { renderPasswords } from './tools/passwords.js';
 import { renderCerts } from './tools/certs.js';
-import { renderDiff } from './tools/diff.js';
+import { renderDiff } from './tools/diffRewrite.js';
 import { renderAudit } from './tools/audit.js';
 import { renderPowershell } from './tools/powershell.js';
 import { renderIdentity } from './tools/identity.js';
 import { renderRegex } from './tools/regex.js';
 import { renderDrivers } from "./tools/drivers.js";
 import { renderHeader } from "./tools/header.js";
+import { renderHeaderRework } from "./tools/headerrework.js";
 import { renderEventViewer } from "./tools/eventviewer.js";
 import { renderSShare } from "./tools/sshare.js";
 import { renderArchiveM } from "./tools/archivem.js";
@@ -31,10 +32,15 @@ import { renderCronConst } from "./tools/cron_const.js";
 import { renderCiscoFirewall } from "./tools/ciscoacl.js";
 import { renderDllAnalyzer } from "./tools/dlls.js";
 import { renderChmod } from "./tools/chmod.js";
-import { renderPaloAlto } from "./tools/paloalto.js";
+import { renderPaloAlto } from "./tools/paloaltoRewrite.js";
 import { renderDism } from './tools/dism.js';
 import { renderJsonViewer } from './tools/jsonviewer.js';
 import { renderCitrixAdc } from './tools/citrixadc.js';
+import { renderCookies } from './tools/cookies.js';
+import { renderRoute } from './tools/route.js';
+import { renderSddl } from './tools/sddl.js';
+import { renderTimeline } from './tools/timeline.js';
+import { renderSapLandscape } from './tools/saplandscape.js';
 
 const views = {
   dashboard: renderDashboard,
@@ -51,6 +57,7 @@ const views = {
   audit: renderAudit,
   drivers: renderDrivers,
   header: renderHeader,
+  headerrework: renderHeaderRework,
   eventviewer: renderEventViewer,
   sshare: renderSShare,
   archivem: renderArchiveM,
@@ -72,7 +79,12 @@ const views = {
   paloalto: renderPaloAlto,
   dism: renderDism,
   jsonviewer: renderJsonViewer,
-  citrixadc: renderCitrixAdc
+  citrixadc: renderCitrixAdc,
+  cookies: renderCookies,
+  route: renderRoute,
+  sddl: renderSddl,
+  timeline: renderTimeline,
+  saplandscape: renderSapLandscape
 };
 
 const app = $('#app');

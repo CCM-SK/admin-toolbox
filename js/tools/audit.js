@@ -5,7 +5,6 @@ export function renderAudit(app) {
       <p class="small">
         Use this screen when reviewing the deployment model.
       </p>
-
       <div class="grid">
         <div class="stat">
           <span>Frontend</span>
@@ -24,7 +23,6 @@ export function renderAudit(app) {
           <strong>None</strong>
         </div>
       </div>
-
       <h3>Controls</h3>
       <ul>
         <li>CSP includes <span class="mono">connect-src 'none'</span>.</li>
@@ -34,7 +32,6 @@ export function renderAudit(app) {
         <li>Cryptographic randomness uses Web Crypto.</li>
         <li>Exports happen only after explicit user action.</li>
       </ul>
-
       <h3>Audit manifest</h3>
       <pre id="manifest" class="mono"></pre>
       <a
@@ -44,7 +41,6 @@ export function renderAudit(app) {
       >Download audit manifest</a>
     </section>
   `;
-
   const manifest = {
     application: 'Admin Toolbox',
     architecture:
@@ -92,7 +88,14 @@ export function renderAudit(app) {
       'identity-inspector',
       'header-analyzer',
       'json-yaml-xml-workbench',
-      'identity-metadata'
+      'identity-metadata',
+      'palo-alto-log-parser',
+      'timestamp-analyzer',
+      'url-encoding-decoding',
+      'url-parameter-inspector',
+      'cisco-acl-parser',
+      'citrix-adc-parser',
+      'timeline-visualizer'
     ],
     review: {
       auditScreen: true,
@@ -104,6 +107,5 @@ export function renderAudit(app) {
       'Files loaded into browser memory.'
     ]
   };
-
   $('#manifest').textContent = JSON.stringify(manifest, null, 2);
 }
