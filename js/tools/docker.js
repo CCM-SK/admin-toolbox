@@ -789,25 +789,24 @@ spec:
           hostPath:
             path: /var/run/docker.sock
             type: Socket
-        ---
-        # NodePort is included to exercise externally reachable service checks.
-        apiVersion: v1
-        kind: Service
-        metadata:
-        name: analyzer-insecure-demo
-        namespace: analyzer-insecure-fixtures
-        labels:
-            purpose: static-analysis-test
-        spec:
-        type: NodePort
-        selector:
-            app: analyzer-insecure-demo
-        ports:
-            - name: http
-            port: 80
-            targetPort: 80
-            nodePort: 30080
-
-          `;
+---
+# NodePort is included to exercise externally reachable service checks.
+apiVersion: v1
+kind: Service
+metadata:
+  name: analyzer-insecure-demo
+  namespace: analyzer-insecure-fixtures
+  labels:
+    purpose: static-analysis-test
+spec:
+  type: NodePort
+  selector:
+    app: analyzer-insecure-demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+`;
         }
       }
