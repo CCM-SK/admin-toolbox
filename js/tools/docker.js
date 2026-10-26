@@ -627,27 +627,6 @@ export function renderDockerKubernetes(app) {
           return lines.join('\n');
         }
         function composeExample() {
-          return `name: demo
-          services:
-          web:
-          image: nginx:latest
-          privileged: true
-          ports:
-          - "8080:80"
-          volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
-          environment:
-          DB_PASSWORD: super-secret-example-value
-          healthcheck:
-          test: ["CMD", "nginx", "-t"]
-          worker:
-          image: example/worker:1.2.3
-          network_mode: host
-          cap_add:
-          - SYS_ADMIN
-          `;
-        }
-        function k8sExample() {
           return `apiVersion: apps/v1
           kind: Deployment
           metadata:
@@ -691,6 +670,144 @@ export function renderDockerKubernetes(app) {
           - port: 80
           targetPort: 80
           nodePort: 30080
+          `;
+        }
+        function k8sExample() {
+          return `# INTENTIONALLY INSECURE STATIC-ANALYSIS FIXTURE.
+# DO NOT APPLY THIS FILE TO A REAL CLUSTER.
+# The credentials below are fake test values. The settings are deliberately unsafe.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: analyzer-insecure-fixtures
+  labels:
+    purpose: static-analysis-test
+    security-profile: intentionally-insecure
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: analyzer-fixture-sa
+  namespace: analyzer-insecure-fixtures
+# Explicitly enabled to exercise analyzer rules for automatic token mounting.
+automountServiceAccountToken: true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hardcoded-fixture-secret
+  namespace: analyzer-insecure-fixtures
+  labels:
+    purpose: static-analysis-test
+type: Opaque
+# Fake values only; intended to trigger hard-coded-secret checks.
+stringData:
+  API_KEY: "fixture-not-a-real-secret"
+  DB_PASSWORD: "password123"
+---
+# Deliberately over-privileged binding. Never deploy this test fixture.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: analyzer-fixture-cluster-admin
+  labels:
+    purpose: static-analysis-test
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: analyzer-fixture-sa
+    namespace: analyzer-insecure-fixtures
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analyzer-insecure-demo
+  namespace: analyzer-insecure-fixtures
+  labels:
+    app: analyzer-insecure-demo
+    purpose: static-analysis-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analyzer-insecure-demo
+  template:
+    metadata:
+      labels:
+        app: analyzer-insecure-demo
+        purpose: static-analysis-test
+    spec:
+      serviceAccountName: analyzer-fixture-sa
+      automountServiceAccountToken: true
+      # Host namespaces reduce isolation from the node.
+      hostNetwork: true
+      hostPID: true
+      hostIPC: true
+      securityContext:
+        runAsNonRoot: false
+        runAsUser: 0
+        seccompProfile:
+          type: Unconfined
+      containers:
+        - name: web
+          image: nginx:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+          # Deliberately weak container hardening for analyzer testing.
+          securityContext:
+            privileged: true
+            allowPrivilegeEscalation: true
+            readOnlyRootFilesystem: false
+            capabilities:
+              add:
+                - ALL
+          # Intentionally omitted: resource requests/limits and health probes.
+          env:
+            - name: DEBUG
+              value: "true"
+            - name: DB_PASSWORD
+              value: "password123"
+          volumeMounts:
+            - name: host-root
+              mountPath: /host
+              readOnly: false
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+              readOnly: false
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /
+            type: Directory
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
+        ---
+        # NodePort is included to exercise externally reachable service checks.
+        apiVersion: v1
+        kind: Service
+        metadata:
+        name: analyzer-insecure-demo
+        namespace: analyzer-insecure-fixtures
+        labels:
+            purpose: static-analysis-test
+        spec:
+        type: NodePort
+        selector:
+            app: analyzer-insecure-demo
+        ports:
+            - name: http
+            port: 80
+            targetPort: 80
+            nodePort: 30080
+
           `;
         }
       }
