@@ -4,6 +4,12 @@ const PBKDF2_ITERATIONS = 600000;
 const AES_BITS = 256;
 const RSA_BITS = 4096;
 const APP_ID = 'Admin Toolbox Secure Password Share';
+const MIN_IMPORTED_ITERATIONS = 100000;
+const MAX_IMPORTED_ITERATIONS = 1000000;
+const MAX_PACKAGE_CHARS = 2 * 1024 * 1024;
+const MAX_JWK_CHARS = 16 * 1024;
+const MAX_PASSPHRASE_CHARS = 1024;
+const MAX_CIPHERTEXT_BYTES = 1024 * 1024;
 function b64(bytes) {
   let s = '';
   const chunk = 0x8000;
@@ -13,6 +19,9 @@ function b64(bytes) {
   return btoa(s).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
 }
 function unb64(text) {
+  if (typeof text !== 'string' || text.length > Math.ceil(MAX_CIPHERTEXT_BYTES * 4 / 3) + 8 || !/^[A-Za-z0-9_-]+$/.test(text) || text.length % 4 === 1) {
+    throw new Error('Package contains an invalid or oversized Base64URL field.');
+  }
   const normalized = text.replaceAll('-', '+').replaceAll('_', '/').padEnd(Math.ceil(text.length / 4) * 4, '=');
   const raw = atob(normalized);
   const bytes = new Uint8Array(raw.length);
@@ -65,19 +74,78 @@ function packageSummary(pkg) {
   if (alg === 'RSA-OAEP-SHA256') return `Recipient-key package · RSA-OAEP-4096 · SHA-256`;
   return `Unknown package format`;
 }
-function validatePackage(pkg) {
-  if (!pkg || typeof pkg !== 'object') throw new Error('Package is not valid JSON.');
-  if (pkg.format !== 'admin-toolbox-secure-secret' || pkg.version !== 1) throw new Error('Unsupported package format or version.');
-  if (!pkg.alg) throw new Error('Package is missing its encryption algorithm.');
+export function validatePackage(pkg) {
+  if (!pkg || typeof pkg !== 'object' || Array.isArray(pkg)) throw new Error('Package is not valid JSON.');
+  if (pkg.format !== 'admin-toolbox-secure-secret' || pkg.version !== 1 || pkg.type !== 'secret') throw new Error('Unsupported package format, version or type.');
+  if (pkg.alg === 'PBKDF2-SHA256/AES-256-GCM') {
+    if (pkg.kdf !== 'PBKDF2-HMAC-SHA256') throw new Error('Unsupported password KDF.');
+    if (!Number.isSafeInteger(pkg.iterations) || pkg.iterations < MIN_IMPORTED_ITERATIONS || pkg.iterations > MAX_IMPORTED_ITERATIONS) {
+      throw new Error(`PBKDF2 iteration count must be between ${MIN_IMPORTED_ITERATIONS.toLocaleString()} and ${MAX_IMPORTED_ITERATIONS.toLocaleString()}.`);
+    }
+    const salt = unb64(pkg.salt);
+    const iv = unb64(pkg.iv);
+    const aad = unb64(pkg.aad);
+    const ciphertext = unb64(pkg.ciphertext);
+    if (salt.length !== 16) throw new Error('Package salt must be exactly 16 bytes.');
+    if (iv.length !== 12) throw new Error('Package AES-GCM IV must be exactly 12 bytes.');
+    if (new TextDecoder().decode(aad) !== APP_ID + '|v1|password') throw new Error('Package additional authenticated data is invalid.');
+    if (ciphertext.length < 16 || ciphertext.length > MAX_CIPHERTEXT_BYTES) throw new Error('Package ciphertext length is invalid or exceeds 1 MiB.');
+    return { algorithm: 'password', salt, iv, aad, ciphertext };
+  }
+  if (pkg.alg === 'RSA-OAEP-SHA256') {
+    const ciphertext = unb64(pkg.ciphertext);
+    if (ciphertext.length !== RSA_BITS / 8) throw new Error('RSA package ciphertext must be exactly 512 bytes for a 4096-bit key.');
+    if (typeof pkg.recipientKeyFingerprint !== 'string' || !/^[a-f0-9]{64}$/i.test(pkg.recipientKeyFingerprint)) {
+      throw new Error('RSA package recipient fingerprint is invalid.');
+    }
+    return { algorithm: 'rsa', ciphertext };
+  }
+  throw new Error('Unsupported package encryption algorithm.');
 }
+export function validatePackageText(text) {
+  if (typeof text !== 'string' || text.length > MAX_PACKAGE_CHARS) throw new Error('Package JSON is missing or exceeds the 2 MiB import limit.');
+  const pkg = JSON.parse(text);
+  validatePackage(pkg);
+  return pkg;
+}
+export function validateRsaJwk(jwk, privateKey = false) {
+  if (!jwk || typeof jwk !== 'object' || Array.isArray(jwk) || jwk.kty !== 'RSA' || typeof jwk.n !== 'string' || typeof jwk.e !== 'string') {
+    throw new Error('A valid RSA JWK is required.');
+  }
+  const modulus = unb64(jwk.n);
+  const exponent = unb64(jwk.e);
+  if (modulus.length !== RSA_BITS / 8 || !(modulus[0] & 0x80)) throw new Error('Only 4096-bit RSA keys are supported.');
+  if (exponent.length !== 3 || exponent[0] !== 1 || exponent[1] !== 0 || exponent[2] !== 1) throw new Error('RSA exponent must be 65537.');
+  const privateFields = ['d', 'p', 'q', 'dp', 'dq', 'qi'];
+  if (!privateKey && privateFields.some(field => field in jwk)) throw new Error('Provide a public JWK only; do not paste private key material here.');
+  if (privateKey) {
+    if (privateFields.some(field => typeof jwk[field] !== 'string' || !jwk[field])) throw new Error('The private JWK is incomplete.');
+    if (unb64(jwk.d).length !== 512 || ['p', 'q', 'dp', 'dq', 'qi'].some(field => unb64(jwk[field]).length !== 256)) {
+      throw new Error('RSA private-key component lengths are invalid for a 4096-bit key.');
+    }
+  }
+  if (Array.isArray(jwk.oth) && jwk.oth.length) throw new Error('Multi-prime RSA keys are not supported.');
+}
+export function parseJwkText(text, privateKey = false) {
+  if (typeof text !== 'string' || text.length > MAX_JWK_CHARS) throw new Error('JWK JSON exceeds the 16 KiB import limit.');
+  const jwk = JSON.parse(text);
+  validateRsaJwk(jwk, privateKey);
+  return jwk;
+}
+
 async function encryptWithPassphrase(secret, passphrase, metadata) {
-  if (!passphrase) throw new Error('A passphrase is required.');
+  if (typeof secret !== 'string' || te.encode(secret).length > 64 * 1024) throw new Error('Secret must be text and no larger than 64 KiB.');
+  if (typeof passphrase !== 'string' || !passphrase) throw new Error('A passphrase is required.');
   if (passphrase.length < 12) throw new Error('Use a passphrase of at least 12 characters.');
+  if (passphrase.length > MAX_PASSPHRASE_CHARS) throw new Error('Passphrases are limited to 1,024 characters.');
+  const label = metadata?.label;
+  if (label !== undefined && (typeof label !== 'string' || label.length > 256)) throw new Error('Label must be 256 characters or fewer.');
+  const payload = JSON.stringify({ secret, ...(label ? { label } : {}), createdAt: new Date().toISOString() });
+  if (te.encode(payload).length > 65 * 1024) throw new Error('Encrypted payload exceeds the 65 KiB limit.');
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const key = await derivePasswordKey(passphrase, salt);
   const aad = te.encode(APP_ID + '|v1|password');
-  const payload = JSON.stringify({ secret, ...metadata, createdAt: new Date().toISOString() });
   const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: aad, tagLength: 128 }, key, te.encode(payload));
   return {
     format: 'admin-toolbox-secure-secret',
@@ -93,12 +161,12 @@ async function encryptWithPassphrase(secret, passphrase, metadata) {
   };
 }
 async function decryptWithPassphrase(pkg, passphrase) {
-  if (pkg.alg !== 'PBKDF2-SHA256/AES-256-GCM') throw new Error('This package does not use passphrase encryption.');
-  const salt = unb64(pkg.salt);
-  const iv = unb64(pkg.iv);
-  const aad = unb64(pkg.aad);
-  const key = await derivePasswordKey(passphrase, salt, pkg.iterations);
-  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv, additionalData: aad, tagLength: 128 }, key, unb64(pkg.ciphertext));
+  const validated = validatePackage(pkg);
+  if (validated.algorithm !== 'password') throw new Error('This package does not use passphrase encryption.');
+  if (typeof passphrase !== 'string' || !passphrase) throw new Error('A passphrase is required.');
+  if (passphrase.length > MAX_PASSPHRASE_CHARS) throw new Error('Passphrases are limited to 1,024 characters.');
+  const key = await derivePasswordKey(passphrase, validated.salt, pkg.iterations);
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: validated.iv, additionalData: validated.aad, tagLength: 128 }, key, validated.ciphertext);
   return JSON.parse(td.decode(plain));
 }
 async function generateRecipientKeys() {
@@ -115,6 +183,7 @@ async function exportPrivateJwk(key) {
   return crypto.subtle.exportKey('jwk', key);
 }
 async function importPublicJwk(jwk) {
+  validateRsaJwk(jwk, false);
   return crypto.subtle.importKey(
     'jwk', jwk,
     { name: 'RSA-OAEP', hash: 'SHA-256' },
@@ -123,6 +192,7 @@ async function importPublicJwk(jwk) {
   );
 }
 async function importPrivateJwk(jwk) {
+  validateRsaJwk(jwk, true);
   return crypto.subtle.importKey(
     'jwk', jwk,
     { name: 'RSA-OAEP', hash: 'SHA-256' },
@@ -131,7 +201,10 @@ async function importPrivateJwk(jwk) {
   );
 }
 async function encryptToRecipient(secret, publicKey, metadata) {
-  const payload = JSON.stringify({ secret, ...metadata, createdAt: new Date().toISOString() });
+  if (typeof secret !== 'string' || te.encode(secret).length > 350) throw new Error('Secret must be text and no larger than 350 bytes for recipient-key mode.');
+  const label = metadata?.label;
+  if (label !== undefined && (typeof label !== 'string' || label.length > 256)) throw new Error('Label must be 256 characters or fewer.');
+  const payload = JSON.stringify({ secret, ...(label ? { label } : {}), createdAt: new Date().toISOString() });
   const plaintext = te.encode(payload);
   if (plaintext.length > 446) {
     throw new Error('The recipient-key format is intentionally limited to short secrets. Use a passphrase package for longer text.');
@@ -147,8 +220,13 @@ async function encryptToRecipient(secret, publicKey, metadata) {
   };
 }
 async function decryptWithPrivateKey(pkg, privateKey) {
-  if (pkg.alg !== 'RSA-OAEP-SHA256') throw new Error('This package does not use recipient-key encryption.');
-  const plain = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, privateKey, unb64(pkg.ciphertext));
+  const validated = validatePackage(pkg);
+  if (validated.algorithm !== 'rsa') throw new Error('This package does not use recipient-key encryption.');
+  const privateJwk = await crypto.subtle.exportKey('jwk', privateKey);
+  const publicKey = await importPublicJwk({ kty: privateJwk.kty, n: privateJwk.n, e: privateJwk.e });
+  const fingerprint = await publicKeyFingerprint(publicKey);
+  if (fingerprint.toLowerCase() !== pkg.recipientKeyFingerprint.toLowerCase()) throw new Error('This package was encrypted for a different recipient key.');
+  const plain = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, privateKey, validated.ciphertext);
   return JSON.parse(td.decode(plain));
 }
 function renderPasswordMode(root) {
@@ -190,8 +268,7 @@ function renderPasswordMode(root) {
   root.querySelector('#ss-copy').onclick = e => copyText(JSON.stringify(latest, null, 2), e.currentTarget);
   root.querySelector('#ss-decrypt').onclick = async () => {
     try {
-      const pkg = JSON.parse(root.querySelector('#ss-pass-in').value);
-      validatePackage(pkg);
+      const pkg = validatePackageText(root.querySelector('#ss-pass-in').value);
       const result = await decryptWithPassphrase(pkg, root.querySelector('#ss-decrypt-pass').value);
       root.querySelector('#ss-dec-out').textContent = JSON.stringify(result, null, 2);
       setMessage(root.querySelector('#ss-dec-msg'), 'Decryption succeeded locally.', 'good');
@@ -251,7 +328,7 @@ function renderRecipientMode(root) {
   root.querySelector('#ss-copy-priv').onclick = e => copyText(JSON.stringify(privateJwk, null, 2), e.currentTarget);
   root.querySelector('#ss-r-encrypt').onclick = async () => {
     try {
-      const jwk = JSON.parse(root.querySelector('#ss-recipient-pub').value);
+      const jwk = parseJwkText(root.querySelector('#ss-recipient-pub').value, false);
       const key = await importPublicJwk(jwk);
       latest = await encryptToRecipient(
         root.querySelector('#ss-r-secret').value,
@@ -266,10 +343,9 @@ function renderRecipientMode(root) {
   root.querySelector('#ss-r-copy').onclick = e => copyText(JSON.stringify(latest, null, 2), e.currentTarget);
   root.querySelector('#ss-r-decrypt').onclick = async () => {
     try {
-      const jwk = JSON.parse(root.querySelector('#ss-dec-priv').value);
+      const jwk = parseJwkText(root.querySelector('#ss-dec-priv').value, true);
       const key = await importPrivateJwk(jwk);
-      const pkg = JSON.parse(root.querySelector('#ss-r-in').value);
-      validatePackage(pkg);
+      const pkg = validatePackageText(root.querySelector('#ss-r-in').value);
       const result = await decryptWithPrivateKey(pkg, key);
       root.querySelector('#ss-r-dec-out').textContent = JSON.stringify(result, null, 2);
       setMessage(root.querySelector('#ss-r-dec-msg'), 'Decryption succeeded locally.', 'good');
@@ -283,11 +359,7 @@ export function renderSShare(app) {
   app.innerHTML = `
     <section class="card">
       <h1>Secure Password Share</h1>
-      <p>
-        <p class="small">
-        Encrypt secrets in your browser for manual, out-of-band sharing. Nothing is uploaded, stored, or looked up.
-        </p>
-      </p>
+      <p class="small">Encrypt secrets in your browser for manual, out-of-band sharing. Nothing is uploaded, stored, or looked up.</p>
       <div class="notice warning"><strong>Important:</strong> this tool transports encrypted packages; it does not provide a server-side one-time secret service. Delete plaintext copies after use and verify recipient identity through a trusted channel.</div>
       <div class="actions">
         <button class="btn" id="ss-tab-pass">Passphrase package</button>

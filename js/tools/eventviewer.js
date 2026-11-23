@@ -1,5 +1,7 @@
 import { $, escapeHtml, downloadText, dropBinder } from "../utils.js";
 export function renderEventViewer(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <section class="card">
       <h2>Event Viewer Analyzer Pro</h2>

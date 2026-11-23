@@ -2113,8 +2113,8 @@ function renderResult(app, result) {
       </div>
       ${result.searchTerms.map((term, i) => `
         <div
-          class="row between search-term"
-          style="gap:.75rem;margin:.35rem 0"
+          class="row between search-term generated-style-393322b5"
+
         >
           <code>${esc(term)}</code>
           <button

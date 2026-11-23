@@ -1878,6 +1878,8 @@ function renderOther(cache) {
 }
 // End of weird functions
 export function renderCitrixAdc(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <div class="tool-window" id="cxWindow">
       <div class="tool-window-header" id="cxDragHandle" title="Drag tool">
@@ -1964,19 +1966,19 @@ export function renderCitrixAdc(app) {
   }
   function selectTab(id, focus = false) {
     activeTab = id;
-    document.querySelectorAll('#cxResult .cx-tab').forEach(btn => {
+    app.querySelectorAll('#cxResult .cx-tab').forEach(btn => {
       const on = btn.dataset.tab === id;
       btn.setAttribute('aria-selected', String(on));
       btn.tabIndex = on ? 0 : -1;
       if (on && focus) btn.focus();
     });
-    document.querySelectorAll('#cxResult .cx-panel').forEach(panel => {
+    app.querySelectorAll('#cxResult .cx-panel').forEach(panel => {
       panel.hidden = panel.id !== `cxPanel-${id}`;
     });
   }
   function applyFilter() {
     const q = $('#cxFilter').value.trim().toLowerCase();
-    document.querySelectorAll('#cxResult [data-search]').forEach(el => {
+    app.querySelectorAll('#cxResult [data-search]').forEach(el => {
       el.hidden = q !== '' && !el.dataset.search.includes(q);
     });
   }

@@ -1,5 +1,7 @@
 import { $, escapeHtml } from '../utils.js';
 export function renderSubnet(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <section class="card">
       <h2>IP / subnet calculator</h2>

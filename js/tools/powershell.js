@@ -86,6 +86,8 @@ const RULES = [
     }),
   );
   export function renderPowershell(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
     app.innerHTML = `
       <section class="card">
     <h2>PowerShell analyzer</h2>
@@ -101,12 +103,12 @@ const RULES = [
     <label for="psCode">PowerShell</label>
     <textarea
     id="psCode"
-    class="mono"
-    style="min-height:340px"
+    class="mono generated-style-1b0a11c9"
+
     spellcheck="false"
     placeholder="Paste PowerShell here"
     ></textarea>
-    <div class="row" style="margin-top:10px">
+    <div class="row generated-style-d2c171b1">
     <button class="btn primary" id="psAnalyze">Analyze</button>
     <button class="btn" id="psNormalize">Normalize</button>
     <button class="btn" id="psClear">Clear</button>

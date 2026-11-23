@@ -6,12 +6,14 @@ export const metadata = {
   path: '/#paloalto'
 };
 export function renderPaloAlto(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <div class="tool-window" id="paloAltoWindow">
       <div class="tool-window-header" id="paloAltoDragHandle" title="Drag tool">
         <span class="tool-drag-grip" aria-hidden="true">⋮⋮</span>
         <strong>Palo Alto Networks Config Analyzer</strong>
-        <span class="small" style="margin-left:auto"></span>
+        <span class="small generated-style-6d000617"></span>
       </div>
       <section class="card">
         <p class="small">
@@ -22,7 +24,7 @@ export function renderPaloAlto(app) {
         <textarea id="paloAltoInput" spellcheck="false"
           placeholder="Examples:
 set rulebase security rules Allow-DNS from Trust to Untrust source any destination any application dns service application-default action allow or paste a PAN-OS XML configuration export here..."></textarea>
-        <div class="row" style="margin-top:10px">
+        <div class="row generated-style-d2c171b1">
           <input id="paloAltoFile" type="file"
             accept=".xml,.txt,.csv,.json,.conf,.cfg,.log" hidden>
           <button class="btn" id="paloAltoPick">Load config / export</button>
@@ -30,7 +32,7 @@ set rulebase security rules Allow-DNS from Trust to Untrust source any destinati
           <button class="btn" id="paloAltoClear">Clear</button>
           <button class="btn" id="paloAltoExport" disabled>Export analysis JSON</button>
         </div>
-        <div id="paloAltoFileInfo" class="small" style="margin-top:10px"></div>
+        <div id="paloAltoFileInfo" class="small generated-style-d2c171b1"></div>
       </section>
       <section class="card" id="paloAltoResult" hidden></section>
     </div>
@@ -4458,8 +4460,8 @@ function renderProperties(
   }
   return `
     <pre
-      class="mono"
-      style="white-space:pre-wrap"
+      class="mono generated-style-a548ea71"
+
     >${escapeHtml(
       JSON.stringify(
         redactSensitiveData(object),

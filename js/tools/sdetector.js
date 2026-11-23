@@ -1,97 +1,5 @@
-const SD_STYLE = `
-  .sd-wrap {
-    display: grid;
-    gap: 14px;
-  }
-  .sd-toolbar label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    }
-  .sd-text {
-    width: 100%;
-    min-height: 300px;
-    resize: vertical;
-    font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
-    padding: 12px;
-    border: 1px solid var(--border, #c8ced6);
-    border-radius: 10px;
-    background: var(--panel, #fff);
-    color: inherit;
-  }
-  .sd-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 10px;
-  }
-  .sd-stat {
-    padding: 12px;
-    border: 1px solid var(--border, #d7dce2);
-    border-radius: 10px;
-    background: var(--panel, #fff);
-  }
-  .sd-stat b {
-    display: block;
-    font-size: 1.25rem;
-  }
-  .sd-hit {
-    border: 1px solid var(--border, #d7dce2);
-    border-left: 4px solid #d14343;
-    border-radius: 10px;
-    padding: 12px;
-    background: var(--panel, #fff);
-  }
-  .sd-hit.high {
-    border-left-color: #b91c1c;
-  }
-  .sd-hit.medium {
-    border-left-color: #d97706;
-  }
-  .sd-hit.low {
-    border-left-color: #6b7280;
-  }
-  .sd-tags {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 6px;
-  }
-  .sd-tag {
-    font-size: .76rem;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: #f2f4f7;
-    border: 1px solid #d0d5dd;
-  }
-  .sd-code {
-    font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
-    word-break: break-word;
-    white-space: pre-wrap;
-  }
-  .sd-muted {
-    color: var(--muted, #667085);
-  }
-  .sd-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .sd-btn {
-    border: 1px solid var(--border, #c8ced6);
-    background: var(--panel, #fff);
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  .sd-good {
-    color: #0f7b3e;
-    background: #ecfdf3;
-  }
-  .sd-warn {
-    color: #8a5a00;
-    background: #fff8e1;
-  }
-`;
+import { addWorkflowArtifact } from '../workflow.js';
+
 const RULES = [
   {
     id: 'AWS_ACCESS_KEY',
@@ -298,20 +206,15 @@ function scan(text) {
 }
 export function renderSDetector(app) {
   app.innerHTML = '';
-  const st = document.createElement('style');
-  st.textContent = SD_STYLE;
-  app.appendChild(st);
   app.insertAdjacentHTML(
     'beforeend',
     `
       <section class="card sd-wrap">
         <div>
           <h2>Secrets detector</h2>
-          <p class="sd-muted">
-            <p class="small">
+          <p class="small sd-muted">
             Paste configuration or log text. Everything is analyzed locally.
             Findings are redacted by default and exports never contain the full detected secret.
-            </p>
           </p>
         </div>
         <textarea
@@ -375,9 +278,8 @@ export function renderSDetector(app) {
       ` +
       `
         <div class="sd-actions">
-          <button class="sd-btn" id="sdCopy">
-            Copy redacted report
-          </button>
+          <button class="sd-btn" id="sdCopy" type="button">Copy redacted report</button>
+          <button class="sd-btn" id="sdToWorkflow" type="button">Add redacted report to workflow</button>
         </div>
       ` +
       (
@@ -413,8 +315,8 @@ export function renderSDetector(app) {
                       x.note
                         ? `
                           <div
-                            class="sd-muted"
-                            style="margin-top:7px"
+                            class="sd-muted generated-style-62838f56"
+
                           >
                             ${esc(x.note)}
                           </div>
@@ -450,6 +352,17 @@ export function renderSDetector(app) {
             ),
           ),
       );
+    app.querySelector('#sdToWorkflow')?.addEventListener('click', () => {
+      try {
+        const report = JSON.stringify({ scannedAt: new Date().toISOString(), findings: last }, null, 2);
+        const item = addWorkflowArtifact({ name: 'Secrets detector redacted report', source: 'Secrets Detector', content: report, contentType: 'application/json' });
+        const button = app.querySelector('#sdToWorkflow');
+        button.textContent = `Added (${item.bytes.toLocaleString()} bytes)`;
+      } catch (error) {
+        const button = app.querySelector('#sdToWorkflow');
+        button.textContent = error.message;
+      }
+    });
   }
   app
     .querySelector('#sdScan')

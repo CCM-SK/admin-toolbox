@@ -1,5 +1,7 @@
 import { $, downloadText } from "../utils.js";
 export function renderCron(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <section class="card">
       <h2>Cron Expression Generator</h2>

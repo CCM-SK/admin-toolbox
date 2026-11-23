@@ -191,8 +191,8 @@ function renderStart(app) {
           rows="11"
           placeholder="Paste a compact JWT/JWS or JWK JSON here…"></textarea>
         <div
-          class="row"
-          style="margin-top:.75rem"
+          class="row generated-style-8c40c9a5"
+
         >
           <button
             class="btn primary"
@@ -227,8 +227,8 @@ function renderStart(app) {
            means the input GUI remains visible after decoding. -->
       <div
         id="jwt-results"
-        style="margin-top:1rem"
-      ></div>
+
+       class="generated-style-2239d6d5"></div>
     `;
 }
 function renderJwk(app, obj) {
@@ -359,13 +359,13 @@ function renderJwk(app, obj) {
                             const bytes =
                                 base64urlToBytes(key[field]);
                             return (
-                                `${field}: ${key[field]}\n` +
+                                `${field}: ${escapeHtml(key[field])}\n` +
                                 `  decoded bytes: ${bytes.length}\n` +
                                 `  hex: ${base64urlToHex(key[field])}`
                             );
                         } catch {
                             return (
-                                `${field}: ${key[field]}\n` +
+                                `${field}: ${escapeHtml(key[field])}\n` +
                                 `  invalid Base64URL`
                             );
                         }
@@ -480,8 +480,8 @@ function renderJws(app, token) {
             ${escapeHtml(expiryMessage)}
           </strong>
           <div
-            class="muted"
-            style="margin-top:.35rem"
+            class="muted generated-style-25747e0c"
+
           >
             Expiry status is calculated from the supplied claims
             and your browser's current clock.
@@ -568,7 +568,7 @@ function renderJws(app, token) {
             ${
                 typeof claims.exp === 'number'
                     ? `
-                      <div style="margin-top:.35rem">
+                      <div class="generated-style-25747e0c">
                         <span class="${exp.cls}">
                           ${escapeHtml(exp.label)}
                         </span>
@@ -588,7 +588,7 @@ function renderJws(app, token) {
             ${
                 typeof claims.nbf === 'number'
                     ? `
-                      <div style="margin-top:.35rem">
+                      <div class="generated-style-25747e0c">
                         <span class="${nbf.cls}">
                           ${escapeHtml(nbf.label)}
                         </span>
@@ -663,8 +663,8 @@ function renderJws(app, token) {
             </div>
           </div>
           <div
-            class="muted"
-            style="margin-top:.75rem"
+            class="muted generated-style-8c40c9a5"
+
           >
             The signature is only Base64URL-decoded.
             It has not been cryptographically verified.

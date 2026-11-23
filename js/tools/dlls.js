@@ -1,4 +1,3 @@
-const $ = s => document.querySelector(s);
 const esc = v => String(v ?? '')
   .replace(/&/g,'&amp;').replace(/</g,'&lt;')
   .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
@@ -311,12 +310,13 @@ function renderData(file,pe,h,strings,findings,yara){
   </div>`:''}
   <div class="card"><h2>Strings</h2>
     <div class="grid two">
-      <div><h3>ASCII (${strings.ascii.length})</h3><pre class="mono" style="max-height:420px;overflow:auto">${esc(strings.ascii.slice(0,10000).map(x=>`0x${x.offset.toString(16)}  ${x.value}`).join('\n'))}</pre></div>
-      <div><h3>UTF-16LE (${strings.unicode.length})</h3><pre class="mono" style="max-height:420px;overflow:auto">${esc(strings.unicode.slice(0,10000).map(x=>`0x${x.offset.toString(16)}  ${x.value}`).join('\n'))}</pre></div>
+      <div><h3>ASCII (${strings.ascii.length})</h3><pre class="mono generated-style-9687cbac">${esc(strings.ascii.slice(0,10000).map(x=>`0x${x.offset.toString(16)}  ${x.value}`).join('\n'))}</pre></div>
+      <div><h3>UTF-16LE (${strings.unicode.length})</h3><pre class="mono generated-style-9687cbac">${esc(strings.unicode.slice(0,10000).map(x=>`0x${x.offset.toString(16)}  ${x.value}`).join('\n'))}</pre></div>
     </div>
   </div>`;
 }
 export function renderDllAnalyzer(app){
+  const $ = selector => app.querySelector(selector);
   app.innerHTML=`
   <section class="card">
     <div class="row between">
@@ -326,7 +326,7 @@ export function renderDllAnalyzer(app){
     <div class="card">
       <label for="dll-file">PE file</label>
       <input id="dll-file" type="file" accept=".dll,.exe,.sys,.ocx,.cpl,.scr,.bin">
-      <div class="row" style="margin-top:.75rem">
+      <div class="row generated-style-8c40c9a5">
         <button class="btn primary" type="button" id="dll-analyze">Analyze</button>
         <button class="btn secondary" type="button" id="dll-clear">Clear</button>
       </div>

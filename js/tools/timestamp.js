@@ -269,6 +269,8 @@ function all(ms) {
   };
 }
 export function renderTimestamp(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <section class="card">
       <div class="row">
@@ -283,9 +285,9 @@ export function renderTimestamp(app) {
       </div>
       <div class="card">
         <div class="row">
-          <label for="ts-input" style="margin:0">Timestamp</label>
+          <label for="ts-input" class="generated-style-11696618">Timestamp</label>
           <span class="spacer"></span>
-          <label for="ts-mode" class="small" style="margin:0">Format</label>
+          <label for="ts-mode" class="small generated-style-11696618">Format</label>
           <select id="ts-mode">
             <option value="heuristic">What timestamp format is this?</option>
             <option value="unix-seconds">Unix seconds</option>
@@ -301,14 +303,14 @@ export function renderTimestamp(app) {
           </select>
         </div>
         <input id="ts-input" type="text" value="1724064000" placeholder="e.g. 1724064000, 1724064000000, 0x01DB..., 2025-01-01T12:00:00Z">
-        <div class="row" id="ts-datestyle-row" hidden style="margin-top:8px">
-          <label for="ts-datestyle" class="small" style="margin:0">Ambiguous local dates (e.g. 05/06/2026) mean:</label>
+        <div class="row generated-style-8a77e5a3" id="ts-datestyle-row" hidden>
+          <label for="ts-datestyle" class="small generated-style-11696618">Ambiguous local dates (e.g. 05/06/2026) mean:</label>
           <select id="ts-datestyle">
             <option value="dmy">Day/Month/Year (Europe)</option>
             <option value="mdy">Month/Day/Year (US)</option>
           </select>
         </div>
-        <div class="row" style="margin-top:10px">
+        <div class="row generated-style-d2c171b1">
           <button class="btn primary" type="button" id="ts-convert">Convert</button>
           <button class="btn" type="button" id="ts-now">Use current time</button>
           <button class="btn" type="button" id="ts-clear">Clear</button>
@@ -346,7 +348,7 @@ export function renderTimestamp(app) {
           <div class="stat"><span>Unix seconds hex</span><strong id="ts-sech">-</strong></div>
           <div class="stat"><span>Unix milliseconds hex</span><strong id="ts-msh">-</strong></div>
         </div>
-        <div id="ts-sentinel-note" hidden style="margin-top:10px"></div>
+        <div id="ts-sentinel-note" hidden class="generated-style-d2c171b1"></div>
       </div>
       <div class="card">
         <h3>Reference notes</h3>
@@ -377,7 +379,7 @@ export function renderTimestamp(app) {
     message.className = `status ${kind || 'warn'}`;
   }
   function sentinelHtml(note) {
-    return note ? `<div class="status ok" style="margin-top:4px"><strong>${escapeHtml(note)}</strong></div>` : '';
+    return note ? `<div class="status ok generated-style-96ad6099"><strong>${escapeHtml(note)}</strong></div>` : '';
   }
   function render(ms, sentinel) {
     const result = all(ms);

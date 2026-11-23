@@ -431,7 +431,7 @@ access-list DMZ_IN extended permit tcp any host 10.30.20.10 eq 443
           <div class="stat"><span>Object-groups</span><strong>${Object.keys(data.objectGroups).length}</strong></div>
           <div class="stat"><span>High-risk findings</span><strong>${high}</strong></div>
         </div>
-        <div class="small " style="margin-top:.75rem">
+        <div class="small  generated-style-8c40c9a5">
           Analysis is based only on the pasted text. It does not know interface direction, NAT behavior, routing, inspection policy, VPN policy, identity rules, or platform-version-specific semantics unless those are included in the pasted configuration.
         </div>
       </div>

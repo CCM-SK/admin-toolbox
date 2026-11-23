@@ -6,6 +6,8 @@ export const metadata = {
   path: '/#dism'
 };
 export function renderDism(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
     app.innerHTML = `
     <div class="tool-window" id="dismWindow">
         <div class="tool-window-header" id="dismDragHandle" title="Drag tool">
@@ -33,12 +35,12 @@ export function renderDism(app) {
     No component store corruption detected.
     The operation completed successfully."
         ></textarea>
-        <div class="row" style="margin-top:10px">
+        <div class="row generated-style-d2c171b1">
             <button class="btn primary" id="dismAnalyze">Analyze</button>
             <button class="btn" id="dismClear">Clear</button>
             <button class="btn" id="dismExample">Load example</button>
         </div>
-        <div id="dismInputInfo" class="small" style="margin-top:10px"></div>
+        <div id="dismInputInfo" class="small generated-style-d2c171b1"></div>
         </section>
         <section class="card" id="dismResult" hidden></section>
     </div>
@@ -969,7 +971,7 @@ function renderResult(a) {
   const summary = `
     <div class="status ${statusClass(a.summary.state)}">
       <strong>
-        <span aria-hidden="true" style="font-size:1.15em;margin-right:6px">
+        <span aria-hidden="true" class="generated-style-ff498581">
           ${statusIcon(a.summary.state)}
         </span>
         ${escapeHtml(a.summary.title)}
@@ -1038,7 +1040,7 @@ function renderResult(a) {
     <h3>Raw output</h3>
     <details>
       <summary>Show original DISM output</summary>
-      <pre class="mono" style="white-space:pre-wrap;max-height:500px;overflow:auto">${escapeHtml(a.raw)}</pre>
+      <pre class="mono generated-style-b7f2f733">${escapeHtml(a.raw)}</pre>
     </details>
   `;
   return `
@@ -1059,7 +1061,7 @@ function renderResult(a) {
     ${warnings}
     ${commands}
     ${raw}
-    <details style="margin-top:14px">
+    <details class="generated-style-d6f2af6e">
       <summary>Parser notes</summary>
       <p class="small">
         This analyzer interprets text produced by DISM. It does not execute DISM, inspect the Windows installation, verify package signatures, contact Microsoft, access Windows Update, or independently validate error codes. A result marked GOOD means that the supplied text contains favorable evidence; it is not an independent health certification.
@@ -1279,7 +1281,7 @@ function renderObservation(observation) {
   return `
     <div class="status ${statusClass(observation.level)}">
       <strong>
-        <span aria-hidden="true" style="font-size:1.15em;margin-right:6px">
+        <span aria-hidden="true" class="generated-style-ff498581">
           ${statusIcon(observation.level)}
         </span>
         ${escapeHtml(observation.title)}
@@ -1291,13 +1293,13 @@ function renderObservation(observation) {
 }
 function renderStateBadge(state, text) {
   if (state === 'installed' || state === 'good') {
-    return `<span class="status success" style="display:inline-block;padding:3px 7px">${escapeHtml(text)}</span>`;
+    return `<span class="status success generated-style-e14af650">${escapeHtml(text)}</span>`;
   }
   if (state === 'pending' || state === 'warn') {
-    return `<span class="status warning" style="display:inline-block;padding:3px 7px">${escapeHtml(text)}</span>`;
+    return `<span class="status warning generated-style-e14af650">${escapeHtml(text)}</span>`;
   }
   if (state === 'bad') {
-    return `<span class="status danger" style="display:inline-block;padding:3px 7px">${escapeHtml(text)}</span>`;
+    return `<span class="status danger generated-style-e14af650">${escapeHtml(text)}</span>`;
   }
   return escapeHtml(text);
 }
@@ -1474,7 +1476,7 @@ function stat(label, value) {
   return `
     <div class="stat">
       <span>${escapeHtml(label)}</span>
-      <strong style="word-break:break-word">
+      <strong class="generated-style-760d9165">
         ${escapeHtml(value)}
       </strong>
     </div>
@@ -1485,7 +1487,7 @@ function healthStat(label, state, value) {
     <div class="stat">
       <span>${escapeHtml(label)}</span>
       <strong>
-        <span aria-hidden="true" style="margin-right:6px">
+        <span aria-hidden="true" class="generated-style-db2f629c">
           ${statusIcon(state)}
         </span>
         ${escapeHtml(value)}

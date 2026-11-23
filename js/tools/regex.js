@@ -1,5 +1,7 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
 export function renderRegex(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
 app.innerHTML = `
   <section class="card">
     <h2>Regex workbench</h2>
@@ -182,7 +184,7 @@ app.innerHTML = `
           : '<p class="status ok">No matches.</p>'
       }
       <h3>Highlighted text</h3>
-      <pre class="mono" style="white-space:pre-wrap">${highlighted}</pre>
+      <pre class="mono generated-style-a548ea71">${highlighted}</pre>
       <h3>Replace</h3>
       <label for="rxReplacement">Replacement pattern</label>
       <input
@@ -199,8 +201,8 @@ app.innerHTML = `
         replacement
           ? `
             <pre
-              class="mono"
-              style="white-space:pre-wrap"
+              class="mono generated-style-a548ea71"
+
             >${escapeHtml(replaced)}</pre>
           `
           : ''

@@ -6,6 +6,8 @@ export const metadata = {
   path: '/#sap-landscape'
 };
 export function renderSapLandscape(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <div class="tool-window" id="sapLandscapeWindow">
       <div class="tool-window-header" id="sapLandscapeDragHandle" title="Drag tool">
@@ -1096,9 +1098,9 @@ export function renderSapLandscape(app) {
           : '';
     return `
       <div
-        class="status ${severityClass} sap-landscape-finding"
+        class="status ${severityClass} sap-landscape-finding generated-style-cc86e3cd"
         data-severity="${escapeHtml(finding.severity)}"
-        style="border:1px solid var(--line); margin:10px 0;"
+
       >
         <div class="row">
           <strong>${escapeHtml(finding.title)}</strong>

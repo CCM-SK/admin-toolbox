@@ -5,7 +5,9 @@ export const metadata = {
   description: 'Analyze message headers locally', 
   path: '/#header' 
 }; 
-export function renderHeader(app) { 
+export function renderHeader(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector); 
   app.innerHTML = ` 
     <div class="tool-window" id="mailHeaderWindow"> 
       <div class="tool-window-header" id="mailHeaderDragHandle" title="Drag tool"> 
@@ -21,13 +23,13 @@ export function renderHeader(app) {
         </p> 
       </p> 
       <textarea id="mailHeaders" spellcheck="false" placeholder="Authentication-Results: mx.example; spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass header.from=example.com\nReceived-SPF: pass (receiver: domain of sender@example.com designates 203.0.113.10 as permitted sender)\nDKIM-Signature: v=rsa-sha256; a=rsa-sha256; d=example.com; s=selector1; ...\nFrom: Sender <sender@example.com>\nTo: recipient@example.net\nSubject: Example\nDate: Thu, 20 Aug 2026 14:00:00 +0000\nMessage-ID: <...>\nReceived: from ..."></textarea> 
-      <div class="row" style="margin-top:10px"> 
+      <div class="row generated-style-d2c171b1">
         <input id="mailHeaderFile" type="file" accept=".eml,.msg,.txt,.log,message/rfc822" hidden> 
         <button class="btn" id="mailHeaderPick">Load .eml / .msg file</button> 
         <button class="btn primary" id="mailHeaderAnalyze">Analyze</button> 
         <button class="btn" id="mailHeaderClear">Clear</button> 
       </div> 
-      <div id="mailHeaderFileInfo" class="small" style="margin-top:10px"></div> 
+      <div id="mailHeaderFileInfo" class="small generated-style-d2c171b1"></div>
     </section> 
     <section class="card" id="mailHeaderResult" hidden></section> 
     </div> 
@@ -44,13 +46,13 @@ export function renderHeader(app) {
         </p> 
       </p> 
       <textarea id="mailHeaders" spellcheck="false" placeholder="Authentication-Results: mx.example; spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass header.from=example.com\nReceived-SPF: pass (receiver: domain of sender@example.com designates 203.0.113.10 as permitted sender)\nDKIM-Signature: v=rsa-sha256; a=rsa-sha256; d=example.com; s=selector1; ...\nFrom: Sender <sender@example.com>\nTo: recipient@example.net\nSubject: Example\nDate: Thu, 20 Aug 2026 14:00:00 +0000\nMessage-ID: <...>\nReceived: from ..."></textarea> 
-      <div class="row" style="margin-top:10px"> 
+      <div class="row generated-style-d2c171b1">
         <input id="mailHeaderFile" type="file" accept=".eml,.msg,.txt,.log,message/rfc822" hidden> 
         <button class="btn" id="mailHeaderPick">Load .eml / .msg file</button> 
         <button class="btn primary" id="mailHeaderAnalyze">Analyze</button> 
         <button class="btn" id="mailHeaderClear">Clear</button> 
       </div> 
-      <div id="mailHeaderFileInfo" class="small" style="margin-top:10px"></div> 
+      <div id="mailHeaderFileInfo" class="small generated-style-d2c171b1"></div>
     </section> 
     <section class="card" id="mailHeaderResult" hidden></section> 
   `; 
@@ -361,11 +363,11 @@ function statusIcon(state) {
 } 
 function renderResult(a, raw) { 
   const s = a.summary; 
-  const summaryHtml = `<div class="status ${statusClass(s.state)}"><strong><span aria-hidden="true" style="font-size:1.15em;margin-right:6px">${statusIcon(s.state)}</span>${escapeHtml(s.title)}</strong><br><span>${escapeHtml(s.text)}</span></div>`; 
+  const summaryHtml = `<div class="status ${statusClass(s.state)}"><strong><span aria-hidden="true" class="generated-style-ff498581">${statusIcon(s.state)}</span>${escapeHtml(s.title)}</strong><br><span>${escapeHtml(s.text)}</span></div>`;
   const cards = a.checks.map(c => ` 
     <div class="stat"> 
       <span>${escapeHtml(c.label)}</span> 
-      <strong><span aria-hidden="true" style="margin-right:6px">${statusIcon(c.state)}</span>${escapeHtml(c.value.toUpperCase())}</strong> 
+      <strong><span aria-hidden="true" class="generated-style-db2f629c">${statusIcon(c.state)}</span>${escapeHtml(c.value.toUpperCase())}</strong>
       <div class="small">${escapeHtml(c.explanation)}</div> 
     </div>`).join(''); 
   const identity = ` 
@@ -422,13 +424,13 @@ function renderResult(a, raw) {
     ${providerNotes.length ? `<div class="table-wrap"><table><thead><tr><th>Entry</th></tr></thead><tbody>${providerNotes.map(x => `<tr><td class="mono">${escapeHtml(x)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="small">No DKIM-Signature or ARC-Seal metadata was found.</p>'} 
      <h3>All headers</h3> 
     <div class="table-wrap"><table><thead><tr><th>#</th><th>Header</th><th>Value</th></tr></thead><tbody>${allHeaderRows}</tbody></table></div> 
-     <details style="margin-top:14px"><summary>What the check-mark means</summary> 
+     <details class="generated-style-d6f2af6e"><summary>What the check-mark means</summary>
       <p class="small">Check-mark means the header contains a positive or otherwise favorable result from the sending/receiving infrastructure. It does <strong>not</strong> mean the message itself is trustworthy. SPF, DKIM and DMARC can all pass for malicious mail sent from an authorized or compromised service.</p> 
     </details> 
   `; 
 } 
 function stat(label, value) { 
-  return `<div class="stat"><span>${escapeHtml(label)}</span><strong style="word-break:break-word">${escapeHtml(value)}</strong></div>`; 
+  return `<div class="stat"><span>${escapeHtml(label)}</span><strong class="generated-style-760d9165">${escapeHtml(value)}</strong></div>`;
 } 
 function sanitizeExport(a, raw) { 
   return { 

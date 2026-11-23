@@ -229,7 +229,7 @@ function render(a, b, opts) {
   const parts = [];
   for (const hunk of hunks) {
     parts.push(
-      `<div class="mono small" style="color:var(--accent);margin-top:10px">` +
+      `<div class="mono small generated-style-5e472a80">` +
       `@@ -${hunk.oldStart},${hunk.oldCount} +${hunk.newStart},${hunk.newCount} @@` +
       `</div>`
     );
@@ -239,10 +239,10 @@ function render(a, b, opts) {
       const oldNum = item.oldIndex !== undefined ? String(item.oldIndex + 1) : '';
       const newNum = item.newIndex !== undefined ? String(item.newIndex + 1) : '';
       parts.push(
-        `<div class="mono ${cls}" style="display:flex;gap:8px;padding:1px 4px">` +
-        `<span style="width:44px;flex:none;text-align:right;opacity:.55">${escapeHtml(oldNum)}</span>` +
-        `<span style="width:44px;flex:none;text-align:right;opacity:.55">${escapeHtml(newNum)}</span>` +
-        `<span style="flex:1;white-space:pre-wrap">${escapeHtml(prefix + ' ' + item.line)}</span>` +
+        `<div class="mono ${cls} generated-style-d7ac42e1">` +
+        `<span class="generated-style-6f4a89c4">${escapeHtml(oldNum)}</span>` +
+        `<span class="generated-style-6f4a89c4">${escapeHtml(newNum)}</span>` +
+        `<span class="generated-style-ab61e99a">${escapeHtml(prefix + ' ' + item.line)}</span>` +
         `</div>`
       );
     }
@@ -250,6 +250,8 @@ function render(a, b, opts) {
   return parts.join('');
 }
 export function renderDiff(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <div class="tool-window" id="diffWindow">
     <div class="tool-window-header" id="diffDragHandle" title="Drag tool">
@@ -271,14 +273,14 @@ export function renderDiff(app) {
           <input id="bf" type="file" hidden>
         </div>
       </div>
-      <div class="row" style="margin-top:10px">
-        <span class="small" style="font-weight:600">Ignore:</span>
+      <div class="row generated-style-d2c171b1">
+        <span class="small generated-style-eed0f8fb">Ignore:</span>
         <label class="small"><input type="checkbox" id="optWs"> Whitespace</label>
         <label class="small"><input type="checkbox" id="optCase"> Case</label>
         <label class="small"><input type="checkbox" id="optBlank"> Blank lines</label>
       </div>
       <div id="sizeWarning"></div>
-      <div class="row" style="margin-top:10px">
+      <div class="row generated-style-d2c171b1">
         <button class="btn" id="ap">Load left file</button>
         <button class="btn" id="bp">Load right file</button>
         <button class="btn primary" id="go">Compare</button>
@@ -332,7 +334,7 @@ export function renderDiff(app) {
     const bLines = bInput.value ? bInput.value.split(/\r?\n/).length : 0;
     if (aLines > LARGE_LINE_THRESHOLD || bLines > LARGE_LINE_THRESHOLD) {
       warningEl.innerHTML = `
-        <div class="status warn" style="margin-top:10px">
+        <div class="status warn generated-style-d2c171b1">
           <strong>Large input (${aLines} / ${bLines} lines)</strong>
           <div class="small">Comparing files this large can be slow and memory-heavy in the browser, especially if they are mostly different rather than mostly similar. It will still run, but expect a delay.</div>
         </div>

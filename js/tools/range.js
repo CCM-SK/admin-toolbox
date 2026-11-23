@@ -260,6 +260,7 @@ function statusBadge(kind, label) {
     return `<span class="badge ${kind}">${label}</span>`;
 }
 export function renderRangeAnalyzer(app) {
+    const $ = (selector, root = app) => root.querySelector(selector);
     app.innerHTML = `
       <section class="card">
         <div class="row between">

@@ -22,6 +22,8 @@ const CHARSETS = {
   symbols: '!@#$%^&*()-_=+[]{}:,.?',
 };
 export function renderPasswords(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <section class="card">
       <h2>Password / passphrase generator</h2>
@@ -38,7 +40,7 @@ export function renderPasswords(app) {
           <input id="pgCount" type="number" min="1" max="100" value="8">
         </div>
       </div>
-      <div class="grid-2" style="margin-top:12px">
+      <div class="grid-2 generated-style-56f43562">
         <div>
           <label for="pgLength">Length / words</label>
           <input id="pgLength" type="number" min="4" max="64" value="20">
@@ -51,12 +53,12 @@ export function renderPasswords(app) {
           <div class="checkline"><input type="checkbox" id="symbols" checked> symbols</div>
         </div>
       </div>
-      <div style="margin-top:16px">
+      <div class="generated-style-1b0f4999">
         <button class="btn primary" id="gen">Generate</button>
         <button class="btn" id="copyAll">Copy</button>
         <button class="btn" id="download">Download text</button>
       </div>
-      <textarea id="out" spellcheck="false" style="margin-top:12px" readonly></textarea>
+      <textarea id="out" spellcheck="false" readonly class="generated-style-56f43562"></textarea>
       <p class="small">
         Randomness source: <span class="mono">crypto.getRandomValues()</span>.
         Generated values are not stored by the application.

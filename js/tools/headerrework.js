@@ -18,6 +18,8 @@ const LIMITS = {
   maxCompoundFileBytes: 128 * 1024 * 1024
 };
 export function renderHeaderRework(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <div class="tool-window" id="mailHeaderWindow">
       <div class="tool-window-header" id="mailHeaderDragHandle" title="Drag tool">
@@ -32,32 +34,32 @@ export function renderHeaderRework(app) {
           or external-service lookups are performed.
         </p>
         <textarea id="mailHeaders" spellcheck="false" placeholder="Authentication-Results: mx.example; spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass header.from=example.com\nReceived-SPF: pass (receiver: domain of sender@example.com designates 203.0.113.10 as permitted sender)\nDKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1; h=from:to:subject:date:message-id; bh=...; b=...\nFrom: Sender <sender@example.com>\nTo: recipient@example.net\nSubject: Example\nDate: Thu, 20 Aug 2026 14:00:00 +0000\nMessage-ID: <example@example.com>\nReceived: from mail.example.com (mail.example.com [203.0.113.10]) by mx.example.net with ESMTPS id abc; Thu, 20 Aug 2026 14:00:00 +0000"></textarea>
-        <div class="row" style="margin-top:10px;align-items:center">
+        <div class="row generated-style-6b3b0bf0">
           <input id="mailHeaderFile" type="file" accept=".eml,.msg,.txt,.log,message/rfc822" hidden>
           <button class="btn" id="mailHeaderPick">Load .eml / .msg file</button>
           <button class="btn primary" id="mailHeaderAnalyze">Analyze</button>
           <button class="btn" id="mailHeaderClear">Clear</button>
         </div>
-        <div class="row" style="margin-top:10px;align-items:center">
+        <div class="row generated-style-6b3b0bf0">
           <label for="mailHeaderAnalysisMode"><strong>Analysis evidence</strong></label>
           <select id="mailHeaderAnalysisMode" aria-describedby="mailHeaderModeHelp">
             <option value="headers">Header evidence only (offline)</option>
             <option value="supplied-dns">Header + user-supplied DNS evidence (offline)</option>
           </select>
         </div>
-        <div id="mailHeaderModeHelp" class="small" style="margin-top:6px">
+        <div id="mailHeaderModeHelp" class="small generated-style-fe7b4979">
           The default mode reads only the message. The second mode lets you paste DNS records you already have; the browser still performs no DNS/network lookups.
         </div>
-        <details id="mailHeaderDnsDetails" style="margin-top:10px" hidden>
+        <details id="mailHeaderDnsDetails" hidden class="generated-style-d2c171b1">
           <summary>Supply DNS evidence</summary>
-          <div class="grid" style="margin-top:10px">
+          <div class="grid generated-style-d2c171b1">
             <label class="stat"><span>SPF TXT record</span><input id="mailHeaderSpfRecord" type="text" spellcheck="false" placeholder="v=spf1 ip4:203.0.113.10 include:example.net -all"></label>
             <label class="stat"><span>DMARC TXT record</span><input id="mailHeaderDmarcRecord" type="text" spellcheck="false" placeholder="v=DMARC1; p=quarantine; adkim=s; aspf=r"></label>
             <label class="stat"><span>DKIM public-key TXT record</span><input id="mailHeaderDkimKeyRecord" type="text" spellcheck="false" placeholder="v=DKIM1; k=rsa; p=MIIBIjANBgkqh..."></label>
           </div>
           <p class="small">Supplied records are treated as evidence, not as automatically authoritative DNS responses. SPF evaluation is deliberately limited to locally evaluable mechanisms such as explicit ip4/ip6 terms; include/a/mx expansion is not performed offline.</p>
         </details>
-        <div id="mailHeaderFileInfo" class="small" style="margin-top:10px"></div>
+        <div id="mailHeaderFileInfo" class="small generated-style-d2c171b1"></div>
       </section>
       <section class="card" id="mailHeaderResult" hidden></section>
     </div>
@@ -139,7 +141,7 @@ export function renderHeaderRework(app) {
     }
     try {
       const headers = parseHeaders(raw);
-      const analysis = analyzeHeaders(headers, readSuppliedEvidence());
+      const analysis = analyzeHeaders(headers, readSuppliedEvidence(app));
       result.hidden = false;
       result.innerHTML = renderResult(analysis, raw);
       bindExports(analysis);
@@ -149,15 +151,15 @@ export function renderHeaderRework(app) {
     }
   }
 }
-function readSuppliedEvidence() {
-  const mode = document.querySelector('#mailHeaderAnalysisMode')?.value || 'headers';
+function readSuppliedEvidence(root) {
+  const mode = root.querySelector('#mailHeaderAnalysisMode')?.value || 'headers';
   if (mode !== 'supplied-dns') return { mode, dns: {} };
   return {
     mode,
     dns: {
-      spf: document.querySelector('#mailHeaderSpfRecord')?.value.trim() || '',
-      dmarc: document.querySelector('#mailHeaderDmarcRecord')?.value.trim() || '',
-      dkimKey: document.querySelector('#mailHeaderDkimKeyRecord')?.value.trim() || ''
+      spf: root.querySelector('#mailHeaderSpfRecord')?.value.trim() || '',
+      dmarc: root.querySelector('#mailHeaderDmarcRecord')?.value.trim() || '',
+      dkimKey: root.querySelector('#mailHeaderDkimKeyRecord')?.value.trim() || ''
     }
   };
 }
@@ -1470,7 +1472,7 @@ function renderResult(a) {
   const s = a.summary;
   const summaryHtml = `<div class="status ${statusClass(s.state)}">
     <strong>
-      <span aria-hidden="true" style="font-size:1.15em;margin-right:6px">
+      <span aria-hidden="true" class="generated-style-ff498581">
         ${statusIcon(s.state)}
       </span>
       ${escapeHtml(s.title)}
@@ -1490,7 +1492,7 @@ function renderResult(a) {
     <div class="stat">
       <span>${escapeHtml(c.label)}</span>
       <strong>
-        <span aria-hidden="true" style="margin-right:6px">
+        <span aria-hidden="true" class="generated-style-db2f629c">
           ${statusIcon(c.state)}
         </span>
         ${escapeHtml(c.value.toUpperCase())}
@@ -1503,7 +1505,7 @@ function renderResult(a) {
       <div class="stat">
         <span>${escapeHtml(c.label)}</span>
         <strong>
-          <span aria-hidden="true" style="margin-right:6px">
+          <span aria-hidden="true" class="generated-style-db2f629c">
             ${statusIcon(c.state)}
           </span>
           ${escapeHtml(c.value.toUpperCase())}
@@ -1640,10 +1642,10 @@ function renderResult(a) {
         <tbody>${relationshipRows}</tbody>
       </table>
     </div>
-    <div class="stat" style="margin-top:10px">
+    <div class="stat generated-style-d2c171b1">
       <span>${escapeHtml(alignment.label)}</span>
       <strong>
-        <span aria-hidden="true" style="margin-right:6px">
+        <span aria-hidden="true" class="generated-style-db2f629c">
           ${statusIcon(alignment.state)}
         </span>
         ${escapeHtml(alignment.value)}
@@ -1689,7 +1691,7 @@ function renderResult(a) {
       <button class="btn" id="mailExportText">Export forensic summary TXT</button>
       <button class="btn" id="mailCopyReport">Copy forensic summary</button>
     </div>
-    <details style="margin-top:14px">
+    <details class="generated-style-d6f2af6e">
       <summary>Observed vs derived vs unverified</summary>
       <p class="small">
         <strong>Observed:</strong> values directly present in supplied headers,
@@ -1839,7 +1841,7 @@ function renderTimeline(a) {
     }
   }
   return `
-    <div class="small" style="margin-bottom:8px">
+    <div class="small generated-style-fdf33f23">
       Transport path is shown oldest → newest.
       Header # refers to the original position of the Received field.
     </div>
@@ -2385,7 +2387,7 @@ function stat(label, value) {
   return `
     <div class="stat">
       <span>${escapeHtml(label)}</span>
-      <strong style="word-break:break-word">${escapeHtml(value)}</strong>
+      <strong class="generated-style-760d9165">${escapeHtml(value)}</strong>
     </div>
   `;
 }

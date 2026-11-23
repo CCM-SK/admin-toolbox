@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; worker-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; script-src 'self'; style-src 'self'; style-src-elem 'self'; style-src-attr 'none'; img-src 'self' data:; connect-src 'none'; worker-src 'self';">
   <meta name="description" content="Local-only (administrative) IT toolbox. Files are processed in your browser and are not uploaded.">
   <title>Toolbox - Local-only IT utilities</title>
   <link rel="icon" href="data:,">
@@ -15,13 +15,26 @@
     <div class="brand">
       <div class="brand-mark" aria-hidden="true">🛠</div>
       <div>
-        <h1>Toolbox <span class="small">v0.1.7.6-beta</span></h1>
+        <h1>Toolbox <span class="small">v0.1.8.0-beta</span></h1>
         <p>Local-only IT utilities. No uploads. No APIs. No usage analytics.</p>
       </div>
     </div>
 
     <div class="topbar-actions">
       <div class="privacy-badge" id="privacyBadge" title="Application data stays in the browser">LOCAL ONLY</div>
+      <button class="icon-button" id="sidebarToggle" type="button" aria-controls="sidebar" aria-label="Collapse tool sidebar" aria-expanded="true" title="Collapse tool sidebar">
+        <span aria-hidden="true">☰</span>
+        <span class="button-label">Hide tools</span>
+      </button>
+      <button class="icon-button" id="workCanvasToggle" type="button" aria-pressed="false" title="Open Work Canvas">
+        <span aria-hidden="true">▦</span>
+        <span class="button-label">Work Canvas</span>
+      </button>
+      <button class="icon-button" id="workspaceToggle" type="button" title="Open workspace">
+        <span aria-hidden="true">▣</span>
+        <span class="button-label">Workspace</span>
+        <span id="workflowCount" class="workflow-count">0</span>
+      </button>
       <button class="icon-button" id="themeToggle" type="button" aria-pressed="false" title="Switch visual theme">
         <span aria-hidden="true">◐</span>
         <span class="button-label">Theme</span>
@@ -44,87 +57,20 @@
       </div>
 
       <div class="sidebar-scroll">
-        <button class="nav-item nav-home active" data-tool="dashboard">
-          <span class="nav-icon" aria-hidden="true">⌂</span>
-          <span>Home</span>
-        </button>
-
-        <details class="tool-group">
-          <summary><span class="group-icon">◈</span><span>Diagnostics</span></summary>
-          <div class="group-items">
-            <button class="nav-item" data-tool="logs"><span class="nav-icon">▤</span><span>Log/CSV inspector</span></button>
-            <button class="nav-item" data-tool="eventviewer"><span class="nav-icon">◉</span><span>Event Viewer analyzer</span></button>
-            <button class="nav-item" data-tool="diff"><span class="nav-icon">⇄</span><span>Configuration diff</span></button>
-            <button class="nav-item" data-tool="hash"><span class="nav-icon">#</span><span>File hashing</span></button>
-            <button class="nav-item" data-tool="archivem"><span class="nav-icon">▣</span><span>Archive manifest viewer</span></button>
-            <button class="nav-item" data-tool="jsonviewer"><span class="nav-icon">⇄</span><span>JSON Viewer</span></button>
-            <button class="nav-item" data-tool="timeline"><span class="nav-icon">⏱</span><span>Timeline</span></button>
-          </div>
+        <div class="tool-search-wrap">
+          <label for="toolSearch">Find a tool <span class="small">Ctrl+K</span></label>
+          <input id="toolSearch" type="search" placeholder="Search name, category or keyword…" autocomplete="off">
+          <div id="toolSearchResults" class="tool-search-results" hidden></div>
+        </div>
+        <section class="tool-shortcuts" id="toolFavoritesSection" hidden>
+          <h3>Favorites</h3>
+          <div id="toolFavorites"></div>
+        </section>
+        <details class="tool-shortcuts" id="toolRecentSection" hidden>
+          <summary>Recently used</summary>
+          <div id="toolRecent"></div>
         </details>
-
-        <details class="tool-group">
-          <summary><span class="group-icon">⌘</span><span>Security &amp; identity</span></summary>
-          <div class="group-items">
-            <button class="nav-item" data-tool="passwords"><span class="nav-icon">⌁</span><span>Password generator</span></button>
-            <button class="nav-item" data-tool="sshare"><span class="nav-icon">⇪</span><span>Secure Share Password</span></button>
-            <button class="nav-item" data-tool="identityMeta"><span class="nav-icon">⇄</span><span>SID/GUID Meta Decoder</span></button>
-            <button class="nav-item" data-tool="certs"><span class="nav-icon">◇</span><span>Certificate/CSR inspector</span></button>
-            <button class="nav-item" data-tool="sdetector"><span class="nav-icon">⌕</span><span>Secrets Detector</span></button>
-            <button class="nav-item" data-tool="jwt"><span class="nav-icon">⇄</span><span>JWT/JWS/JWK Decoder</span></button>
-          </div>
-        </details>
-
-        <details class="tool-group">
-          <summary><span class="group-icon">⌘</span><span>Network &amp; mail &amp; firewall</span></summary>
-          <div class="group-items">
-            <!-- <button class="nav-item" data-tool="header"><span class="nav-icon">@</span><span>Mail-header analyzer</span></button> -->
-            <button class="nav-item" data-tool="headerrework"><span class="nav-icon">@</span><span>Mail-header analyzer</span></button>
-            <button class="nav-item" data-tool="urlanalyzer"><span class="nav-icon">🌐︎</span><span>URL Analyzer</span></button>
-            <button class="nav-item" data-tool="subnet"><span class="nav-icon">⌁</span><span>IP/subnet calculator</span></button>
-            <button class="nav-item" data-tool="range"><span class="nav-icon">⌁</span><span>IP Range Analyzer</span></button>
-            <button class="nav-item" data-tool="vlanplanner"><span class="nav-icon">⌁</span><span>VLAN planner</span></button>
-            <button class="nav-item" data-tool="route"><span class="nav-icon">🗺</span><span>Route Calculator/Simulator</span></button>
-            <button class="nav-item" data-tool="ciscofirewall"><span class="nav-icon">⌕</span><span>Cisco ASA/ACL Analyzer</span></button>
-            <button class="nav-item" data-tool="paloalto"><span class="nav-icon">⌕</span><span>Palo Alto Analyzer</span></button>
-            <button class="nav-item" data-tool="citrixadc"><span class="nav-icon">⌘</span><span>Citrix ADC Analyzer</span></button>
-            <button class="nav-item" data-tool="cookies"><span class="nav-icon">⊙</span><span>Cookie Analyzer</span></button>
-          </div>
-        </details>
-
-        <details class="tool-group">
-          <summary><span class="group-icon">⌘</span><span>Developer &amp; data</span></summary>
-          <div class="group-items">
-            <button class="nav-item" data-tool="regex"><span class="nav-icon">.*</span><span>Regex Workbench</span></button>
-            <button class="nav-item" data-tool="encoding"><span class="nav-icon">⇄</span><span>Encoding/decoding</span></button>
-            <button class="nav-item" data-tool="dataWorkbench"><span class="nav-icon">◫</span><span>Data Workbench</span></button>
-            <button class="nav-item" data-tool="dlls"><span class="nav-icon">⚙︎</span><span>DLL Analyzer</span></button>
-            <button class="nav-item" data-tool="timestamp"><span class="nav-icon">⏱</span><span>Timestamp converter</span></button>
-            <button class="nav-item" data-tool="chmod"><span class="nav-icon">⌕</span><span>CHMOD Calculator/Parser</span></button>
-            <button class="nav-item" data-tool="powershell"><span class="nav-icon">PS</span><span>PowerShell Analyzer</span></button>
-            <button class="nav-item" data-tool="saplandscape"><span class="nav-icon">⌘</span><span>SAP Landscape Analyzer</span></button>
-            <button class="nav-item" data-tool="docker"><span class="nav-icon">⬡</span><span>Docker/Kubernetes Analyzer</span></button>
-          </div>
-        </details>
-
-        <details class="tool-group">
-          <summary><span class="group-icon">▣</span><span>Windows &amp; hardware</span></summary>
-          <div class="group-items">
-            <button class="nav-item" data-tool="gpresult"><span class="nav-icon">⌕</span><span>Group Policy Results</span></button>
-            <button class="nav-item" data-tool="drivers"><span class="nav-icon">▦</span><span>Driver Assistant</span></button>
-            <button class="nav-item" data-tool="bios"><span class="nav-icon">◈</span><span>Bios Interpreter</span></button>
-            <button class="nav-item" data-tool="dism"><span class="nav-icon">⌕</span><span>DISM/Windows Image Inspector</span></button>
-            <button class="nav-item" data-tool="sddl"><span class="nav-icon">⌕</span><span>SDDL/ACL Inspector</span></button>
-          </div>
-        </details>
-
-        <details class="tool-group">
-          <summary><span class="group-icon">⟳</span><span>Automation</span></summary>
-          <div class="group-items">
-            <!-- <button class="nav-item" data-tool="cron"><span class="nav-icon">↻</span><span>Cron Generator</span></button> -->
-            <button class="nav-item" data-tool="cron_const"><span class="nav-icon">↻</span><span>Cron Expression Builder</span></button>
-          </div>
-        </details>
-
+        <div id="toolNavigation"></div>
       </div>
 
       <div class="sidebar-footer">
@@ -132,7 +78,44 @@
       </div>
     </nav>
 
-    <section class="content" id="app" aria-live="polite"></section>
+    <section class="workspace-main">
+      <div class="tool-actionbar" id="toolActionBar" hidden>
+        <div class="tool-actionbar-heading">
+          <strong id="activeToolName"></strong>
+          <span id="activeToolCategory" class="small"></span>
+          <span id="toolActionMessage" class="small" role="status" aria-live="polite"></span>
+        </div>
+        <div class="actions tool-action-buttons">
+          <button class="btn" id="loadToolExample" type="button" hidden>Load example</button>
+          <button class="btn" id="addToWorkflow" type="button" hidden>Add input to workflow</button>
+          <button class="btn primary" id="openInCanvas" type="button" hidden>Open in Work Canvas</button>
+        </div>
+      </div>
+      <section class="content" id="app" aria-live="polite"></section>
+      <section class="work-canvas-view" id="workCanvasView" hidden aria-label="Work Canvas">
+        <div class="canvas-toolbar">
+          <div>
+            <h2>Work Canvas</h2>
+            <p class="small">Open multiple tools at once. Move, resize, minimize or maximize each panel independently. Everything stays in this browser tab.</p>
+          </div>
+          <div class="canvas-toolbar-actions">
+            <div class="canvas-add-controls">
+              <label class="visually-hidden" for="canvasToolPicker">Choose a tool to add</label>
+              <select id="canvasToolPicker" aria-label="Choose a tool to add"></select>
+              <button class="btn primary" id="canvasAddTool" type="button">＋ Add tool</button>
+            </div>
+            <div class="canvas-layout-actions">
+              <button class="btn" id="exportCanvas" type="button">Export Canvas</button>
+              <button class="btn" id="importCanvas" type="button">Import Canvas</button>
+              <input id="canvasLayoutFile" type="file" accept="application/json,.json" hidden>
+            </div>
+            <span class="small" id="canvasLayoutStatus" role="status" aria-live="polite"></span>
+          </div>
+        </div>
+        <div class="canvas-hint small" id="canvasHint">Add a tool to get started. You can open several different tools and work in them side by side.</div>
+        <div class="work-canvas-board" id="workCanvasBoard" aria-label="Tool panels on Work Canvas"></div>
+      </section>
+    </section>
   </main>
 
   <footer class="footer">
@@ -140,6 +123,25 @@
     <span>•</span>
     <span>Browser processing only</span>
   </footer>
+
+  <dialog class="workspace-dialog" id="workspaceDialog" aria-labelledby="workspaceTitle">
+    <div class="workspace-dialog-header">
+      <div><h2 id="workspaceTitle">Workspace</h2><p class="small">Session-only favorites, recent tools, Work Canvas layout and workflow artifacts.</p></div>
+      <button class="icon-button" id="closeWorkspace" type="button" aria-label="Close workspace">✕</button>
+    </div>
+    <section class="workspace-actions">
+      <button class="btn primary" id="exportWorkspace" type="button">Export workspace</button>
+      <button class="btn" id="importWorkspace" type="button">Import workspace</button>
+      <input id="workspaceFile" type="file" accept="application/json,.json" hidden>
+      <span id="workspaceStatus" class="small" role="status" aria-live="polite"></span>
+    </section>
+    <p class="notice warning">Workspace files include the text you added to the workflow and the Work Canvas panel layout. Tool input fields are not exported automatically. Files may contain confidential logs, tokens or configuration; store them securely.</p>
+    <section><h3>Workflow artifacts</h3><div id="workflowItems" class="workflow-items"></div></section>
+    <div class="workspace-dialog-footer">
+      <button class="btn secondary" id="clearWorkflow" type="button">Clear workflow</button>
+      <span class="small">Items are held in memory until this tab is closed.</span>
+    </div>
+  </dialog>
 
   <script type="module" src="js/shell.js"></script>
   <script type="module" src="js/app.js"></script>

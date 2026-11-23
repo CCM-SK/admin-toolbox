@@ -6,6 +6,8 @@ export const metadata = {
   path: '/#route'
 };
 export function renderRoute(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <div class="card tool-window" id="routeWindow">
       <div class="tool-window-header" id="routeDragHandle" title="Drag tool">
@@ -1908,8 +1910,7 @@ export function renderRoute(app) {
   ) {
     return `
       <div
-        class="route-tree-node"
-        style="--route-depth:${depth}"
+        class="route-tree-node route-depth-${Math.max(0, Math.min(32, Number(depth) || 0))}"
       >
         <div class="route-tree-entry">
           <span class="route-tree-branch">

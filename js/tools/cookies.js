@@ -498,7 +498,7 @@ function renderCookieCard(cookie, index) {
   return `
     <section class="card">
       <div class="row">
-        <h3 style="margin:0">Cookie ${index + 1}: <span class="mono">${escapeHtml(cookie.name || '(unnamed)')}</span></h3>
+        <h3 class="generated-style-11696618">Cookie ${index + 1}: <span class="mono">${escapeHtml(cookie.name || '(unnamed)')}</span></h3>
         <span class="spacer"></span>
         <span class="pill">${escapeHtml(overallLabel)}</span>
       </div>
@@ -564,7 +564,7 @@ function renderSummary(cookies) {
         <div class="stat"><span>Session / Persistent</span><strong>${session} / ${persistent}</strong></div>
       </div>
       ${dangerTotal
-        ? `<div class="status danger" style="margin-top:12px">
+        ? `<div class="status danger generated-style-56f43562">
              <strong>${dangerTotal} issue${dangerTotal > 1 ? 's' : ''} found</strong>
              <div class="small">See the per-cookie breakdown below.</div>
            </div>`
@@ -625,6 +625,8 @@ function safeExport(result) {
   return result;
 }
 export function renderCookies(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <div class="tool-window" id="cookieWindow">
     <div class="tool-window-header" id="cookieDragHandle" title="Drag tool">
@@ -643,7 +645,7 @@ export function renderCookies(app) {
         placeholder="sessionid=abc123; Domain=.example.com; Path=/; Expires=Wed, 21 Oct 2026 07:28:00 GMT; HttpOnly; Secure; SameSite=Lax __Host-csrftoken=xyz789; Path=/; Secure; SameSite=Strict Set-Cookie: cart=1a2b3c; Max-Age=3600; Path=/checkout
         One Set-Cookie value per line. A plain 'Cookie: a=1; b=2' request header and DevTools table pastes are also supported."
       ></textarea>
-      <div class="row" style="margin-top:10px">
+      <div class="row generated-style-d2c171b1">
         <button class="btn primary" id="cookieAnalyze">Analyze</button>
         <button class="btn" id="cookieClear">Clear</button>
         <button class="btn" id="cookieCopy">Copy report</button>

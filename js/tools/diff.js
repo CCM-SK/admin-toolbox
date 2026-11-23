@@ -1,5 +1,7 @@
 import { $, escapeHtml, downloadText } from '../utils.js';
 export function renderDiff(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <section class="card">
       <h2>Configuration diff</h2>
@@ -15,7 +17,7 @@ export function renderDiff(app) {
           <input id="bf" type="file" hidden>
         </div>
       </div>
-      <div class="row" style="margin-top:10px">
+      <div class="row generated-style-d2c171b1">
         <button class="btn" id="ap">Load left file</button>
         <button class="btn" id="bp">Load right file</button>
         <button class="btn primary" id="go">Compare</button>

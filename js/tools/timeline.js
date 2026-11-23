@@ -1,3 +1,4 @@
+import { addWorkflowArtifact } from '../workflow.js';
 import { $, escapeHtml, downloadText, dropBinder, enableToolDragging } from '../utils.js';
 async function copyText(text) {
   if (navigator.clipboard?.writeText) {
@@ -417,10 +418,10 @@ function resolveFileTimezone(file, tz) {
   }
 }
 function fileStatusBadge(file) {
-  if (file.status === 'ready') return '<span class="status ok" style="display:inline-block;padding:2px 8px">auto-detected</span>';
-  if (file.status === 'resolved') return '<span class="status ok" style="display:inline-block;padding:2px 8px">resolved</span>';
-  if (file.status === 'needs-column') return '<span class="status warn" style="display:inline-block;padding:2px 8px">needs column</span>';
-  return '<span class="status warn" style="display:inline-block;padding:2px 8px">needs timezone</span>';
+  if (file.status === 'ready') return '<span class="status ok generated-style-91a1b73b">auto-detected</span>';
+  if (file.status === 'resolved') return '<span class="status ok generated-style-91a1b73b">resolved</span>';
+  if (file.status === 'needs-column') return '<span class="status warn generated-style-91a1b73b">needs column</span>';
+  return '<span class="status warn generated-style-91a1b73b">needs timezone</span>';
 }
 function renderFileList(files, zones) {
   if (!files.length) return '';
@@ -440,7 +441,7 @@ function renderFileList(files, zones) {
              </select>`
           : file.status === 'ready'
             ? `<span class="small">${escapeHtml(file.tzNote || 'UTC')}</span>`
-            : `<input class="fileTz mono" list="tzListOptions" data-file-id="${file.id}" placeholder="e.g. Europe/Berlin or UTC" value="${escapeHtml(file.tzValue)}" style="width:180px">`}
+            : `<input class="fileTz mono generated-style-54f91ac4" list="tzListOptions" data-file-id="${file.id}" placeholder="e.g. Europe/Berlin or UTC" value="${escapeHtml(file.tzValue)}">`}
       </td>
       <td><button class="btn danger fileRemove" data-file-id="${file.id}">Remove</button></td>
     </tr>
@@ -477,19 +478,19 @@ function renderHistogram(events, bucket, displayTz) {
     const pct = Math.max(2, Math.round((count / max) * 100));
     const label = formatInZone(k, displayTz, true);
     return `
-      <div class="hist-row" data-bucket-start="${k}" data-bucket-end="${k + bucketMs}" style="display:flex;align-items:center;gap:8px;cursor:pointer" title="Click to zoom into this ${bucket}">
-        <span class="small mono" style="width:160px;flex:none">${escapeHtml(label)}</span>
-        <span style="background:var(--accent);height:10px;border-radius:4px;width:${pct}%;min-width:4px"></span>
-        <span class="small" style="width:40px;flex:none;text-align:right">${count}</span>
+      <div class="hist-row generated-style-c92fd946" data-bucket-start="${k}" data-bucket-end="${k + bucketMs}" title="Click to zoom into this ${bucket}">
+        <span class="small mono generated-style-b3bf1a9a">${escapeHtml(label)}</span>
+        <span class="hist-bar hist-bar-${Math.max(0, Math.min(100, Math.round(pct)))}"></span>
+        <span class="small generated-style-a46ccd47">${count}</span>
       </div>
     `;
   }).join('');
   return `
     <section class="card">
       <div class="row">
-        <h3 style="margin:0">Event density</h3>
+        <h3 class="generated-style-11696618">Event density</h3>
         <span class="spacer"></span>
-        <label class="small" style="margin:0">Bucket:
+        <label class="small generated-style-11696618">Bucket:
           <select id="histBucket">
             <option value="minute" ${bucket === 'minute' ? 'selected' : ''}>Minute</option>
             <option value="hour" ${bucket === 'hour' ? 'selected' : ''}>Hour</option>
@@ -498,7 +499,7 @@ function renderHistogram(events, bucket, displayTz) {
         </label>
       </div>
       <p class="small">${keys.length} bucket${keys.length === 1 ? '' : 's'}. Click a bar to filter the timeline to that period.</p>
-      <div style="display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto">${bars}</div>
+      <div class="generated-style-f035a982">${bars}</div>
     </section>
   `;
 }
@@ -543,6 +544,8 @@ function renderSummary(events, displayTz) {
   `;
 }
 export function renderTimeline(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   const zones = getIanaZones();
   app.innerHTML = `
     <div class="tool-window" id="timelineWindow">
@@ -558,9 +561,14 @@ export function renderTimeline(app) {
         in this browser; files are never uploaded anywhere.
       </p>
       <div class="dropzone" id="timelineDrop">
-        Drop files here, or <button class="btn" id="timelinePick">choose files</button>
+        Drop files here, or <button class="btn" id="timelinePick" type="button">choose files</button>
         <input id="timelineFile" type="file" multiple hidden>
       </div>
+      <details class="log-paste-panel">
+        <summary>Paste text or import a workflow item</summary>
+        <textarea id="timelinePaste" rows="6" spellcheck="false" placeholder="Paste timestamped log lines here"></textarea>
+        <div class="actions"><button class="btn" id="timelineLoadPasted" type="button">Load pasted text</button></div>
+      </details>
     </section>
     <div id="timelineFiles"></div>
     <section class="card" id="timelineFilters" hidden>
@@ -571,7 +579,7 @@ export function renderTimeline(app) {
         <div><label for="fIp">IP</label><input id="fIp" placeholder="substring"></div>
         <div><label for="fProcess">Process</label><input id="fProcess" placeholder="substring"></div>
       </div>
-      <div class="grid-2" style="margin-top:10px">
+      <div class="grid-2 generated-style-d2c171b1">
         <div><label for="fSearch">Free text</label><input id="fSearch" placeholder="search message/raw fields"></div>
         <div>
           <label for="displayTz">Display timezone</label>
@@ -579,14 +587,16 @@ export function renderTimeline(app) {
           <datalist id="tzListOptionsMain">${zones.map(z => `<option value="${escapeHtml(z)}">`).join('')}</datalist>
         </div>
       </div>
-      <div class="row" style="margin-top:10px">
+      <div class="row generated-style-d2c171b1">
         <div class="small">Range: <span id="rangeLabel">full range</span></div>
         <button class="btn" id="rangeClear" hidden>Clear range</button>
         <span class="spacer"></span>
         <button class="btn" id="exportCsv">Export filtered CSV</button>
         <button class="btn" id="exportJson">Export filtered JSON</button>
         <button class="btn" id="copyReport">Copy report</button>
+        <button class="btn" id="timelineWorkflowReport">Add timeline report to workflow</button>
       </div>
+      <p id="timelineWorkflowMessage" class="small" role="status" aria-live="polite"></p>
     </section>
     <div id="timelineHistogram"></div>
     <section class="card" id="timelineSummary" hidden></section>
@@ -611,16 +621,26 @@ export function renderTimeline(app) {
   let range = null;
   let fileIdCounter = 0;
   async function handleFiles(fileObjs) {
+    const sourceTexts = [];
     for (const f of fileObjs) {
       const text = await f.text();
+      sourceTexts.push(text);
       const result = detectAndParse(f.name, text);
       const id = ++fileIdCounter;
       const state = newFileState(id, f.name, text, result);
       files.push(state);
     }
+    const combined = sourceTexts.join('\n');
+    if (new TextEncoder().encode(combined).byteLength <= 8 * 1024 * 1024) app.dataset.workflowText = combined;
+    else delete app.dataset.workflowText;
     rerenderAll();
   }
   $('#timelinePick').onclick = () => fileInput.click();
+  $('#timelineLoadPasted').onclick = () => {
+    const text = $('#timelinePaste').value;
+    if (!text.trim()) return;
+    handleFiles([new File([text], 'workflow-import.log', { type: 'text/plain' })]);
+  };
   fileInput.onchange = () => { if (fileInput.files.length) handleFiles([...fileInput.files]); fileInput.value = ''; };
   dropBinder(drop, list => list.length && handleFiles(list));
   function allIncludedEvents() {
@@ -768,6 +788,22 @@ export function renderTimeline(app) {
   $('#copyReport').onclick = async () => {
     const filtered = applyFilters(allIncludedEvents());
     await copyText(JSON.stringify({ count: filtered.length, events: filtered.slice(0, 200) }, null, 2));
+  };
+  $('#timelineWorkflowReport').onclick = () => {
+    try {
+      const filtered = applyFilters(allIncludedEvents());
+      const payload = filtered.map(ev => ({
+        timestamp: ev.epochUtcMs === null ? null : new Date(ev.epochUtcMs).toISOString(),
+        file: ev.fileName, host: ev.fields.host, user: ev.fields.user,
+        ip: ev.fields.ip, process: ev.fields.process, message: ev.message, details: ev.extra
+      }));
+      const item = addWorkflowArtifact({
+        name: 'Normalized timeline report', source: 'Timeline',
+        content: JSON.stringify({ generatedAt: new Date().toISOString(), events: payload }, null, 2),
+        contentType: 'application/json'
+      });
+      $('#timelineWorkflowMessage').textContent = `Added ${payload.length.toLocaleString()} events (${item.bytes.toLocaleString()} bytes) to workflow.`;
+    } catch (error) { $('#timelineWorkflowMessage').textContent = error.message; }
   };
   enableToolDragging(
     $('#timelineWindow'),

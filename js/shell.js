@@ -51,7 +51,7 @@ function pointerPosition(event) {
 
 function startDrag(event) {
   if (!sidebar?.classList.contains('detached')) return;
-  if (event.target.closest('button, summary, input, select, textarea, a')) return;
+  if (event.target.closest('button, summary, input, select, textarea, a') && !event.target.closest('#dragHandle')) return;
 
   const pos = pointerPosition(event);
   const rect = sidebar.getBoundingClientRect();

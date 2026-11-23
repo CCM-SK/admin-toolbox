@@ -120,6 +120,8 @@ const BUILTIN_RIDS = new Map([
   [582, 'Storage Replica Administrators']
 ]);
 export function renderIdentity(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <section class="card">
       <h2>SID / GUID / identity decoder</h2>
@@ -130,8 +132,8 @@ export function renderIdentity(app) {
       <label for="identityInput">Value</label>
       <textarea
         id="identityInput"
-        class="mono"
-        style="min-height:180px"
+        class="mono generated-style-79569352"
+
         placeholder="Examples:
 S-1-5-21-1111111111-2222222222-3333333333-1107
 S-1-5-18
@@ -139,7 +141,7 @@ S-1-5-32-544
 550e8400-e29b-41d4-a716-446655440000
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
       ></textarea>
-      <div class="row" style="margin-top:10px">
+      <div class="row generated-style-d2c171b1">
         <button class="btn primary" id="identityDecode">Decode</button>
         <button class="btn" id="identityClear">Clear</button>
         <button class="btn" id="identityExport">Export result</button>
@@ -405,8 +407,8 @@ S-1-5-32-544
       .map(
         m => `
           <div
-            class="card"
-            style="box-shadow:none;margin:0 0 12px;padding:14px"
+            class="card generated-style-32b7a2ba"
+
           >
             <h3>${escapeHtml(m.type)}</h3>
             <pre class="mono">${escapeHtml(

@@ -542,7 +542,7 @@ function renderAceCard(ace, index, aclKind) {
   return `
     <section class="card">
       <div class="row">
-        <h3 style="margin:0">${aclKind === 'dacl' ? 'DACL' : 'SACL'} ACE ${index + 1}${typeInfo ? `: ${escapeHtml(typeInfo.name)}` : ''}</h3>
+        <h3 class="generated-style-11696618">${aclKind === 'dacl' ? 'DACL' : 'SACL'} ACE ${index + 1}${typeInfo ? `: ${escapeHtml(typeInfo.name)}` : ''}</h3>
         <span class="spacer"></span>
         <span class="pill">${escapeHtml(pillLabel)}</span>
       </div>
@@ -611,7 +611,7 @@ function renderSummary(result) {
       </div>
       ${descriptorFindings.map(findingBlock).join('')}
       ${totalDanger
-        ? `<div class="status danger" style="margin-top:12px"><strong>${totalDanger} issue${totalDanger > 1 ? 's' : ''} found across all ACEs</strong><div class="small">See the per-ACE breakdown below.</div></div>`
+        ? `<div class="status danger generated-style-56f43562"><strong>${totalDanger} issue${totalDanger > 1 ? 's' : ''} found across all ACEs</strong><div class="small">See the per-ACE breakdown below.</div></div>`
         : ''}
     </section>
   `;
@@ -656,6 +656,8 @@ function safeExport(result) {
   };
 }
 export function renderSddl(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <div class="tool-window" id="sddlWindow">
     <div class="tool-window-header" id="sddlDragHandle" title="Drag tool">
@@ -675,7 +677,7 @@ export function renderSddl(app) {
         spellcheck="false"
         placeholder="O:BAG:BAD:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRC;;;IU)(A;;CCLCSWLOCRRC;;;SU)(A;;LCRP;;;LS)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
       ></textarea>
-      <div class="row" style="margin-top:10px">
+      <div class="row generated-style-d2c171b1">
         <button class="btn primary" id="sddlAnalyze">Decode</button>
         <button class="btn" id="sddlClear">Clear</button>
         <button class="btn" id="sddlCopy">Copy report</button>

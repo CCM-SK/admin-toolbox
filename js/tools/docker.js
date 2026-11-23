@@ -6,6 +6,8 @@ export const metadata = {
     path: '/#docker-kubernetes'
 };
 export function renderDockerKubernetes(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <div class="tool-window" id="dockerKubernetesWindow">
   <div class="tool-window-header" id="dockerKubernetesDragHandle" title="Drag tool">
@@ -609,7 +611,7 @@ export function renderDockerKubernetes(app) {
           const order = { critical: 0, high: 1, medium: 2, low: 3 };
           return `<div class="tool-toolbar"><label for="dkSeverity">Filter severity</label><select id="dkSeverity"><option value="all">All findings</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div><div id="dkFindingList">${[...items].sort((a,b) => order[a.severity]-order[b.severity]).map(f => {
                 const css = ['critical','high'].includes(f.severity) ? 'danger' : f.severity === 'medium' ? 'warn' : '';
-                return `<div class="status ${css} dk-finding" data-severity="${f.severity}" style="border:1px solid var(--line);margin:10px 0"><div class="row"><strong>${escapeHtml(f.title)}</strong><span class="pill">${f.severity.toUpperCase()}</span><span class="small">${escapeHtml(f.code)}</span></div>${f.target ? `<p><strong>Context:</strong> <code>${escapeHtml(f.target)}</code></p>` : ''}<p>${escapeHtml(f.details)}</p><p><strong>Recommendation:</strong> ${escapeHtml(f.recommendation)}</p></div>`;
+                return `<div class="status ${css} dk-finding generated-style-f251d7c1" data-severity="${f.severity}"><div class="row"><strong>${escapeHtml(f.title)}</strong><span class="pill">${f.severity.toUpperCase()}</span><span class="small">${escapeHtml(f.code)}</span></div>${f.target ? `<p><strong>Context:</strong> <code>${escapeHtml(f.target)}</code></p>` : ''}<p>${escapeHtml(f.details)}</p><p><strong>Recommendation:</strong> ${escapeHtml(f.recommendation)}</p></div>`;
             }).join('')}</div>`;
         }
         results.addEventListener('change', e => {

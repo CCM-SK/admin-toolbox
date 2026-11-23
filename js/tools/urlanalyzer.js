@@ -596,6 +596,8 @@ function renderResult(result) {
   `;
 }
 export function renderUrlAnalyzer(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <section class="card">
       <h2>URL Authenticity / Simple Forensics</h2>

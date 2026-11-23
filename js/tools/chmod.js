@@ -344,7 +344,7 @@ export function renderChmod(app) {
             <div class="stat"><span>Symbolic</span><strong class="mono" id="chmod-symbolic">-rwxr-xr-x</strong></div>
             <div class="stat"><span>chmod command</span><strong class="mono" id="chmod-command">chmod 0755</strong></div>
           </div>
-          <div class="grid three" style="margin-top:.75rem">
+          <div class="grid three generated-style-8c40c9a5">
             <div class="stat"><span>Owner digit</span><strong id="chmod-owner">7</strong></div>
             <div class="stat"><span>Group digit</span><strong id="chmod-group">5</strong></div>
             <div class="stat"><span>Others digit</span><strong id="chmod-others">5</strong></div>
@@ -372,7 +372,7 @@ export function renderChmod(app) {
         <div class="card">
           <h2>Symbolic suggestion</h2>
           <div class="mono" id="chmod-symbolic-suggestion"></div>
-          <div class="small" style="margin-top:.5rem">This is a readable representation of the current complete mode; it is not intended to preserve every nuance of a relative chmod operation.</div>
+          <div class="small generated-style-b310ca1d">This is a readable representation of the current complete mode; it is not intended to preserve every nuance of a relative chmod operation.</div>
         </div>
       </section>
     `;

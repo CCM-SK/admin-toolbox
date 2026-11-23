@@ -9,6 +9,8 @@ import { $, downloadText } from "../utils.js";
  * 4. Supports copying, exporting, and loading predefined cron templates.
  */
 export function renderCronConst(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   // ---------------------------------------------------------------------------
   // Render the complete Cron Expression Generator UI.
   // ---------------------------------------------------------------------------

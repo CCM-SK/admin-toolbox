@@ -11,6 +11,8 @@ export const metadata = {
   path: '/#jsonviewer'
 };
 export function renderJsonViewer(app) {
+  // Keep this tool instance's controls isolated when several tools are mounted.
+  const $ = (selector, root = app) => root.querySelector(selector);
   app.innerHTML = `
     <div class="card tool-window" id="jsonViewerWindow">
       <div class="tool-window-header" id="jsonViewerDragHandle" title="Drag tool">
