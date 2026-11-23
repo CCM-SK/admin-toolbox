@@ -41,6 +41,7 @@ import { renderRoute } from './tools/route.js';
 import { renderSddl } from './tools/sddl.js';
 import { renderTimeline } from './tools/timeline.js';
 import { renderSapLandscape } from './tools/saplandscape.js';
+import { renderDockerKubernetes } from './tools/docker.js';
 
 const views = {
   dashboard: renderDashboard,
@@ -84,7 +85,8 @@ const views = {
   route: renderRoute,
   sddl: renderSddl,
   timeline: renderTimeline,
-  saplandscape: renderSapLandscape
+  saplandscape: renderSapLandscape,
+  docker: renderDockerKubernetes,
 };
 
 const app = $('#app');
