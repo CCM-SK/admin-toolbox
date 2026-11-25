@@ -2,6 +2,7 @@ import { TOOL_REGISTRY, TOOL_BY_ID } from './registry.js';
 import { addWorkflowArtifact, clearWorkflow, getWorkflowArtifact, listWorkflowArtifacts, removeWorkflowArtifact, replaceWorkflowArtifacts } from './workflow.js';
 import { downloadText, enableToolDragging, escapeHtml, formatBytes, setActiveToolScope } from './utils.js';
 import { createCanvasLayoutExport, displaySpaceName, parseCanvasLayoutExport, resolveCanvasPanelDimensions, sortToolsBySpaceThenName } from './canvas-layout.js';
+import { parseAppRoute } from './routes.js';
 
 const app = document.querySelector('#app');
 const navRoot = document.querySelector('#toolNavigation');
@@ -199,7 +200,7 @@ document.querySelector('#sidebarToggle').addEventListener('click', () => {
   setSidebarCollapsed(!document.body.classList.contains('sidebar-collapsed'));
 });
 
-function setCanvasMode(enabled, { seedCurrentTool = false } = {}) {
+function setCanvasMode(enabled, { seedCurrentTool = false, updateHash = false } = {}) {
   const nextMode = Boolean(enabled);
   if (nextMode && !canvasMode) {
     sidebarCollapsedBeforeCanvas = document.body.classList.contains('sidebar-collapsed');
@@ -208,6 +209,7 @@ function setCanvasMode(enabled, { seedCurrentTool = false } = {}) {
     setSidebarCollapsed(sidebarCollapsedBeforeCanvas);
   }
   canvasMode = nextMode;
+  if (updateHash) history.pushState(null, '', canvasMode ? '#canvas' : `#${currentToolId}`);
   document.body.classList.toggle('work-canvas-active', canvasMode);
   workCanvasView.hidden = !canvasMode;
   app.hidden = canvasMode;
@@ -577,8 +579,8 @@ canvasBoard.addEventListener('focusin', event => {
 }, true);
 
 document.querySelector('#workCanvasToggle').addEventListener('click', () => {
-  if (canvasMode) setCanvasMode(false);
-  else setCanvasMode(true, { seedCurrentTool: true });
+  if (canvasMode) setCanvasMode(false, { updateHash: true });
+  else setCanvasMode(true, { seedCurrentTool: true, updateHash: true });
 });
 document.querySelector('#canvasAddTool').addEventListener('click', () => {
   if (canvasToolPicker.value) void addToolToCanvas(canvasToolPicker.value);
@@ -875,6 +877,16 @@ document.querySelector('#workspaceFile').addEventListener('change', async event 
 
 renderNavigation();
 renderWorkflowItems();
-const initialTool = location.hash.slice(1) || 'dashboard';
-activate(initialTool, false, true);
-window.addEventListener('popstate', () => activate(location.hash.slice(1) || 'dashboard', false, false));
+function applyHashRoute() {
+  const route = parseAppRoute(location.hash, new Set(TOOL_REGISTRY.map(tool => tool.id)));
+  if (route.type === 'canvas') {
+    setCanvasMode(true, { seedCurrentTool: false });
+  } else {
+    setCanvasMode(false);
+    void activate(route.id, false, false);
+  }
+}
+const initialRoute = parseAppRoute(location.hash, new Set(TOOL_REGISTRY.map(tool => tool.id)));
+if (initialRoute.type === 'canvas') setCanvasMode(true, { seedCurrentTool: false });
+else void activate(initialRoute.id, false, true);
+window.addEventListener('hashchange', applyHashRoute);
