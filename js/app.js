@@ -140,8 +140,6 @@ function showToolMessage(message, kind = '') {
   el.dataset.kind = kind;
 }
 function initializeToolDragging(tool) {
-  // Most tools render a single .tool-window themselves. Wrap the remaining
-  // tools so every registered tool gets the same draggable title bar.
   let toolWindow = app.children.length === 1 && app.firstElementChild?.classList.contains('tool-window')
     ? app.firstElementChild
     : null;
@@ -173,8 +171,6 @@ function initializeToolDragging(tool) {
     dragHandle.title = 'Detach the sidebar, then drag to move this tool';
   }
 
-  // Existing tool modules may already initialize their own drag handle.
-  // enableToolDragging is idempotent, so this safely covers both cases.
   enableToolDragging(
     toolWindow,
     dragHandle,
@@ -531,8 +527,6 @@ async function addToolToCanvas(id, layout = null) {
   const dimensions = resolveCanvasPanelDimensions(layout, { width: panelWidth, height: 520 });
   panel.style.left = `${left}px`;
   panel.style.top = `${top}px`;
-  // Do not clamp imported widths to the current viewport. Canvas can scroll,
-  // and the original window size must survive imports across monitor sizes.
   panel.style.width = `${dimensions.width}px`;
   panel.style.height = `${dimensions.height}px`;
   canvasBoard.append(panel);
@@ -740,10 +734,6 @@ function getCanvasPanelLayouts() {
       ? Number.parseFloat(panel.dataset.expandedHeight) || 520
       : Number.parseFloat(panel.style.height) || panel.offsetHeight || 520;
     let minimized = panel.classList.contains('is-minimized');
-
-    // A maximized panel's visible rectangle is the viewport, not its saved
-    // desktop placement. Export its restore rectangle so another screen can
-    // recreate the arrangement faithfully.
     if (maximized) {
       try {
         const previous = JSON.parse(panel.dataset.previousRect || '{}');
@@ -847,7 +837,6 @@ document.querySelector('#workspaceFile').addEventListener('change', async event 
     const validId = id => typeof id === 'string' && TOOL_BY_ID.has(id);
     const canvasLayouts = (workspace.canvas || []).filter(item => item && validId(item.id)).slice(0, MAX_CANVAS_PANELS);
     if (new Set(canvasLayouts.map(item => item.id)).size !== canvasLayouts.length) throw new Error('Workspace Canvas contains duplicate tools.');
-    // Validate and replace artifacts before mutating the other workspace state.
     replaceWorkflowArtifacts(workspace.artifacts);
     favorites.clear();
     workspace.favorites.filter(validId).forEach(id => favorites.add(id));

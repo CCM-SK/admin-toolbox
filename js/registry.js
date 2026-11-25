@@ -1,7 +1,3 @@
-/**
- * Single source of truth for tool metadata, lazy loaders, examples and workflow adapters.
- * All modules are relative static assets, so GitHub Pages can serve them without a backend.
- */
 const define = (id, name, category, description, path, exportName, options = {}) => ({
   id, name, category, description, modulePath: path, rendererName: exportName,
   load: async () => {
